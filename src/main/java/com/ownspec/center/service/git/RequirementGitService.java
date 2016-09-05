@@ -21,4 +21,9 @@ public class RequirementGitService implements GitService {
         git.add().addFilepattern(filePath).call();
         git.commit().setMessage("Commit file [" + filePath + "]").call();
     }
+
+    public Git getGit() {
+        return git;
+    }
+
 }

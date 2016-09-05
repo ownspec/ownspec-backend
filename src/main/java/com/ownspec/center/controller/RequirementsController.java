@@ -45,7 +45,11 @@ public class RequirementsController {
     public String create(@RequestBody Requirement requirement) throws IOException, GitAPIException {
 
         if(requirement.getHtmlDescriptionContent() != null){
-            File htmlDescriptionFile = new File(UUID.randomUUID() + ".html");
+            File htmlDescriptionFile = new File(
+                    requirementGitService.getGit().getRepository().getWorkTree(),
+                    UUID.randomUUID() + ".html");
+            LOG.info("creating requirement file [{}]", htmlDescriptionFile.getAbsoluteFile());
+
             try (FileOutputStream outputStream = new FileOutputStream(htmlDescriptionFile)) {
                 outputStream.write(requirement.getHtmlDescriptionContent().getBytes());
             } catch (Exception e) {

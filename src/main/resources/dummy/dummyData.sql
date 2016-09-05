@@ -7,7 +7,7 @@ INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Ownspec project',
 
 -- Requirements
 INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,html_description_path,git_reference ,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
-'My first dummy requirement', 'first requirement description','target/dummyRepository/req1.html','master', '2016-01-12 23:51:32.341',true,false);
+'My first dummy requirement', 'first requirement description','dummy/gitrepo/requirement/req1.html','master', '2016-01-12 23:51:32.341',true,false);
 INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
 'Second dummy requirement', 'second requirement description', CURRENT_TIMESTAMP(),true,false);
 INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
