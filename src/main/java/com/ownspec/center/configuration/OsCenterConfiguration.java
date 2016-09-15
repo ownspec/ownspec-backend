@@ -1,7 +1,5 @@
 package com.ownspec.center.configuration;
 
-import com.ownspec.center.service.git.RequirementGitService;
-import com.ownspec.center.service.git.SpecificationGitService;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,24 +21,13 @@ import java.io.IOException;
 @EnableTransactionManagement
 public class OsCenterConfiguration {
 
-
     @Value("${git.repository.path.requirement}")
     String requirementGitRepositoryPath;
 
-    @Value("${git.repository.path.specification}")
-    String specificationGitRepositoryPath;
 
-    @Bean
-    public RequirementGitService requirementGitService() throws IOException, GitAPIException {
-        Git git = git(requirementGitRepositoryPath);
-        return new RequirementGitService(git);
-    }
+    @Value("${git.repository.path.document}")
+    String documentGitRepositoryPath;
 
-    @Bean
-    public SpecificationGitService specificationGitService() throws IOException, GitAPIException {
-        Git git = git(specificationGitRepositoryPath);
-        return new SpecificationGitService(git);
-    }
 
     @Bean
     @Scope(value = BeanDefinition.SCOPE_PROTOTYPE)
@@ -49,6 +36,14 @@ public class OsCenterConfiguration {
         git.add().addFilepattern(".").call();
         git.commit().setMessage("Adding all files under directory [" + repositoryPath + "]").call();
         return git;
+    }
+
+    public String getDocumentGitRepositoryPath() {
+        return documentGitRepositoryPath;
+    }
+
+    public String getRequirementGitRepositoryPath() {
+        return requirementGitRepositoryPath;
     }
 
 }
