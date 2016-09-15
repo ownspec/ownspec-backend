@@ -17,7 +17,6 @@ public class Requirement {
     private String title;
     private String description;
     private String htmlDescriptionPath;
-    private String htmlDescriptionContent;
     private String gitReference;
     private Date creationDate;
 
@@ -122,11 +121,4 @@ public class Requirement {
         this.gitReference = gitReference;
     }
 
-    public String getHtmlDescriptionContent() {
-        return htmlDescriptionContent;
-    }
-
-    public void setHtmlDescriptionContent(String htmlDescriptionContent) {
-        this.htmlDescriptionContent = htmlDescriptionContent;
-    }
 }
