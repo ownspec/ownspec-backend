@@ -22,10 +22,10 @@ public class Project {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedDate;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     private List<Requirement> requirements;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     private List<Document> documents;
 
     public Project() {
@@ -59,7 +59,6 @@ public class Project {
     public Date getCreationDate() {
         return creationDate;
     }
-
 
     public Date getUpdatedDate() {
         return updatedDate;

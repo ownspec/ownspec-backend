@@ -5,5 +5,8 @@ package com.ownspec.center.model;
  */
 public enum  Status {
     OPEN,
+    DRAFT,
+    IN_VALIDATION,
+    VALIDATED,
     CLOSED
 }

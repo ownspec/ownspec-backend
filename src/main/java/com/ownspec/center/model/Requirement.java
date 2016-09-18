@@ -1,7 +1,9 @@
 package com.ownspec.center.model;
 
+import com.ownspec.center.model.component.AbstractComponent;
+import com.ownspec.center.model.component.ComponentTypes;
+
 import javax.persistence.Entity;
-import java.util.List;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -9,5 +11,8 @@ import java.util.List;
 @Entity
 public class Requirement extends AbstractComponent {
 
+    public Requirement() {
+        setType(ComponentTypes.REQUIREMENT);
+    }
 
 }

@@ -1,10 +1,11 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.component;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToOne;
+import com.ownspec.center.model.Status;
+import com.ownspec.center.model.User;
+
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by lyrold on 16/09/2016.
@@ -21,13 +22,15 @@ public abstract class AbstractComponent {
     protected String gitReference;
     protected Date creationDate = new Date();
     protected Status status;
-
+    protected ComponentTypes type;
+    protected boolean editable = true;
+    protected boolean secret;
     @OneToOne
     protected User author;
 
-    protected boolean editable = true;
+    @OneToMany
+    private List<Component> children;
 
-    protected boolean secret;
 
     public Long getId() {
         return id;
@@ -107,5 +110,39 @@ public abstract class AbstractComponent {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public ComponentTypes getType() {
+        return type;
+    }
+
+    public void setType(ComponentTypes type) {
+        this.type = type;
+    }
+
+    public List<Component> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Component> children) {
+        this.children = children;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", htmlContentFilePath='" + htmlContentFilePath + '\'' +
+                ", gitReference='" + gitReference + '\'' +
+                ", creationDate=" + creationDate +
+                ", status=" + status +
+                ", type=" + type +
+                ", editable=" + editable +
+                ", secret=" + secret +
+                ", author=" + author +
+                ", children=" + children +
+                '}';
     }
 }
