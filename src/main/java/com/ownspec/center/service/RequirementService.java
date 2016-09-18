@@ -1,23 +1,13 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.configuration.OsCenterConfiguration;
-import com.sun.deploy.util.ArrayUtil;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CharacterEditor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.HtmlUtils;
 
 import javax.annotation.PostConstruct;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by lyrold on 15/09/2016.

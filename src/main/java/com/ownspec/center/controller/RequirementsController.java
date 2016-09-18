@@ -46,20 +46,20 @@ public class RequirementsController {
     @ResponseBody
     public ResponseEntity create(@RequestBody Requirement requirement) throws IOException, GitAPIException {
 
-        if (requirement.getHtmlDescriptionContent() != null) {
+        if (requirement.getContent() != null) {
             File htmlDescriptionFile = new File(
                     requirementService.getGit().getRepository().getWorkTree(),
                     UUID.randomUUID() + ".html");
             LOG.info("creating requirement file [{}]", htmlDescriptionFile.getAbsoluteFile());
 
             try (FileOutputStream outputStream = new FileOutputStream(htmlDescriptionFile)) {
-                outputStream.write(requirement.getHtmlDescriptionContent().getBytes());
+                outputStream.write(requirement.getContent().getBytes());
             } catch (Exception e) {
                 LOG.error("An error has occurred when writing file", e);
             }
             requirementService.commit(htmlDescriptionFile.getAbsolutePath());
-            requirement.setHtmlDescriptionPath(htmlDescriptionFile.getAbsolutePath());
-            requirement.setDescription(htmlFileToPlainText(htmlDescriptionFile.getAbsolutePath()));
+            requirement.setHtmlContentFilePath(htmlDescriptionFile.getAbsolutePath());
+            requirement.setContent(htmlFileToPlainText(htmlDescriptionFile.getAbsolutePath()));
         }
         requirement.setAuthor(currentUser);
         repository.saveAndFlush(requirement);
@@ -72,8 +72,8 @@ public class RequirementsController {
     public String update(@PathVariable("id") Long id) throws GitAPIException {
         Requirement requestedRequirement = repository.findOne(id);
         if (requestedRequirement != null) {
-            requestedRequirement.setDescription(htmlFileToPlainText(requestedRequirement.getHtmlDescriptionPath()));
-            requirementService.commit(requestedRequirement.getHtmlDescriptionPath());
+            requestedRequirement.setContent(htmlFileToPlainText(requestedRequirement.getHtmlContentFilePath()));
+            requirementService.commit(requestedRequirement.getHtmlContentFilePath());
             repository.saveAndFlush(requestedRequirement);
             return "Requirement successfully updated";
         } else {
@@ -88,7 +88,7 @@ public class RequirementsController {
         Requirement requirement = repository.findOne(id);
         if (requirement != null) {
             try {
-                FileUtils.forceDelete(new File(requirement.getHtmlDescriptionPath()));
+                FileUtils.forceDelete(new File(requirement.getHtmlContentFilePath()));
                 repository.delete(id);
                 return "Requirement successfully removed";
             } catch (IOException e) {

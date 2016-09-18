@@ -18,10 +18,15 @@ public class Project {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedDate;
+
     @OneToMany(fetch = FetchType.EAGER)
     private List<Requirement> requirements;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<Document> documents;
 
     public Project() {
         creationDate = new Date();

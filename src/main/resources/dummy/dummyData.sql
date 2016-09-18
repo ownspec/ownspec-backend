@@ -1,19 +1,30 @@
 -- Projects
-INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('My first dummy project', 'first project description', '2016-01-12 23:51:32.341');
-INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Second dummy project', 'second project description', CURRENT_TIMESTAMP());
-INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Third dummy project', 'Third project description', '2016-05-29 23:51:32.341');
+INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('My first dummy project', 'first project content', '2016-01-12 23:51:32.341');
+INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Second dummy project', 'second project content', CURRENT_TIMESTAMP());
+INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Third dummy project', 'Third project content', '2016-05-29 23:51:32.341');
 INSERT INTO PROJECT (TITLE, DESCRIPTION,CREATION_DATE) VALUES('Ownspec project', 'shuuuuutttt', CURRENT_TIMESTAMP());
 
 
 -- Requirements
-INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,html_description_path,git_reference ,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
-'My first dummy requirement', 'first requirement description','dummy/gitrepo/requirement/req1.html','master', '2016-01-12 23:51:32.341',true,false);
-INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
-'Second dummy requirement', 'second requirement description', CURRENT_TIMESTAMP(),true,false);
-INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
-'Third dummy requirement', 'Third requirement description', '2016-05-29 23:51:32.341',true,false);
-INSERT INTO REQUIREMENT (TITLE, DESCRIPTION,CREATION_DATE,IS_EDITABLE, IS_PRIVATE) VALUES(
+INSERT INTO REQUIREMENT (TITLE, content,html_content_file_path,git_reference ,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'My first dummy requirement', 'first requirement content','dummy/gitrepo/requirement/req1.html','master', '2016-01-12 23:51:32.341',true,false);
+INSERT INTO REQUIREMENT (TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'Second dummy requirement', 'second requirement content', CURRENT_TIMESTAMP(),true,false);
+INSERT INTO REQUIREMENT (TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'Third dummy requirement', 'Third requirement content', '2016-05-29 23:51:32.341',true,false);
+INSERT INTO REQUIREMENT (TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
 'Ownspec requirement', 'shuuuuutttt', CURRENT_TIMESTAMP(),true,false);
+
+
+-- Components
+INSERT INTO COMPONENT (TITLE, content,html_content_file_path,git_reference ,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'My first dummy component', 'first requirement content','dummy/gitrepo/requirement/req1.html','master', '2016-01-12 23:51:32.341',true,false);
+INSERT INTO COMPONENT (TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'Second dummy component', 'second requirement content', CURRENT_TIMESTAMP(),true,false);
+INSERT INTO COMPONENT(TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'Third dummy component', 'Third requirement content', '2016-05-29 23:51:32.341',true,false);
+INSERT INTO COMPONENT (TITLE, content,CREATION_DATE,EDITABLE, SECRET) VALUES(
+'Ownspec COMPONENT', 'shuuuuutttt', CURRENT_TIMESTAMP(),true,false);
 
 
 -- users
