@@ -2,11 +2,12 @@ package com.ownspec.center.controller;
 
 import com.ownspec.center.model.Project;
 import com.ownspec.center.repository.ProjectRepository;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import com.ownspec.center.util.OsUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,23 +20,24 @@ public class ProjectController {
     @Autowired
     private ProjectRepository repository;
 
-
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity create() {
+    public ResponseEntity create(@RequestBody Project project) {
+
         return ResponseEntity.ok("Project successfully created");
     }
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    public String update(@PathVariable("id") Long id) throws GitAPIException {
-        Project requestedProject = repository.findOne(id);
-        if (requestedProject != null) {
-            // Do something
-            repository.saveAndFlush(requestedProject);
-            return "Project successfully updated";
+    public ResponseEntity update(@PathVariable("id") Long id, @RequestBody Project source) {
+        Project target = repository.findOne(id);
+        if (target != null) {
+            OsUtils.mergeWithNotNullProperties(source, target);
+            target.setUpdatedDate(new Date());
+            repository.saveAndFlush(target);
+            return ResponseEntity.ok().build();
         } else {
-            return "Cannot remove project with id [" + id + "]; cause not found";
+            return ResponseEntity.badRequest().body("Cannot remove project with id [" + id + "]; cause not found");
         }
     }
 

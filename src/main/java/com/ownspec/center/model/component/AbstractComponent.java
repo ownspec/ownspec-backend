@@ -1,5 +1,6 @@
 package com.ownspec.center.model.component;
 
+import com.ownspec.center.model.Resource;
 import com.ownspec.center.model.Status;
 import com.ownspec.center.model.User;
 
@@ -21,6 +22,7 @@ public abstract class AbstractComponent {
     protected String htmlContentFilePath;
     protected String gitReference;
     protected Date creationDate = new Date();
+    protected Date updatedDate;
     protected Status status;
     protected ComponentTypes type;
     protected boolean editable = true;
@@ -31,6 +33,8 @@ public abstract class AbstractComponent {
     @OneToMany
     private List<Component> children;
 
+    @ManyToMany
+    protected List<Resource> resources;
 
     public Long getId() {
         return id;
@@ -128,21 +132,19 @@ public abstract class AbstractComponent {
         this.children = children;
     }
 
-    @Override
-    public String toString() {
-        return this.getClass().getName() + "{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", htmlContentFilePath='" + htmlContentFilePath + '\'' +
-                ", gitReference='" + gitReference + '\'' +
-                ", creationDate=" + creationDate +
-                ", status=" + status +
-                ", type=" + type +
-                ", editable=" + editable +
-                ", secret=" + secret +
-                ", author=" + author +
-                ", children=" + children +
-                '}';
+    public List<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<Resource> resources) {
+        this.resources = resources;
+    }
+
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
     }
 }

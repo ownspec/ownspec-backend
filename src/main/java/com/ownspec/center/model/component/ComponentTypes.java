@@ -8,4 +8,5 @@ public enum ComponentTypes {
     GLOSSARY,
     REQUIREMENT,
     TEMPLATE,
+    TABLE_OF_CONTENT,
 }
