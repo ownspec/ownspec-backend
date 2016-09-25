@@ -1,16 +1,15 @@
 package com.ownspec.center.model;
 
+import com.ownspec.center.model.audit.Audit;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-
-import com.ownspec.center.model.audit.Audit;
-import lombok.Data;
+import java.util.Date;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -33,10 +32,15 @@ public class User implements UserDetails {
     private String signature;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Instant lastConnection;
+    private Date lastConnection;
 
     @Embedded
     private Audit audit;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "category"))
+    private UserCategory category;
+
 
     @Column(columnDefinition = "boolean default false")
     private boolean loggedIn;

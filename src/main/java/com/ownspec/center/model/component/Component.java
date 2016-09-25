@@ -1,8 +1,5 @@
 package com.ownspec.center.model.component;
 
-import com.ownspec.center.model.component.AbstractComponent;
-import com.ownspec.center.model.component.ComponentTypes;
-
 import javax.persistence.Entity;
 
 /**
@@ -10,6 +7,5 @@ import javax.persistence.Entity;
  */
 @Entity
 public class Component extends AbstractComponent {
-
 
 }

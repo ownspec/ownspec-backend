@@ -1,4 +1,4 @@
-package com.ownspec.center.repository;
+package com.ownspec.center.repository.component;
 
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentTypes;

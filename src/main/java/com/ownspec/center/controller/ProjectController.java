@@ -1,6 +1,5 @@
 package com.ownspec.center.controller;
 
-import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.util.OsUtils;
@@ -8,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**

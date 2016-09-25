@@ -1,4 +1,4 @@
-package com.ownspec.center.repository;
+package com.ownspec.center.repository.component;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

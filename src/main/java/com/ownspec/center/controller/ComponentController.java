@@ -1,8 +1,6 @@
 package com.ownspec.center.controller;
 
 import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.model.component.Component;
-import com.ownspec.center.repository.ComponentRepository;
 import com.ownspec.center.service.ComponentService;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
