@@ -1,5 +1,6 @@
 package com.ownspec.center.controller;
 
+import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.util.OsUtils;
@@ -14,7 +15,7 @@ import java.util.List;
  * Created by lyrold on 18/09/2016.
  */
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     @Autowired
@@ -33,7 +34,6 @@ public class ProjectController {
         Project target = repository.findOne(id);
         if (target != null) {
             OsUtils.mergeWithNotNullProperties(source, target);
-            target.setUpdatedDate(new Date());
             repository.saveAndFlush(target);
             return ResponseEntity.ok().build();
         } else {

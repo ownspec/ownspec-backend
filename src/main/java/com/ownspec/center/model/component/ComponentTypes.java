@@ -5,8 +5,8 @@ package com.ownspec.center.model.component;
  */
 public enum ComponentTypes {
     DOCUMENT,
-    GLOSSARY,
+    COMPONENT,
     REQUIREMENT,
+    RESOURCE,
     TEMPLATE,
-    TABLE_OF_CONTENT,
 }

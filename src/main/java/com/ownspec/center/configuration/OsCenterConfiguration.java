@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.io.IOException;
 @Configuration
 @EnableAutoConfiguration
 @EnableTransactionManagement
+@EnableJpaAuditing
 public class OsCenterConfiguration {
 
     @Value("${git.repository.path.components}")

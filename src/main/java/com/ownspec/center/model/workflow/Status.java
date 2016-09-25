@@ -1,4 +1,4 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.workflow;
 
 /**
  * Created by lyrold on 18/09/2016.

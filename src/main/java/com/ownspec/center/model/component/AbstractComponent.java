@@ -1,150 +1,54 @@
 package com.ownspec.center.model.component;
 
-import com.ownspec.center.model.Resource;
-import com.ownspec.center.model.Status;
-import com.ownspec.center.model.User;
+import javax.persistence.Embedded;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
+import org.springframework.data.domain.Persistable;
+
+import com.ownspec.center.model.Project;
+import com.ownspec.center.model.audit.Audit;
+import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.workflow.WorkflowInstance;
+import lombok.Data;
 
 /**
  * Created by lyrold on 16/09/2016.
  */
+@Data
 @MappedSuperclass
-public abstract class AbstractComponent {
+public abstract class AbstractComponent implements Auditable, Persistable<Long> {
     @Id
     @GeneratedValue
     protected Long id;
 
     protected String title;
-    protected String content;
-    protected String htmlContentFilePath;
-    protected String gitReference;
-    protected Date creationDate = new Date();
-    protected Date updatedDate;
-    protected Status status;
+    protected String filePath;
+
+    @Embedded
+    private Audit audit;
+
+    // Project which owns this WorkflowStatus
+    @ManyToOne
+    protected Project project;
+
+    // WorkflowInstance which owns this WorkflowStatus
+    @ManyToOne
+    private WorkflowInstance currentWorkflowInstance;
+
+
     protected ComponentTypes type;
     protected boolean editable = true;
     protected boolean secret;
-    @OneToOne
-    protected User author;
 
-    @OneToMany
-    private List<Component> children;
+    protected boolean confidential;
 
-    @ManyToMany
-    protected List<Resource> resources;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getHtmlContentFilePath() {
-        return htmlContentFilePath;
-    }
-
-    public void setHtmlContentFilePath(String htmlContentFilePath) {
-        this.htmlContentFilePath = htmlContentFilePath;
-    }
-
-    public String getGitReference() {
-        return gitReference;
-    }
-
-    public void setGitReference(String gitReference) {
-        this.gitReference = gitReference;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    private void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
-    }
-
-    public boolean isEditable() {
-        return editable;
-    }
-
-    public void setEditable(boolean editable) {
-        this.editable = editable;
-    }
-
-    public boolean isSecret() {
-        return secret;
-    }
-
-    public void setSecret(boolean secret) {
-        this.secret = secret;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public ComponentTypes getType() {
-        return type;
-    }
-
-    public void setType(ComponentTypes type) {
-        this.type = type;
-    }
-
-    public List<Component> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<Component> children) {
-        this.children = children;
-    }
-
-    public List<Resource> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<Resource> resources) {
-        this.resources = resources;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
+    @Override
+    @Transient
+    public boolean isNew() {
+        return null == getId();
     }
 }
