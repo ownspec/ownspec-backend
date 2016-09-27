@@ -1,6 +1,6 @@
 package com.ownspec.center.model.audit;
 
-import com.ownspec.center.model.User;
+import com.ownspec.center.model.user.User;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,7 +26,7 @@ public class Audit {
 
     @ManyToOne
     @CreatedBy
-    protected User createdUser;
+    protected User author;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -35,4 +35,5 @@ public class Audit {
     @ManyToOne
     @LastModifiedBy
     protected User lastModifiedUser;
+
 }

@@ -1,4 +1,4 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.user;
 
 import com.ownspec.center.model.audit.Audit;
 import lombok.Data;
@@ -38,9 +38,7 @@ public class User implements UserDetails {
     private Audit audit;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "category"))
     private UserCategory category;
-
 
     @Column(columnDefinition = "boolean default false")
     private boolean loggedIn;

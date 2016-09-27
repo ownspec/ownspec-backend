@@ -1,8 +1,7 @@
 package com.ownspec.center.model.component;
 
+import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Project;
-import com.ownspec.center.model.Quantifiable;
-import com.ownspec.center.model.UserCategory;
 import com.ownspec.center.model.audit.Audit;
 import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.workflow.WorkflowInstance;
@@ -10,8 +9,8 @@ import lombok.Data;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by lyrold on 16/09/2016.
@@ -25,7 +24,6 @@ public abstract class AbstractComponent implements Auditable, Persistable<Long> 
 
     protected String title;
     protected String filePath;
-    protected String version;
 
     @Embedded
     private Audit audit;
@@ -38,13 +36,25 @@ public abstract class AbstractComponent implements Auditable, Persistable<Long> 
     @ManyToOne
     private WorkflowInstance currentWorkflowInstance;
 
+    @OneToMany
+    @ElementCollection
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany
+    @ElementCollection
+    private List<ComponentReference> children = new ArrayList<>();
+
 //    @ElementCollection
 //    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
     protected ComponentTypes type;
-    protected Boolean editable = true;
-    protected Boolean secret = false;
-    protected Boolean confidential = false;
+
+    @Column(columnDefinition = "boolean default true")
+    protected boolean editable;
+    @Column(columnDefinition = "boolean default false")
+    protected boolean secret;
+    @Column(columnDefinition = "boolean default false")
+    protected boolean confidential;
 
     @Override
     @Transient

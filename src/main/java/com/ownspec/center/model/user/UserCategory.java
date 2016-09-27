@@ -1,4 +1,4 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.user;
 
 import lombok.Data;
 
@@ -10,6 +10,5 @@ import javax.persistence.Embeddable;
 @Data
 @Embeddable
 public class UserCategory {
-    private String value;
-
+    private String category;
 }

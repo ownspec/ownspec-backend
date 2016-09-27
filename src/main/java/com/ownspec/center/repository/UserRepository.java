@@ -1,8 +1,7 @@
 package com.ownspec.center.repository;
 
-import com.ownspec.center.model.User;
+import com.ownspec.center.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by lyrold on 23/08/2016.

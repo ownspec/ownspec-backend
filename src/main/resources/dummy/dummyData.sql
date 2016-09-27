@@ -5,8 +5,8 @@ INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Third dummy project', 'Third pr
 INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Ownspec project', 'shuuuuutttt');
 
 -- Components
-INSERT INTO COMPONENT (TITLE,file_path) VALUES(
-'My first dummy component', 'dummy/gitrepo/requirement/req1.html');
+INSERT INTO COMPONENT (TITLE,file_path, created_date) VALUES(
+'My first dummy component', 'dummy/gitrepo/requirement/req1.html', CURRENT_TIMESTAMP);
 INSERT INTO COMPONENT (TITLE) VALUES(
 'Second dummy component');
 INSERT INTO COMPONENT(TITLE) VALUES(

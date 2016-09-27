@@ -1,7 +1,7 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.exception.UserAlreadyExistsException;
-import com.ownspec.center.model.User;
+import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
