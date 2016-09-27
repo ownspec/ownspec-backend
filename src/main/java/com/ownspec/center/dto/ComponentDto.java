@@ -2,6 +2,8 @@ package com.ownspec.center.dto;
 
 import javax.annotation.Nullable;
 
+import java.time.Instant;
+
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -22,8 +24,17 @@ public interface ComponentDto {
     String getTitle();
 
     @Nullable
-    String getFilePath();
+    Instant getCreatedDate();
+    @Nullable
+    UserDto getCreatedUser();
+    @Nullable
+    Instant getLastModifiedDate();
+    @Nullable
+    UserDto getLastModifiedUser();
 
     String getContent();
+
+    @Nullable
+    WorkflowInstanceDto getCurrentWorkflowInstance();
 
 }

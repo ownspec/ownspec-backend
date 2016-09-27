@@ -18,11 +18,9 @@ public class ComponentRepositoryTest extends AbstractTest {
 
     @Test
     @Transactional
-    @Commit
     public void name() throws Exception {
         ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
                 .content("doo")
-                .filePath("dd")
                 .title("title").build();
 
         Component component = componentService.create(componentDto);

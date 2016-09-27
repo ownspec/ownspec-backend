@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -33,7 +34,7 @@ public class GitService {
     private User currentUser;
 
 
-    public void updateAndCommit(Resource resource, String filePath) {
+    public String updateAndCommit(Resource resource, String filePath) {
         File contentFile = new File(filePath);
         LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
 
@@ -44,13 +45,13 @@ public class GitService {
             // TODO: 24/09/16 Create custom exception
             throw new RuntimeException(e);
         }
-        commit(contentFile.getAbsolutePath());
+        return commit(contentFile.getAbsolutePath());
     }
 
-    public File createAndCommit(Resource resource) {
+    public Pair<File, String> createAndCommit(Resource resource) {
         File contentFile = new File(getGit().getRepository().getWorkTree(), UUID.randomUUID() + ".html");
-        updateAndCommit(resource, contentFile.getAbsolutePath());
-        return contentFile;
+        String hash = updateAndCommit(resource, contentFile.getAbsolutePath());
+        return Pair.of(contentFile, hash);
     }
 
     public void deleteAndCommit(String filePath) {
@@ -64,13 +65,17 @@ public class GitService {
     }
 
 
-    public void commit(String filePath) {
+    public String commit(String filePath) {
         try {
             git.add().addFilepattern(filePath).call();
-            git
+            RevCommit revCommit = git
                     .commit()
                     .setAuthor(currentUser.getFirstName(), currentUser.getUsername())
                     .setMessage("Defaut commit message for changed file [" + filePath + "]").call();
+
+
+            return revCommit.getId().name();
+
         } catch (GitAPIException e) {
             // TODO: 24/09/16 Create custom exception
             throw new RuntimeException(e);

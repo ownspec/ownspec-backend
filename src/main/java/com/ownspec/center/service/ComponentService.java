@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,23 +56,27 @@ public class ComponentService {
     private User currentUser;
 
     public Component create(ComponentDto source) throws UnsupportedEncodingException {
+
+        // TODO: 27/09/16 return git reference too
+        // TODO: 27/09/16 handle case if transaction fails
+        Pair<File, String> pair = gitService.createAndCommit(new ByteArrayResource(defaultIfEmpty(source.getContent(), "").getBytes("UTF-8")));
+
+
         Component component = new Component();
         component.setTitle(source.getTitle());
 
         WorkflowInstance workflowInstance = new WorkflowInstance();
         workflowInstance.setComponent(component);
         workflowInstance.setCurrentStatus(Status.OPEN);
-        workflowInstance.setCurrentGitReference("dd");
+        workflowInstance.setCurrentGitReference(pair.getRight());
 
         WorkflowStatus workflowStatus = new WorkflowStatus();
         workflowStatus.setWorkflowComponent(component);
         workflowStatus.setWorkflowInstance(workflowInstance);
         workflowStatus.setStatus(Status.OPEN);
-        workflowStatus.setGitReference("dd");
+        workflowStatus.setGitReference(pair.getRight());
 
-        // TODO: 27/09/16 return git reference too
-        File contentFile = gitService.createAndCommit(new ByteArrayResource(defaultIfEmpty(source.getContent(), "").getBytes("UTF-8")));
-        component.setFilePath(contentFile.getAbsolutePath());
+        component.setFilePath(pair.getLeft().getAbsolutePath());
         component = componentRepository.save(component);
 
         workflowInstance = workflowInstanceRepository.save(workflowInstance);
