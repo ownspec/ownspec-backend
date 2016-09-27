@@ -6,7 +6,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import com.ownspec.center.model.audit.Audit;
+
+import java.time.Instant;
+
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.domain.Persistable;
+
+import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 /**
@@ -17,7 +27,7 @@ import lombok.Data;
  */
 @Data
 @Entity
-public class ComponentReference {
+public class ComponentReference implements Persistable<Long>, Auditable<User> {
 
     @Id
     @GeneratedValue
@@ -34,6 +44,19 @@ public class ComponentReference {
     // A reference target a component in a specific workflow cycle
     private Long targetWorkflowInstanceId;
 
-    @Embedded
-    private Audit audit;
+    @CreatedDate
+    protected Instant createdDate;
+    @ManyToOne
+    @CreatedBy
+    protected User createdUser;
+    @LastModifiedDate
+    protected Instant lastModifiedDate;
+    @ManyToOne
+    @LastModifiedBy
+    protected User lastModifiedUser;
+
+    @Override
+    public boolean isNew() {
+        return null == getId();
+    }
 }

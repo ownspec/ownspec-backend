@@ -1,22 +1,32 @@
 package com.ownspec.center.model.user;
 
-import com.ownspec.center.model.audit.Audit;
-import lombok.Data;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import com.ownspec.center.model.audit.Auditable;
+import lombok.Data;
 
 /**
  * Created by lyrold on 23/08/2016.
  */
 @Data
 @Entity
-public class User implements UserDetails {
+public class User implements UserDetails, Auditable<User> {
 
     @Id
     @GeneratedValue
@@ -31,11 +41,19 @@ public class User implements UserDetails {
     private String fax;
     private String signature;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastConnection;
 
-    @Embedded
-    private Audit audit;
+    private Instant lastConnection;
+
+    @CreatedDate
+    protected Instant createdDate;
+    @ManyToOne
+    @CreatedBy
+    protected User createdUser;
+    @LastModifiedDate
+    protected Instant lastModifiedDate;
+    @ManyToOne
+    @LastModifiedBy
+    protected User lastModifiedUser;
 
     @Embedded
     private UserCategory category;

@@ -2,9 +2,16 @@ package com.ownspec.center.model;
 
 import javax.persistence.*;
 
+import java.time.Instant;
+
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
-import com.ownspec.center.model.audit.Audit;
+import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 /**
@@ -12,7 +19,7 @@ import lombok.Data;
  */
 @Data
 @Entity
-public class Project implements Persistable<Long> {
+public class Project implements Persistable<Long>, Auditable<User> {
 
     @Id
     @GeneratedValue
@@ -20,8 +27,16 @@ public class Project implements Persistable<Long> {
     private String title;
     private String description;
 
-    @Embedded
-    private Audit audit;
+    @CreatedDate
+    protected Instant createdDate;
+    @ManyToOne
+    @CreatedBy
+    protected User createdUser;
+    @LastModifiedDate
+    protected Instant lastModifiedDate;
+    @ManyToOne
+    @LastModifiedBy
+    protected User lastModifiedUser;
 
     @Override
     @Transient

@@ -28,7 +28,8 @@ public class GitService {
     @Autowired
     private Git git;
 
-    //    @Autowired
+    // TODO: 27/09/16 temporary
+    @Autowired
     private User currentUser;
 
 

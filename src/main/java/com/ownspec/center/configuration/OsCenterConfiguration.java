@@ -1,24 +1,33 @@
 package com.ownspec.center.configuration;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import java.io.File;
-import java.io.IOException;
+import com.ownspec.center.model.user.User;
+
 
 /**
  * Created by lyrold on 23/08/2016.
  */
 @Configuration
-@EnableAutoConfiguration
 @EnableTransactionManagement
 @EnableJpaAuditing
+@EnableJpaRepositories(basePackages ="com.ownspec.center")
+@EntityScan(
+        basePackages = {"com.ownspec.center.model"},
+        basePackageClasses = {Jsr310JpaConverters.class }
+)
 public class OsCenterConfiguration {
 
     @Value("${git.repository.path.components}")
@@ -31,5 +40,13 @@ public class OsCenterConfiguration {
         git.commit().setMessage("Adding all files under directory [" + componentsGitRepositoryPath + "]").call();
         return git;
     }
+
+    @Bean
+    public User currentUser(){
+        User user = new User("foo", "bar");
+        user.setFirstName("firstname");
+        return user;
+    }
+
 
 }

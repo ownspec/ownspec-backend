@@ -26,7 +26,7 @@ public class ProjectController {
         return ResponseEntity.ok("Project successfully created");
     }
 
-    @RequestMapping(value = "/update/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}/update", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity update(@PathVariable("id") Long id, @RequestBody Project source) {
         Project target = repository.findOne(id);
@@ -39,7 +39,7 @@ public class ProjectController {
         }
     }
 
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}/delete", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity delete(@PathVariable("id") Long id) {
         Project project = repository.findOne(id);

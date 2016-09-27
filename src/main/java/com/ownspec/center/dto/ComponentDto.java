@@ -1,5 +1,7 @@
 package com.ownspec.center.dto;
 
+import javax.annotation.Nullable;
+
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -14,10 +16,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(as = ImmutableComponentDto.class)
 public interface ComponentDto {
 
+    @Nullable
     Long getId();
 
     String getTitle();
 
+    @Nullable
     String getFilePath();
 
     String getContent();

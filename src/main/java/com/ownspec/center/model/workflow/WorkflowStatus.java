@@ -1,15 +1,21 @@
 package com.ownspec.center.model.workflow;
 
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.time.Instant;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.audit.Audit;
+import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 /**
@@ -17,7 +23,7 @@ import lombok.Data;
  */
 @Data
 @Entity
-public class WorkflowStatus {
+public class WorkflowStatus implements Auditable<User> {
 
     @Id
     @GeneratedValue
@@ -34,7 +40,15 @@ public class WorkflowStatus {
     @Enumerated(EnumType.STRING)
     protected Status status;
 
-    @Embedded
-    private Audit audit;
+    @CreatedDate
+    protected Instant createdDate;
+    @ManyToOne
+    @CreatedBy
+    protected User createdUser;
+    @LastModifiedDate
+    protected Instant lastModifiedDate;
+    @ManyToOne
+    @LastModifiedBy
+    protected User lastModifiedUser;
 
 }
