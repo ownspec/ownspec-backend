@@ -4,6 +4,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.model.user.User;
 
 /**
  * Created by nlabrot on 27/09/16.
@@ -14,10 +15,22 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(as = ImmutableUserDto.class)
 public interface UserDto {
 
-    String getusername();
-    String getEmail();
-    String getFirstName();
-    String getLastName();
-    String getCompany();
+    String getUsername();
 
+
+    String getFirstName();
+
+    String getLastName();
+
+
+
+    static UserDto createFromUser(User user) {
+        return ImmutableUserDto.newUserDto()
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+
+
+    }
 }

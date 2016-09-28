@@ -2,9 +2,6 @@ package com.ownspec.center.repository.workflow;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.component.ComponentTypes;
-import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 
 /**

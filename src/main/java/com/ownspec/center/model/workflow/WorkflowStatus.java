@@ -30,15 +30,13 @@ public class WorkflowStatus implements Auditable<User> {
     private Long id;
 
     @ManyToOne
-    private Component workflowComponent;
-
-    @ManyToOne
-    private WorkflowInstance workflowInstance;
-
-    private String gitReference;
+    private Component component;
 
     @Enumerated(EnumType.STRING)
     protected Status status;
+
+    private String gitReference;
+
 
     @CreatedDate
     protected Instant createdDate;

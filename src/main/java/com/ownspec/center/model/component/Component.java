@@ -1,16 +1,14 @@
 package com.ownspec.center.model.component;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,11 +16,10 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
-import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.model.workflow.WorkflowInstance;
+import com.ownspec.center.model.workflow.Status;
 import lombok.Data;
 
 /**
@@ -44,15 +41,18 @@ public class Component implements Auditable<User>, Persistable<Long> {
     @ManyToOne
     protected Project project;
 
-    // WorkflowInstance which owns this WorkflowStatus
-    @ManyToOne
-    private WorkflowInstance currentWorkflowInstance;
+
+    // Denormalized from workflow status
+    @Enumerated(EnumType.STRING)
+    protected Status currentStatus;
+    protected String currentGitReference;
 
 
 
 //    @ElementCollection
 //    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
+    @Enumerated(EnumType.STRING)
     protected ComponentTypes type;
 
     @Column(columnDefinition = "boolean default true")
@@ -79,8 +79,4 @@ public class Component implements Auditable<User>, Persistable<Long> {
     @ManyToOne
     @LastModifiedBy
     protected User lastModifiedUser;
-
-
-
-
 }

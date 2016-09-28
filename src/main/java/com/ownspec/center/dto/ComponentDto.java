@@ -8,6 +8,8 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.model.component.ComponentTypes;
+import com.ownspec.center.model.workflow.Status;
 
 /**
  * Created by nlabrot on 24/09/16.
@@ -23,6 +25,9 @@ public interface ComponentDto {
 
     String getTitle();
 
+
+    ComponentTypes getType();
+
     @Nullable
     Instant getCreatedDate();
     @Nullable
@@ -35,6 +40,7 @@ public interface ComponentDto {
     String getContent();
 
     @Nullable
-    WorkflowInstanceDto getCurrentWorkflowInstance();
+    Status getCurrentStatus();
+
 
 }

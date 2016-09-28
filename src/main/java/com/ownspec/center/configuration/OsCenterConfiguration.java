@@ -2,6 +2,7 @@ package com.ownspec.center.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -9,11 +10,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ownspec.center.model.user.User;
 
 
@@ -48,5 +52,21 @@ public class OsCenterConfiguration {
         return user;
     }
 
+
+    @Bean
+    public ObjectMapper objectMapper(){
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+    @Bean
+    public DateTimeProvider dateTimeProvider(){
+        return new DateTimeProvider(){
+            @Override public Calendar getNow() {
+                return Calendar.getInstance();
+            }
+        };
+    }
 
 }

@@ -82,6 +82,7 @@ public class GitService {
         }
     }
 
+
     public Iterable<RevCommit> getHistoryFor(String filePath) throws GitAPIException {
         return git.log().addPath(filePath).call();
     }

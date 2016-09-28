@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ImmutableComponentDto;
+import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.service.ComponentService;
@@ -35,7 +37,17 @@ public class ComponentController {
     @RequestMapping
     public List<ComponentDto> findAll() {
         return componentService.findAll().stream()
-                .map(c -> newComponentDto().build())
+                .map(c -> {
+                    return newComponentDto()
+                            .id(c.getId())
+                            .title(c.getTitle())
+                            .type(c.getType())
+                            .content(componentService.getContent(c))
+                            .currentStatus(c.getCurrentStatus())
+                            .createdDate(c.getCreatedDate())
+                            .createdUser(UserDto.createFromUser(c.getCreatedUser()))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -54,6 +66,15 @@ public class ComponentController {
         componentService.updateComponent(source, id);
         return ResponseEntity.ok().build();
     }
+
+
+    @RequestMapping(value = "/{id}/update-content", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
+        componentService.updateContent(id, content);
+        return ResponseEntity.ok().build();
+    }
+
 
 
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
