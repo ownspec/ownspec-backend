@@ -27,10 +27,7 @@ public class ComponentControllerTest extends AbstractTest {
                                 "    \"firstName\" : \"admnistrator\",\n" +
                                 "    \"lastName\" : \"admnistrator\"\n" +
                                 "  },\n" +
-                                "  \"lastModifiedDate\" : null,\n" +
-                                "  \"lastModifiedUser\" : null,\n" +
-                                "  \"content\" : \"doo\",\n" +
-                                "  \"currentStatus\" : null\n" +
+                                "  \"content\" : \"doo\"\n" +
                                 "}, {\n" +
                                 "  \"id\" : 2,\n" +
                                 "  \"title\" : \"Second dummy component\",\n" +
@@ -41,10 +38,7 @@ public class ComponentControllerTest extends AbstractTest {
                                 "    \"firstName\" : \"admnistrator\",\n" +
                                 "    \"lastName\" : \"admnistrator\"\n" +
                                 "  },\n" +
-                                "  \"lastModifiedDate\" : null,\n" +
-                                "  \"lastModifiedUser\" : null,\n" +
-                                "  \"content\" : \"\",\n" +
-                                "  \"currentStatus\" : null\n" +
+                                "  \"content\" : \"\"\n" +
                                 "}, {\n" +
                                 "  \"id\" : 3,\n" +
                                 "  \"title\" : \"Third dummy component\",\n" +
@@ -55,10 +49,7 @@ public class ComponentControllerTest extends AbstractTest {
                                 "    \"firstName\" : \"admnistrator\",\n" +
                                 "    \"lastName\" : \"admnistrator\"\n" +
                                 "  },\n" +
-                                "  \"lastModifiedDate\" : null,\n" +
-                                "  \"lastModifiedUser\" : null,\n" +
-                                "  \"content\" : \"\",\n" +
-                                "  \"currentStatus\" : null\n" +
+                                "  \"content\" : \"\"\n" +
                                 "}, {\n" +
                                 "  \"id\" : 4,\n" +
                                 "  \"title\" : \"Ownspec COMPONENT\",\n" +
@@ -69,10 +60,7 @@ public class ComponentControllerTest extends AbstractTest {
                                 "    \"firstName\" : \"admnistrator\",\n" +
                                 "    \"lastName\" : \"admnistrator\"\n" +
                                 "  },\n" +
-                                "  \"lastModifiedDate\" : null,\n" +
-                                "  \"lastModifiedUser\" : null,\n" +
-                                "  \"content\" : \"\",\n" +
-                                "  \"currentStatus\" : null\n" +
+                                "  \"content\" : \"\"\n" +
                                 "} ]"
                 ))
                 .andReturn();

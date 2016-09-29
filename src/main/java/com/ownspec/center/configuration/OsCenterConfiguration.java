@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ownspec.center.model.user.User;
@@ -45,28 +46,12 @@ public class OsCenterConfiguration {
         return git;
     }
 
+    // TODO: 29/09/16 temporary until we handle authentication
     @Bean
     public User currentUser(){
         User user = new User("foo", "bar");
         user.setFirstName("firstname");
         return user;
-    }
-
-
-    @Bean
-    public ObjectMapper objectMapper(){
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper;
-    }
-
-    @Bean
-    public DateTimeProvider dateTimeProvider(){
-        return new DateTimeProvider(){
-            @Override public Calendar getNow() {
-                return Calendar.getInstance();
-            }
-        };
     }
 
 }
