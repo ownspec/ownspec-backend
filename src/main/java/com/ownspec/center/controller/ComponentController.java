@@ -12,17 +12,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
+import static org.aspectj.apache.bcel.Constants.types;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -35,8 +37,11 @@ public class ComponentController {
 
 
     @RequestMapping
-    public List<ComponentDto> findAll() {
-        return componentService.findAll().stream()
+    public List<ComponentDto> findAll(
+            @RequestParam(value = "types", required = false) ComponentType[] types,
+            @RequestParam(value = "projectId", required = false) Long projectId
+    ) {
+        return componentService.findAll(projectId, types).stream()
                 .map(c -> {
                     return newComponentDto()
                             .id(c.getId())
@@ -74,7 +79,6 @@ public class ComponentController {
         componentService.updateContent(id, content);
         return ResponseEntity.ok().build();
     }
-
 
 
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)

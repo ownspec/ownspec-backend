@@ -53,7 +53,7 @@ public class Component implements Auditable<User>, Persistable<Long> {
 //    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
     @Enumerated(EnumType.STRING)
-    protected ComponentTypes type;
+    protected ComponentType type;
 
     @Column(columnDefinition = "boolean default true")
     protected boolean editable;

@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "My first dummy component",
+    "type": "REQUIREMENT",
+    "createdDate": 1451646610.000000000,
+    "createdUser": {
+      "username": "admin",
+      "firstName": "admnistrator",
+      "lastName": "admnistrator"
+    },
+    "content": "doo"
+  }
+]

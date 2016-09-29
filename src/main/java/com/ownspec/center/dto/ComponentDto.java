@@ -8,7 +8,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.component.ComponentTypes;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 
 /**
@@ -26,7 +26,7 @@ public interface ComponentDto {
     String getTitle();
 
 
-    ComponentTypes getType();
+    ComponentType getType();
 
     @Nullable
     Instant getCreatedDate();

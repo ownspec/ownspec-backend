@@ -20,7 +20,7 @@ INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Ownspec project', 'shuuuuutttt'
 
 -- Components
 INSERT INTO COMPONENT (TITLE,file_path, created_date, CREATED_USER_ID, TYPE) VALUES(
-'My first dummy component', 'dummy/gitrepo/components/req1.html', '2016-01-01 12:10:10', 0 , 'COMPONENT');
+'My first dummy component', 'dummy/gitrepo/components/req1.html', '2016-01-01 12:10:10', 0 , 'REQUIREMENT');
 
 INSERT INTO COMPONENT (TITLE,created_date, CREATED_USER_ID,TYPE) VALUES('Second dummy component', '2016-01-01 12:10:10', 0, 'COMPONENT');
 
