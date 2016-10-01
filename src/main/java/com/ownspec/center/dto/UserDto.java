@@ -1,10 +1,9 @@
 package com.ownspec.center.dto;
 
-import org.immutables.value.Value;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.user.User;
+import org.immutables.value.Value;
 
 /**
  * Created by nlabrot on 27/09/16.
@@ -17,11 +16,15 @@ public interface UserDto {
 
     String getUsername();
 
+    String getPassword();
 
     String getFirstName();
 
     String getLastName();
 
+    String getEmail();
+
+    String getRole();
 
 
     static UserDto createFromUser(User user) {
@@ -33,4 +36,5 @@ public interface UserDto {
 
 
     }
+
 }

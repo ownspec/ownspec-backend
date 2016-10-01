@@ -24,7 +24,6 @@ import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
-import static org.aspectj.apache.bcel.Constants.types;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -68,7 +67,7 @@ public class ComponentController {
     @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) throws GitAPIException, UnsupportedEncodingException {
-        componentService.updateComponent(source, id);
+        componentService.update(source, id);
         return ResponseEntity.ok().build();
     }
 
@@ -84,7 +83,7 @@ public class ComponentController {
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
     @ResponseBody
     public ResponseEntity delete(@PathVariable("id") Long id) {
-        componentService.removeComponent(id);
+        componentService.remove(id);
         return ResponseEntity.ok().build();
     }
 

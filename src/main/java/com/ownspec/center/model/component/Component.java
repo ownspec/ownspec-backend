@@ -1,26 +1,18 @@
 package com.ownspec.center.model.component;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-import java.time.Instant;
-
+import com.ownspec.center.model.Project;
+import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.user.User;
+import com.ownspec.center.model.workflow.Status;
+import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
-import com.ownspec.center.model.Project;
-import com.ownspec.center.model.audit.Auditable;
-import com.ownspec.center.model.user.User;
-import com.ownspec.center.model.workflow.Status;
-import lombok.Data;
+import javax.persistence.*;
+import java.time.Instant;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -48,7 +40,6 @@ public class Component implements Auditable<User>, Persistable<Long> {
     protected String currentGitReference;
 
 
-
 //    @ElementCollection
 //    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
@@ -61,14 +52,6 @@ public class Component implements Auditable<User>, Persistable<Long> {
     protected boolean secret;
     @Column(columnDefinition = "boolean default false")
     protected boolean confidential;
-
-    @Override
-    @Transient
-    public boolean isNew() {
-        return null == getId();
-    }
-
-
     @CreatedDate
     protected Instant createdDate;
     @ManyToOne
@@ -79,4 +62,11 @@ public class Component implements Auditable<User>, Persistable<Long> {
     @ManyToOne
     @LastModifiedBy
     protected User lastModifiedUser;
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return null == getId();
+    }
+
 }

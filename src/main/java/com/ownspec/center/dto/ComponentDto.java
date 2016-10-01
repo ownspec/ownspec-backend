@@ -25,15 +25,17 @@ public interface ComponentDto {
 
     String getTitle();
 
-
     ComponentType getType();
 
     @Nullable
     Instant getCreatedDate();
+
     @Nullable
     UserDto getCreatedUser();
+
     @Nullable
     Instant getLastModifiedDate();
+
     @Nullable
     UserDto getLastModifiedUser();
 
@@ -41,6 +43,5 @@ public interface ComponentDto {
 
     @Nullable
     Status getCurrentStatus();
-
 
 }

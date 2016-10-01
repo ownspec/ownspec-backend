@@ -186,7 +186,7 @@
                             <outputDirectory>target/generated-sources/java</outputDirectory>
                             <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                             <includes>
-                                <include>com.ownspec.center.model</include>
+                                <include>com.ownspec.center.model.*</include>
                             </includes>
                         </configuration>
                     </execution>
