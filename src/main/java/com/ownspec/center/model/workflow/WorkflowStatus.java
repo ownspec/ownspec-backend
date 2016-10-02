@@ -36,10 +36,6 @@ public class WorkflowStatus implements Auditable<User> {
     protected Status status;
 
 
-    private String startGitReference;
-    private String endGitReference;
-
-
     @CreatedDate
     protected Instant createdDate;
     @ManyToOne

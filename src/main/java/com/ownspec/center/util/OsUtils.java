@@ -29,7 +29,7 @@ public final class OsUtils {
     }
 
     public static void mergeWithNotNullProperties(Object source, Object target) {
-        String[] standardPropertiesToIgnored = {"id", "creationDate"};
+        String[] standardPropertiesToIgnored = {"id", "createdDate"};
         BeanUtils.copyProperties(source, target,
                 ArrayUtils.addAll(standardPropertiesToIgnored, getNullProperties(source)));
     }
@@ -41,7 +41,6 @@ public final class OsUtils {
                 .filter(propertyName -> wrappedSource.getPropertyValue(propertyName) == null)
                 .toArray(String[]::new);
     }
-
 
 
 }

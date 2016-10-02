@@ -87,7 +87,7 @@ public class ComponentController {
         if (workflow) {
             builder.workflowStatuses(workflowStatusRepository.findAllByComponentId(id, new Sort("id"))
                     .stream()
-                    .map(s -> newWorkflowStatusDto().id(s.getId()).status(s.getStatus()).gitReference(s.getGitReference()).build())
+                    .map(s -> newWorkflowStatusDto().id(s.getId()).status(s.getStatus()).build())
                     .collect(Collectors.toList()));
         }
 
@@ -112,7 +112,7 @@ public class ComponentController {
     @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) throws GitAPIException, UnsupportedEncodingException {
-        componentService.updateComponent(source, id);
+        componentService.update(source, id);
         return ResponseEntity.ok().build();
     }
 
@@ -128,7 +128,7 @@ public class ComponentController {
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
     @ResponseBody
     public ResponseEntity delete(@PathVariable("id") Long id) {
-        componentService.removeComponent(id);
+        componentService.remove(id);
         return ResponseEntity.ok().build();
     }
 

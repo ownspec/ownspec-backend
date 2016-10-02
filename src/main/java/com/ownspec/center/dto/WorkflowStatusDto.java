@@ -33,8 +33,6 @@ public interface WorkflowStatusDto {
 
     Status getStatus();
 
-    String getGitReference();
-
     @Nullable
     Instant getCreatedDate();
     @Nullable

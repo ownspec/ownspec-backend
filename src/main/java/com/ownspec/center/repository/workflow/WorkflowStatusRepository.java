@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.ownspec.center.model.workflow.WorkflowStatus;
 
@@ -13,5 +14,4 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 public interface WorkflowStatusRepository extends JpaRepository<WorkflowStatus, Long> {
 
     List<WorkflowStatus> findAllByComponentId(long id, Sort sort);
-
 }

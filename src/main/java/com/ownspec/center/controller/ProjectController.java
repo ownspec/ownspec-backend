@@ -32,7 +32,7 @@ public class ProjectController {
         Project target = repository.findOne(id);
         if (target != null) {
             OsUtils.mergeWithNotNullProperties(source, target);
-            repository.saveAndFlush(target);
+            repository.save(target);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.badRequest().body("Cannot remove project with id [" + id + "]; cause not found");

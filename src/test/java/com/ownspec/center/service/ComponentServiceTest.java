@@ -60,12 +60,12 @@ public class ComponentServiceTest extends AbstractTest {
         // fetch git history
         for (int i = 0; i < workflowStatuses.size(); i++) {
 
-            String currentGitReference = workflowStatuses.get(i).getGitReference();
+/*            String currentGitReference = workflowStatuses.get(i);
             String lastGitReference = null;
 
             if (i + 1 < workflowStatuses.size()) {
-                lastGitReference = workflowStatuses.get(i + 1).getGitReference();
-            }
+                lastGitReference = workflowStatuses.get(i + 1);
+            }*/
 
             // Retrive file history
 
