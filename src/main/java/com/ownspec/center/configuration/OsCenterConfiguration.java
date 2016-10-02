@@ -40,14 +40,4 @@ public class OsCenterConfiguration {
         return git;
     }
 
-    // TODO: 29/09/16 temporary until we handle authentication
-    @Bean
-    public User currentUser() {
-        User user = new User();
-        user.setUsername("foo");
-        user.setPassword("bar");
-        user.setFirstName("firstname");
-        return user;
-    }
-
 }

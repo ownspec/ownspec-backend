@@ -21,6 +21,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private User currentUser;
 
     @RequestMapping
     @ResponseBody
@@ -30,8 +32,14 @@ public class UserController {
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity currentUserProfile() {
+    public UserDto me() {
+        return UserDto.createFromUser(currentUser);
+    }
 
+    //    @RequestMapping
+//    @ResponseBody
+    public ResponseEntity profile() {
+        //todo : que voulais-tu faire ici ?
         UserDto userDto = UserDto.createFromUser(userService.loadUserByUsername("admin"));
 
         ImmutableMap.Builder<Object, Object> propertiesBuilder = ImmutableMap.builder();
@@ -42,6 +50,7 @@ public class UserController {
                 .put("properties", propertiesBuilder.build()));
     }
 
+    //    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity create(@RequestBody UserDto source) {

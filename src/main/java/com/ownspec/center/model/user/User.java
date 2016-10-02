@@ -37,7 +37,6 @@ public class User implements UserDetails, Auditable<User> {
     private String fax;
     private String signature;
 
-
     private Instant lastConnection;
 
     @CreatedDate
@@ -51,6 +50,8 @@ public class User implements UserDetails, Auditable<User> {
     @LastModifiedBy
     protected User lastModifiedUser;
 
+    @Embedded
+    private UserPreference preference;
     @Embedded
     private UserCategory category;
 

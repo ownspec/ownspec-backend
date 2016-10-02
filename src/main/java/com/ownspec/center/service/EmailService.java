@@ -1,5 +1,6 @@
 package com.ownspec.center.service;
 
+import com.ownspec.center.model.Task;
 import com.ownspec.center.model.user.User;
 import org.springframework.stereotype.Service;
 
@@ -9,13 +10,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    String redirectLink;
-
 
     public void sendResetPasswordNotification(User user) {
+        String redirectLink;
+
+
     }
 
     public void sendConfirmRegistrationNotification(User user) {
+        String confirmationLink;
+
+    }
+
+    public void sendNewTaskNotification(Task task) {
 
     }
 }

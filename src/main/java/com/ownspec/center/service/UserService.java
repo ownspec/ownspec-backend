@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,6 +29,9 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     @Override
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -53,7 +58,7 @@ public class UserService implements UserDetailsService {
 
         User user = new User();
         user.setUsername(source.getUsername());
-        user.setPassword(source.getPassword());
+        user.setPassword(encoder.encode(source.getPassword())); //todo : TBC
         user.setFirstName(source.getFirstName());
         user.setLastName(source.getLastName());
         user.setEmail(source.getEmail());
@@ -61,6 +66,7 @@ public class UserService implements UserDetailsService {
         user.setEnabled(false);
         user.setAccountNonLocked(false);
 
+        //todo: Set token
         emailService.sendConfirmRegistrationNotification(user);
 
         userRepository.save(user);

@@ -30,8 +30,11 @@ public interface UserDto {
     static UserDto createFromUser(User user) {
         return ImmutableUserDto.newUserDto()
                 .username(user.getUsername())
+                .password(user.getPassword()) //todo: TBC
+                .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .role(user.getRole())
                 .build();
 
 

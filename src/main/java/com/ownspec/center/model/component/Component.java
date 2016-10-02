@@ -1,8 +1,10 @@
 package com.ownspec.center.model.component;
 
 import com.ownspec.center.model.Project;
+import com.ownspec.center.model.Quantifiable;
 import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.user.User;
+import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.model.workflow.Status;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
@@ -13,6 +15,8 @@ import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -40,8 +44,8 @@ public class Component implements Auditable<User>, Persistable<Long> {
     protected String currentGitReference;
 
 
-//    @ElementCollection
-//    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
+    @ElementCollection
+    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
     @Enumerated(EnumType.STRING)
     protected ComponentType type;
