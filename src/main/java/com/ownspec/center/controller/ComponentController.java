@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,15 +17,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.primitives.Booleans;
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ImmutableComponentDto;
+import com.ownspec.center.dto.ImmutableWorkflowStatusDto;
 import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
+import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
-import static org.aspectj.apache.bcel.Constants.types;
+import static com.ownspec.center.dto.ImmutableWorkflowStatusDto.newWorkflowStatusDto;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -35,6 +42,8 @@ public class ComponentController {
     @Autowired
     private ComponentService componentService;
 
+    @Autowired
+    private WorkflowStatusRepository workflowStatusRepository;
 
     @RequestMapping
     public List<ComponentDto> findAll(
@@ -56,6 +65,35 @@ public class ComponentController {
                 .collect(Collectors.toList());
     }
 
+    @RequestMapping("/{id}")
+    public ComponentDto get(@PathVariable("id") Long id,
+                            @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
+                            @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow
+    ) {
+        Component c = componentService.findOne(id);
+
+        ImmutableComponentDto.Builder builder = newComponentDto()
+                .id(c.getId())
+                .title(c.getTitle())
+                .type(c.getType())
+                .currentStatus(c.getCurrentStatus())
+                .createdDate(c.getCreatedDate())
+                .createdUser(UserDto.createFromUser(c.getCreatedUser()));
+
+        if (content) {
+            builder.content(componentService.getContent(c));
+        }
+
+        if (workflow) {
+            builder.workflowStatuses(workflowStatusRepository.findAllByComponentId(id, new Sort("id"))
+                    .stream()
+                    .map(s -> newWorkflowStatusDto().id(s.getId()).status(s.getStatus()).gitReference(s.getGitReference()).build())
+                    .collect(Collectors.toList()));
+        }
+
+        return builder.build();
+    }
+
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
@@ -64,6 +102,12 @@ public class ComponentController {
         return ResponseEntity.ok().build();
     }
 
+    @RequestMapping(value = "/{id}/workflow-statuses", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
+        componentService.getWorkflowStatuses(id);
+        return ResponseEntity.ok().build();
+    }
 
     @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
     @ResponseBody
@@ -73,7 +117,7 @@ public class ComponentController {
     }
 
 
-    @RequestMapping(value = "/{id}/update-content", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}/update-content", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
         componentService.updateContent(id, content);

@@ -3,6 +3,7 @@ package com.ownspec.center.dto;
 import javax.annotation.Nullable;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.immutables.value.Value;
 
@@ -36,11 +37,13 @@ public interface ComponentDto {
     Instant getLastModifiedDate();
     @Nullable
     UserDto getLastModifiedUser();
-
+    @Nullable
     String getContent();
 
     @Nullable
     Status getCurrentStatus();
 
+    @Nullable
+    List<WorkflowStatusDto> getWorkflowStatuses();
 
 }

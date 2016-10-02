@@ -3,6 +3,7 @@ package com.ownspec.center.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import com.ownspec.center.model.user.User;
@@ -50,6 +51,7 @@ public class GitService {
 
     public Pair<File, String> createAndCommit(Resource resource) {
         File contentFile = new File(getGit().getRepository().getWorkTree(), UUID.randomUUID() + ".html");
+
         String hash = updateAndCommit(resource, contentFile.getAbsolutePath());
         return Pair.of(contentFile, hash);
     }
@@ -67,7 +69,8 @@ public class GitService {
 
     public String commit(String filePath) {
         try {
-            git.add().addFilepattern(filePath).call();
+
+            git.add().addFilepattern(relativize(filePath)).call();
             RevCommit revCommit = git
                     .commit()
                     .setAuthor(currentUser.getFirstName(), currentUser.getUsername())
@@ -83,8 +86,13 @@ public class GitService {
     }
 
 
-    public Iterable<RevCommit> getHistoryFor(String filePath) throws GitAPIException {
-        return git.log().addPath(filePath).call();
+    public Iterable<RevCommit> getHistoryFor(String filePath)  {
+        try {
+            return git.log().addPath(relativize(filePath)).call();
+        } catch (GitAPIException e) {
+            // TODO: 24/09/16 Create custom exception
+            throw new RuntimeException(e);
+        }
     }
 
     public Git getGit() {
@@ -92,4 +100,7 @@ public class GitService {
     }
 
 
+    private String relativize(String filePath){
+        return getGit().getRepository().getWorkTree().toPath().normalize().toAbsolutePath().relativize(Paths.get(filePath).toAbsolutePath()).toString();
+    }
 }

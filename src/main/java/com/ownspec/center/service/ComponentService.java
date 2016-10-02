@@ -7,19 +7,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.model.Comment;
@@ -80,7 +85,8 @@ public class ComponentService {
         WorkflowStatus workflowStatus = new WorkflowStatus();
         workflowStatus.setComponent(component);
         workflowStatus.setStatus(Status.OPEN);
-        workflowStatus.setGitReference(pair.getRight());
+        workflowStatus.setStartGitReference(pair.getRight());
+        workflowStatus.setEndGitReference(pair.getRight());
 
         component.setCurrentStatus(Status.OPEN);
         component.setCurrentGitReference(pair.getRight());
@@ -91,6 +97,20 @@ public class ComponentService {
         workflowStatus = workflowStatusRepository.save(workflowStatus);
 
         return component;
+    }
+
+
+    public void updateStatus(Long id, Status nextStatus){
+        Component component = requireNonNull(componentRepository.findOne(id));
+
+        WorkflowStatus workflowStatus = new WorkflowStatus();
+        workflowStatus.setComponent(component);
+        workflowStatus.setStatus(nextStatus);
+
+        component.setCurrentStatus(nextStatus);
+
+        component = componentRepository.save(component);
+        workflowStatus = workflowStatusRepository.save(workflowStatus);
     }
 
     public Component updateContent(Long id, byte[] content) {
@@ -140,9 +160,9 @@ public class ComponentService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        if (projectId != null){
+        if (projectId != null) {
             predicates.add(QComponent.component.project.id.eq(projectId));
-        }else{
+        } else {
             predicates.add(QComponent.component.project.id.isNull());
         }
 
@@ -168,5 +188,16 @@ public class ComponentService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Component findOne(Long id) {
+        return componentRepository.findOne(id);
+    }
+
+
+    public void getWorkflowStatuses(Long id) {
+
+
+
     }
 }

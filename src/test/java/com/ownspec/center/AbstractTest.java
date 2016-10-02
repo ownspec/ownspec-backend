@@ -12,7 +12,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.ownspec.center.repository.component.ComponentRepository;
+import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
+import com.ownspec.center.service.ComponentServiceTest;
+import com.ownspec.center.service.GitService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = OsCenterApplication.class)
@@ -29,4 +32,9 @@ public abstract class AbstractTest {
     @Autowired
     protected ComponentService componentService;
 
+    @Autowired
+    protected WorkflowStatusRepository workflowStatusRepository;
+
+    @Autowired
+    protected GitService gitService;
 }
