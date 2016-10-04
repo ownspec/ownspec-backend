@@ -13,10 +13,10 @@ VALUES(3, 'guillaume','$2a$08$NUpo1R9lkXgmhAD8tHOcXOLkjn3qj7KiUZXAlUCSql55L7tili
 
 
 -- Projects
-INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('My first dummy project', 'first project content');
-INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Second dummy project', 'second project content');
-INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Third dummy project', 'Third project content');
-INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Ownspec project', 'shuuuuutttt');
+-- INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('My first dummy project', 'first project content');
+-- INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Second dummy project', 'second project content');
+-- INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Third dummy project', 'Third project content');
+-- INSERT INTO PROJECT (TITLE, DESCRIPTION) VALUES('Ownspec project', 'shuuuuutttt');
 
 -- Components
 -- INSERT INTO COMPONENT (ID, TITLE,file_path, created_date, CREATED_USER_ID, TYPE, CURRENT_STATUS)

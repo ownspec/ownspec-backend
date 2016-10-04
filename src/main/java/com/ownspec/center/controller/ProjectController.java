@@ -1,13 +1,20 @@
 package com.ownspec.center.controller;
 
+import com.ownspec.center.dto.ImmutableProjectDto;
+import com.ownspec.center.dto.ProjectDto;
+import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.util.OsUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.ownspec.center.dto.ImmutableProjectDto.newProjectDto;
 
 /**
  * Created by lyrold on 18/09/2016.
@@ -52,8 +59,16 @@ public class ProjectController {
     }
 
     @RequestMapping
-    public List<Project> findAll() {
-        return repository.findAll();
+    public List<ProjectDto> findAll() {
+        return repository.findAll().stream()
+                .map(p -> newProjectDto()
+                        .id(p.getId())
+                        .title(p.getTitle())
+                        .description(p.getDescription())
+                        .createdDate(p.getCreatedDate())
+                        .createdUser(UserDto.createFromUser(p.getCreatedUser()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
 
