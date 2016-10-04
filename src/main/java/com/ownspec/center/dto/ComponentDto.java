@@ -24,6 +24,9 @@ public interface ComponentDto {
     @Nullable
     Long getId();
 
+    @Nullable
+    Long getProjectId();
+
     String getTitle();
 
     ComponentType getType();

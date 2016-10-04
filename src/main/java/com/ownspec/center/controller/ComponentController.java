@@ -32,6 +32,7 @@ import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 import static com.ownspec.center.dto.ImmutableWorkflowStatusDto.newWorkflowStatusDto;
+import static org.reflections.util.ConfigurationBuilder.build;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -85,10 +86,7 @@ public class ComponentController {
         }
 
         if (workflow) {
-            builder.workflowStatuses(workflowStatusRepository.findAllByComponentId(id, new Sort("id"))
-                    .stream()
-                    .map(s -> newWorkflowStatusDto().id(s.getId()).status(s.getStatus()).build())
-                    .collect(Collectors.toList()));
+            builder.workflowStatuses(componentService.getWorkflowStatuses(id));
         }
 
         return builder.build();
@@ -98,15 +96,15 @@ public class ComponentController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity create(@RequestBody ComponentDto source) throws IOException, GitAPIException {
-        componentService.create(source);
+         componentService.create(source);
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(value = "/{id}/workflow-statuses", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
-        componentService.getWorkflowStatuses(id);
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok(componentService.getWorkflowStatuses(id));
     }
 
     @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)

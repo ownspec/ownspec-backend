@@ -30,12 +30,7 @@ public class GitService {
     @Autowired
     private Git git;
 
-    // TODO: 27/09/16 temporary
-    @Autowired
-    private User currentUser;
-
-
-    public String updateAndCommit(Resource resource, String filePath) {
+    public String updateAndCommit(Resource resource, String filePath, User user, String message) {
         File contentFile = new File(filePath);
         LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
 
@@ -46,20 +41,20 @@ public class GitService {
             // TODO: 24/09/16 Create custom exception
             throw new RuntimeException(e);
         }
-        return commit(contentFile.getAbsolutePath());
+        return commit(contentFile.getAbsolutePath(), user, message);
     }
 
-    public Pair<File, String> createAndCommit(Resource resource) {
-        File contentFile = new File(getGit().getRepository().getWorkTree(), UUID.randomUUID() + ".html");
+    public Pair<File, String> createAndCommit(Resource resource, User user, String message) {
+        File contentFile = new File(git.getRepository().getWorkTree(), UUID.randomUUID() + ".html");
 
-        String hash = updateAndCommit(resource, contentFile.getAbsolutePath());
+        String hash = updateAndCommit(resource, contentFile.getAbsolutePath(), user, message);
         return Pair.of(contentFile, hash);
     }
 
-    public void deleteAndCommit(String filePath) {
+    public void deleteAndCommit(String filePath, User user, String message) {
         try {
             FileUtils.forceDelete(new File(filePath));
-            commit(filePath);
+            commit(filePath, user, message);
         } catch (Exception e) {
             // TODO: 24/09/16 Create custom exception
             throw new RuntimeException(e);
@@ -67,15 +62,14 @@ public class GitService {
     }
 
 
-    public String commit(String filePath) {
+    public String commit(String filePath, User user, String message) {
         try {
 
             git.add().addFilepattern(relativize(filePath)).call();
             RevCommit revCommit = git
                     .commit()
-                    .setAuthor(currentUser.getFirstName(), currentUser.getUsername())
-                    .setMessage("Defaut commit message for changed file [" + filePath + "]").call();
-
+                    .setAuthor(user.getUsername(), user.getEmail())
+                    .setMessage(message).call();
 
             return revCommit.getId().name();
 
@@ -86,7 +80,7 @@ public class GitService {
     }
 
 
-    public Iterable<RevCommit> getHistoryFor(String filePath)  {
+    public Iterable<RevCommit> getHistoryFor(String filePath) {
         try {
             return git.log().addPath(relativize(filePath)).call();
         } catch (GitAPIException e) {
@@ -100,7 +94,7 @@ public class GitService {
     }
 
 
-    private String relativize(String filePath){
-        return getGit().getRepository().getWorkTree().toPath().normalize().toAbsolutePath().relativize(Paths.get(filePath).toAbsolutePath()).toString();
+    private String relativize(String filePath) {
+        return git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath().relativize(Paths.get(filePath).toAbsolutePath()).toString();
     }
 }
