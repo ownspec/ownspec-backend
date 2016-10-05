@@ -1,14 +1,14 @@
 -- users
-INSERT INTO USER (ID, username, password,role, first_name,last_name, category, email, language)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, category, email, language)
 VALUES(0, 'admin','password','ADMIN','admnistrator','admnistrator', 'ADMINISTRATOR', 'admin@ownspec.com', 'en');
 
-INSERT INTO USER (ID, username, password,role, first_name,last_name, category, email)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, category, email)
 VALUES(1, 'lyrold','$2a$08$KemzMdJ3dYol9J/MyZrvUOR0JuJZCXzcXb9ptOWggUv63dW1Mrx/i','USER','Lyrold-Boris','Careto', 'DEVELOPER', 'lyrold.c@ownpsec.com');
 
-INSERT INTO USER (ID,  username, password,role, first_name,last_name, email)
+INSERT INTO "user" (ID,  username, password,role, first_name,last_name, email)
 VALUES(2, 'bruno','$2a$08$0B/AHx5MUfXxDuFt7gLgyuIix5qRXleYlDt0MX1tEwTzLPH4vA.xW','USER','Bruno','Ramos', 'bruno.r@ownspec.com');
 
-INSERT INTO USER (ID, username, password,role, first_name,last_name, email)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email)
 VALUES(3, 'guillaume','$2a$08$NUpo1R9lkXgmhAD8tHOcXOLkjn3qj7KiUZXAlUCSql55L7tilip3q','USER','Guillaume','Beisel', 'guillaume.b@ownspec.com');
 
 

@@ -20,6 +20,7 @@ import java.util.Collection;
  */
 @Data
 @Entity
+@Table(name = "\"User\"")
 public class User implements UserDetails, Auditable<User> {
 
     @Id
