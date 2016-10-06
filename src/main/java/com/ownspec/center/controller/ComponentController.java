@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,22 +16,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.primitives.Booleans;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ImmutableComponentDto;
-import com.ownspec.center.dto.ImmutableWorkflowStatusDto;
 import com.ownspec.center.dto.UserDto;
-import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
-import static com.ownspec.center.dto.ImmutableWorkflowStatusDto.newWorkflowStatusDto;
-import static org.reflections.util.ConfigurationBuilder.build;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -96,14 +91,21 @@ public class ComponentController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity create(@RequestBody ComponentDto source) throws IOException, GitAPIException {
-         componentService.create(source);
+        componentService.create(source);
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(value = "/{id}/workflow-statuses", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
+    public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) {
 
+        return ResponseEntity.ok(componentService.getWorkflowStatuses(id));
+    }
+
+    @RequestMapping(value = "/{id}/workflow-statuses/{nextStatus}", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity updatetWorkflowStatuses(@PathVariable("id") Long id, @PathVariable("nextStatus") Status nextStatus) {
+        componentService.updateStatus(id, nextStatus);
         return ResponseEntity.ok(componentService.getWorkflowStatuses(id));
     }
 

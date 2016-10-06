@@ -36,7 +36,7 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 public class ComponentServiceTest extends AbstractTest {
 
     @Test
-    public void name() throws Exception {
+    public void testWorkflow() throws Exception {
 
         ImmutableComponentDto componentDto = ImmutableComponentDto.newComponentDto()
                 .title("test")
