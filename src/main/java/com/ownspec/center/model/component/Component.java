@@ -67,6 +67,9 @@ public class Component implements Auditable<User>, Persistable<Long> {
     @LastModifiedBy
     protected User lastModifiedUser;
 
+    @Column(columnDefinition = "boolean default false")
+    protected boolean requiredTest;
+
     @Override
     @Transient
     public boolean isNew() {
