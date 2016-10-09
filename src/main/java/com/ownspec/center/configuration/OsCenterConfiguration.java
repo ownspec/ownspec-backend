@@ -1,8 +1,7 @@
 package com.ownspec.center.configuration;
 
-import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.SecurityService;
-
+import org.apache.commons.lang.LocaleUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 
 /**
@@ -48,8 +48,15 @@ public class OsCenterConfiguration {
     }
 
     @Bean
-    public AuditorAware auditorAware(){
+    public AuditorAware auditorAware() {
         return () -> securityService.getAuthentifiedUser();
     }
 
+
+    public ResourceBundle translation() {
+        return ResourceBundle.getBundle(
+                "translation",
+                LocaleUtils.toLocale(securityService.getAuthentifiedUser().getPreference().getLanguage())
+        );
+    }
 }

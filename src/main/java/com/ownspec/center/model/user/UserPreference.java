@@ -14,6 +14,8 @@ public class UserPreference {
 
     private String language;
 
+    private String timezone;
+
     @Column(columnDefinition = "boolean default true")
     private boolean notifyMeOnNewTask;
 
