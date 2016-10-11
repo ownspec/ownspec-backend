@@ -1,5 +1,7 @@
 package com.ownspec.center.configuration;
 
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.SecurityService;
 
@@ -50,6 +52,14 @@ public class OsCenterConfiguration {
     @Bean
     public AuditorAware auditorAware(){
         return () -> securityService.getAuthentifiedUser();
+    }
+
+
+    @Bean
+    public Module collectionModule(){
+            return new GuavaModule();
+                //.registerModule(new HppcModule())
+                //.registerModule(new PCollectionsModule())
     }
 
 }

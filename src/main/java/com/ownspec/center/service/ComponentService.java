@@ -146,7 +146,11 @@ public class ComponentService {
     public Component update(ComponentDto source, Long id) {
         Component target = requireNonNull(componentRepository.findOne(id));
         mergeWithNotNullProperties(source, target);
-        gitService.updateAndCommit(new ByteArrayResource(defaultIfEmpty(source.getContent(), "").getBytes(UTF_8)), target.getFilePath(), securityService.getAuthentifiedUser(), "");
+
+        if (source.getContent() != null){
+            updateContent(target, source.getContent().getBytes(UTF_8));
+        }
+
         return componentRepository.save(target);
     }
 
@@ -167,8 +171,11 @@ public class ComponentService {
     }
 
     public Component updateContent(Long id, byte[] content) {
-        Component component = requireNonNull(componentRepository.findOne(id));
-        WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByComponentId(id);
+        return updateContent(requireNonNull(componentRepository.findOne(id)), content);
+    }
+
+    public Component updateContent(Component component, byte[] content) {
+        WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByComponentId(component.getId());
 
         if (!workflowStatus.getStatus().isEditable()) {
             // TODO: 28/09/16 better exception

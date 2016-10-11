@@ -68,7 +68,7 @@ public class GitService {
             git.add().addFilepattern(relativize(filePath)).call();
             RevCommit revCommit = git
                     .commit()
-                    .setAuthor(user.getUsername(), user.getEmail())
+                        .setAuthor(user.getUsername(), user.getEmail())
                     .setMessage(message).call();
 
             return revCommit.getId().name();

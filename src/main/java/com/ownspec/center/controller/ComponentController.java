@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -109,9 +110,9 @@ public class ComponentController {
         return ResponseEntity.ok(componentService.getWorkflowStatuses(id));
     }
 
-    @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}/update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) throws GitAPIException, UnsupportedEncodingException {
+    public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) {
         componentService.update(source, id);
         return ResponseEntity.ok().build();
     }
