@@ -11,4 +11,6 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class UserCategory {
     private String category;
+
+    private Double hourlyPrice;
 }

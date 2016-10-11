@@ -4,15 +4,17 @@ import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.exception.UserAlreadyExistsException;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
+import com.ownspec.center.util.AbstractMimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static java.util.Objects.requireNonNull;
@@ -32,6 +34,9 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private CompositionService compositionService;
 
     @Override
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -58,16 +63,18 @@ public class UserService implements UserDetailsService {
 
         User user = new User();
         user.setUsername(source.getUsername());
-        user.setPassword(encoder.encode(source.getPassword())); //todo : TBC
+        user.setPassword(encoder.encode(source.getPassword()));
         user.setFirstName(source.getFirstName());
         user.setLastName(source.getLastName());
         user.setEmail(source.getEmail());
         user.setRole(source.getRole());
         user.setEnabled(false);
         user.setAccountNonLocked(false);
+        user.setSignature(buildDefaultSignature(user));
 
         //todo: Set token
-        emailService.sendConfirmRegistrationNotification(user);
+        AbstractMimeMessage message = getConfirmRegistrationMessage(user);
+        emailService.send(message);
 
         userRepository.save(user);
         return user;
@@ -85,11 +92,36 @@ public class UserService implements UserDetailsService {
 
     public void resetPassword(Long id) {
         User target = requireNonNull(userRepository.findOne(id));
-        emailService.sendResetPasswordNotification(target);
+        AbstractMimeMessage message = getResetPasswordMessage(target);
+        emailService.send(message);
     }
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    private AbstractMimeMessage getResetPasswordMessage(User user) {
+        return null;
+    }
+
+    private AbstractMimeMessage getConfirmRegistrationMessage(User user) {
+        String confirmationLink;
+        AbstractMimeMessage message = AbstractMimeMessage.builder()
+                .addRecipient(user.getEmail())
+                .subject("Account registration") //todo to be internationalized
+                .body("Dear "); //todo
+
+        return message;
+    }
+
+    private String buildDefaultSignature(User user) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("firstname", user.getFirstName());
+        model.put("lastname", user.getLastName());
+        model.put("phone", user.getPhone());
+        model.put("email", user.getEmail());
+
+        return compositionService.compose("templates/email/signature.ftl", model);
     }
 
 }

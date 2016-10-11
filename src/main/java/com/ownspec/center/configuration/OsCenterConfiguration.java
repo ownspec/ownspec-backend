@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.SecurityService;
-
+import org.apache.commons.lang.LocaleUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 
 /**
@@ -50,16 +51,22 @@ public class OsCenterConfiguration {
     }
 
     @Bean
-    public AuditorAware auditorAware(){
+    public AuditorAware auditorAware() {
         return () -> securityService.getAuthentifiedUser();
     }
 
 
-    @Bean
-    public Module collectionModule(){
-            return new GuavaModule();
-                //.registerModule(new HppcModule())
-                //.registerModule(new PCollectionsModule())
+    public ResourceBundle translation() {
+        return ResourceBundle.getBundle(
+                "translation",
+                LocaleUtils.toLocale(securityService.getAuthentifiedUser().getPreference().getLanguage())
+        );
     }
 
+    @Bean
+    public Module collectionModule(){
+        return new GuavaModule();
+        //.registerModule(new HppcModule())
+        //.registerModule(new PCollectionsModule())
+    }
 }

@@ -30,7 +30,7 @@ public class UserController {
         return userService.findAll();
     }
 
-    @RequestMapping(value = "/me", method = RequestMethod.GET)
+    @GetMapping(value = "/me")
     @ResponseBody
     public UserDto me() {
         return UserDto.createFromUser(currentUser);
@@ -51,28 +51,28 @@ public class UserController {
     }
 
     //    @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @PostMapping(value = "/create")
     @ResponseBody
     public ResponseEntity create(@RequestBody UserDto source) {
         userService.create(source);
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(value = "/{id}/update", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}/update")
     @ResponseBody
     public ResponseEntity update(@PathVariable("id") Long id, @RequestBody UserDto source) {
         userService.update(source, id);
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{id}/delete")
     @ResponseBody
     public ResponseEntity delete(@PathVariable("id") Long id) {
         userService.delete(id);
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(value = "/{id}/resetPassword")
+    @PostMapping(value = "/{id}/resetPassword")
     @ResponseBody
     public ResponseEntity resetPassword(@PathVariable("id") Long id) {
         userService.resetPassword(id);
