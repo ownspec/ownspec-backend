@@ -4,6 +4,7 @@ import com.ownspec.center.AbstractTest;
 import com.ownspec.center.dto.ImmutableUserDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 
 /**
  * com.ownspec.center.service
@@ -23,14 +24,20 @@ public class UserServiceTest extends AbstractTest {
     ImmutableUserDto userDto = ImmutableUserDto.newUserDto()
                                                .username("lyrold")
                                                .password("lyrold")
-                                               .firstName("foo")
-                                               .lastName("foo")
-                                               .email("foo")
-                                               .role("ADMIN")
                                                .build();
     String token = userService.login(userDto);
 
 //    Assert.assertEquals("", token); todo
+  }
+
+  @Test(expected = BadCredentialsException.class)
+  public void login_badCredentials() throws Exception {
+
+    ImmutableUserDto userDto = ImmutableUserDto.newUserDto()
+                                               .username("lyrold")
+                                               .password("foo")
+                                               .build();
+    userService.login(userDto);
   }
 
 }

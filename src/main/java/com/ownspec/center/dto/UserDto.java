@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.user.User;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by nlabrot on 27/09/16.
  */
@@ -14,30 +16,34 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableUserDto.class)
 public interface UserDto {
 
-    String getUsername();
+  String getUsername();
 
-    String getPassword();
+  String getPassword();
 
-    String getFirstName();
+  @Nullable
+  String getFirstName();
 
-    String getLastName();
+  @Nullable
+  String getLastName();
 
-    String getEmail();
+  @Nullable
+  String getEmail();
 
-    String getRole();
-
-
-    static UserDto createFromUser(User user) {
-        return ImmutableUserDto.newUserDto()
-                .username(user.getUsername())
-                .password(user.getPassword()) //todo: TBC
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .role(user.getRole())
-                .build();
+  @Nullable
+  String getRole();
 
 
-    }
+  static UserDto createFromUser(User user) {
+    return ImmutableUserDto.newUserDto()
+                           .username(user.getUsername())
+                           .password(user.getPassword()) //todo: TBC
+                           .email(user.getEmail())
+                           .firstName(user.getFirstName())
+                           .lastName(user.getLastName())
+                           .role(user.getRole())
+                           .build();
+
+
+  }
 
 }
