@@ -1,27 +1,18 @@
 package com.ownspec.center.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
+import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.model.component.QComponent.component;
+import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
+import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.google.common.collect.LinkedListMultimap;
+import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ImmutableChangeDto;
 import com.ownspec.center.dto.ImmutableWorkflowStatusDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
@@ -30,7 +21,6 @@ import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.component.QComponent;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
@@ -42,17 +32,25 @@ import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.coyote.http2.ByteUtil;
+import org.apache.tomcat.util.buf.ByteBufferUtils;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
-import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
-import static com.ownspec.center.model.component.QComponent.component;
-import static com.ownspec.center.model.user.QUser.user;
-import static com.ownspec.center.model.workflow.QWorkflowStatus.workflowStatus;
-import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
-import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -141,7 +139,6 @@ public class ComponentService {
   public Component findOne(Long id) {
     return componentRepository.findOne(id);
   }
-
 
   public Component update(ComponentDto source, Long id) {
     Component target = requireNonNull(componentRepository.findOne(id));
@@ -278,5 +275,10 @@ public class ComponentService {
 
     return workflowStatusDtos;
 
+  }
+
+  public Map<Component, byte[]> searchForInnerDraftComponents(byte[] content) {
+    //todo
+    return null;
   }
 }

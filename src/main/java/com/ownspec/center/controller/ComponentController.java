@@ -3,13 +3,16 @@ package com.ownspec.center.controller;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -79,7 +82,7 @@ public class ComponentController {
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   @ResponseBody
   public ResponseEntity create(@RequestBody ComponentDto source) throws IOException, GitAPIException {
-    Component component = componentService.create(source);
+    componentService.create(source);
     return ResponseEntity.ok().build();
   }
 
@@ -104,14 +107,18 @@ public class ComponentController {
     return ResponseEntity.ok().build();
   }
 
-
   @RequestMapping(value = "/{id}/update-content", method = RequestMethod.POST)
   @ResponseBody
   public ResponseEntity updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
+    Map<Component,byte[]> innerDraftComponents = componentService.searchForInnerDraftComponents(content);
     componentService.updateContent(id, content);
+    if (!innerDraftComponents.isEmpty()) {
+      for (Component component : innerDraftComponents.keySet()) {
+        componentService.updateContent(component, innerDraftComponents.get(component));
+      }
+    }
     return ResponseEntity.ok().build();
   }
-
 
   @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
   @ResponseBody
@@ -139,6 +146,18 @@ public class ComponentController {
     return componentService.getRevisionsForComponent(id);
   }
 
+  @PostMapping(value = "/import")
+  @ResponseBody
+  public ResponseEntity importFrom(@RequestBody Object source){
+
+    return null;
+  }
+
+  @GetMapping(value = "/{id}/export")
+  @ResponseBody
+  public ResponseEntity export(@RequestBody Long id){
+    return null;
+  }
 
   private ComponentDto toDto(Component c, boolean content, boolean workflow, Boolean comments) {
 

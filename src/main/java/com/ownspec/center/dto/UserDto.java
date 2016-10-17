@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.user.User;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by nlabrot on 27/09/16.
  */
@@ -18,13 +20,18 @@ public interface UserDto {
 
   String getPassword();
 
+  @Nullable
   String getFirstName();
 
+  @Nullable
   String getLastName();
 
+  @Nullable
   String getEmail();
 
+  @Nullable
   String getRole();
+
 
 
   static UserDto createFromUser(User user) {

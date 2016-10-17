@@ -1,12 +1,19 @@
 package com.ownspec.center.service;
 
+import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
+import static java.util.Objects.requireNonNull;
+
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.exception.UserAlreadyExistsException;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.util.AbstractMimeMessage;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,9 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
-import static java.util.Objects.requireNonNull;
+import java.util.UUID;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -25,6 +30,8 @@ import static java.util.Objects.requireNonNull;
 @Service
 @Slf4j
 public class UserService implements UserDetailsService {
+
+  private static final String SECRET_KEY = UUID.randomUUID().toString(); //todo TBC
 
   @Autowired
   private UserRepository userRepository;
@@ -38,6 +45,9 @@ public class UserService implements UserDetailsService {
   @Autowired
   private CompositionService compositionService;
 
+  @Autowired
+  private AuthenticationManager authenticationManager;
+
   @Override
   public User loadUserByUsername(String username) throws UsernameNotFoundException {
     User foundUser = userRepository.findByUsername(username);
@@ -47,8 +57,21 @@ public class UserService implements UserDetailsService {
     return foundUser;
   }
 
-  public User logIn(User user) {
-    return null;
+  public String login(UserDto source) {
+    User target = userRepository.findByUsername(source.getUsername());
+    if (target == null) {
+      throw new UsernameNotFoundException("Unknown username");
+    }
+    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(source.getUsername(), source.getPassword());
+    if (authenticationManager.authenticate(token).isAuthenticated()) {
+      return Jwts.builder()
+                 .setSubject(target.getUsername())
+                 .claim("company", target.getCompany())
+                 .claim("role", target.getRole())
+                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                 .compact();
+    }
+    return "bad";
   }
 
   public void logOut(User user) {
@@ -107,9 +130,9 @@ public class UserService implements UserDetailsService {
   private AbstractMimeMessage getConfirmRegistrationMessage(User user) {
     String confirmationLink;
     AbstractMimeMessage message = AbstractMimeMessage.builder()
-        .addRecipient(user.getEmail())
-        .subject("Account registration") //todo to be internationalized
-        .body("Dear "); //todo
+                                                     .addRecipient(user.getEmail())
+                                                     .subject("Account registration") //todo to be internationalized
+                                                     .body("Dear "); //todo
 
     return message;
   }
