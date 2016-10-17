@@ -67,8 +67,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // TODO: 29/09/16 temporary until we handle authentication
     @Bean
     public User currentUser() {
-//        return userRepository.findOne(1L);
-        return new User();
+        return userRepository.findOne(1L);
+        //return new User();
     }
 
 }

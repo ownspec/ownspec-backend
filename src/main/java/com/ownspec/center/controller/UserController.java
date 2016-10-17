@@ -5,6 +5,7 @@ import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +37,8 @@ public class UserController {
         return UserDto.createFromUser(currentUser);
     }
 
-    //    @RequestMapping
-//    @ResponseBody
+    @GetMapping(value = "/me/profil")
+    @ResponseBody
     public ResponseEntity profile() {
         //todo : que voulais-tu faire ici ?
         UserDto userDto = UserDto.createFromUser(userService.loadUserByUsername("admin"));
@@ -47,7 +48,7 @@ public class UserController {
 
         return ResponseEntity.ok(ImmutableMap.builder()
                 .put("user", userDto)
-                .put("properties", propertiesBuilder.build()));
+                .put("properties", propertiesBuilder.build()).build());
     }
 
     //    @PreAuthorize("hasRole('ADMIN')")

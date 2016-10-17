@@ -28,12 +28,13 @@ public class EmailConfiguration {
     public SmtpConnectionPool smtpConnectionPool() {
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(1);
+        config.setJmxEnabled(false);
 
         return new SmtpConnectionPool(SmtpConnectionFactoryBuilder.newSmtpBuilder()
                 .host(emailHost)
                 .port(emailPort)
                 .protocol(emailProtocol)
-                .build());
+                .build() , config);
     }
 
     @Bean

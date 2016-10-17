@@ -186,6 +186,7 @@ public class ComponentService {
 
         if (workflowStatus.getFirstGitReference() == null) {
             workflowStatus.setFirstGitReference(hash);
+            workflowStatus.setLastGitReference(hash);
         } else {
             workflowStatus.setLastGitReference(hash);
         }

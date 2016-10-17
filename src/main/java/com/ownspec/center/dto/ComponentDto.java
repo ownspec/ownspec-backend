@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 
@@ -21,34 +22,38 @@ import com.ownspec.center.model.workflow.Status;
 @JsonDeserialize(as = ImmutableComponentDto.class)
 public interface ComponentDto {
 
-    @Nullable
-    Long getId();
+  @Nullable
+  Long getId();
 
-    @Nullable
-    Long getProjectId();
+  @Nullable
+  Long getProjectId();
 
-    String getTitle();
+  String getTitle();
 
-    ComponentType getType();
+  ComponentType getType();
 
-    @Nullable
-    Instant getCreatedDate();
+  @Nullable
+  Instant getCreatedDate();
 
-    @Nullable
-    UserDto getCreatedUser();
+  @Nullable
+  UserDto getCreatedUser();
 
-    @Nullable
-    Instant getLastModifiedDate();
+  @Nullable
+  Instant getLastModifiedDate();
 
-    @Nullable
-    UserDto getLastModifiedUser();
-    @Nullable
-    String getContent();
+  @Nullable
+  UserDto getLastModifiedUser();
 
-    @Nullable
-    Status getCurrentStatus();
+  @Nullable
+  String getContent();
 
-    @Nullable
-    List<WorkflowStatusDto> getWorkflowStatuses();
+  @Nullable
+  Status getCurrentStatus();
+
+  @Nullable
+  List<WorkflowStatusDto> getWorkflowStatuses();
+
+  @Nullable
+  List<CommentDto> getComments();
 
 }
