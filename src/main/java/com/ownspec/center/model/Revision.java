@@ -11,10 +11,10 @@ import java.util.Date;
 @Data
 public class Revision {
 
-    private String id;
-    private User author;
-    private Date date;
-    private String message;
-    private String currentCommitFilePath;
-    private String previousCommitFilePath;
+  private String id;
+  private User author;
+  private Date date;
+  private String message;
+  private String currentCommitFilePath;
+  private String previousCommitFilePath;
 }

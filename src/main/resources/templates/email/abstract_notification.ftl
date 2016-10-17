@@ -5,12 +5,12 @@
     <title>Ownspec's notification</title>
 </head>
 <body>
-    <header>
-        <p>${salutation} ${firstname},</p>
-    </header>
+<header>
+    <p>${salutation} ${firstname},</p>
+</header>
 
-    <div class="container">${content}</div>
+<div class="container">${content}</div>
 
-    <footer>This is an automatically generated email, please do not reply to this message.</footer>
+<footer>This is an automatically generated email, please do not reply to this message.</footer>
 </body>
 </html>

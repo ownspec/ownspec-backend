@@ -19,24 +19,25 @@ import java.time.Instant;
 @Entity
 public class Invoice {
 
-    /** Invoice will be used to automatically invoicing a project,
-     * based on a quantifiable component map,
-     * or the ownspec's customer, based on active users and their assets
-     */
+  /**
+   * Invoice will be used to automatically invoicing a project,
+   * based on a quantifiable component map,
+   * or the ownspec's customer, based on active users and their assets
+   */
 
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    @CreatedDate
-    private Instant createdDate;
+  @CreatedDate
+  private Instant createdDate;
 
-    @OneToOne
-    @CreatedBy
-    private User author;
+  @OneToOne
+  @CreatedBy
+  private User author;
 
-    @ManyToOne
-    private User recipient;
+  @ManyToOne
+  private User recipient;
 
 
 }

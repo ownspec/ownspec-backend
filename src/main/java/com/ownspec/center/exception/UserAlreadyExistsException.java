@@ -5,7 +5,7 @@ package com.ownspec.center.exception;
  */
 public class UserAlreadyExistsException extends RuntimeException {
 
-    public UserAlreadyExistsException(String username) {
-        super("Username " + username + " already exists");
-    }
+  public UserAlreadyExistsException(String username) {
+    super("Username " + username + " already exists");
+  }
 }

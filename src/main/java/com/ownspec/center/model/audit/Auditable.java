@@ -8,19 +8,19 @@ import java.time.Instant;
  * Created by nlabrot on 26/09/16.
  */
 public interface Auditable<U> {
-    Instant getCreatedDate();
+  Instant getCreatedDate();
 
-    U getCreatedUser();
+  U getCreatedUser();
 
-    Instant getLastModifiedDate();
+  Instant getLastModifiedDate();
 
-    U getLastModifiedUser();
+  U getLastModifiedUser();
 
-    void setCreatedDate(Instant createdDate);
+  void setCreatedDate(Instant createdDate);
 
-    void setCreatedUser(U createdUser);
+  void setCreatedUser(U createdUser);
 
-    void setLastModifiedDate(Instant lastModifiedDate);
+  void setLastModifiedDate(Instant lastModifiedDate);
 
-    void setLastModifiedUser(U lastModifiedUser);
+  void setLastModifiedUser(U lastModifiedUser);
 }

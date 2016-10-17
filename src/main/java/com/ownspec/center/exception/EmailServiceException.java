@@ -5,9 +5,9 @@ package com.ownspec.center.exception;
  */
 public class EmailServiceException extends RuntimeException {
 
-    public EmailServiceException(Throwable e){
-        super(e);
-    }
+  public EmailServiceException(Throwable e) {
+    super(e);
+  }
 
 
 }

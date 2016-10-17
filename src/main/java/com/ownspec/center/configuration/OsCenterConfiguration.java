@@ -31,42 +31,42 @@ import java.util.ResourceBundle;
 @EnableJpaAuditing(auditorAwareRef = "")
 @EnableJpaRepositories(basePackages = "com.ownspec.center")
 @EntityScan(
-        basePackages = {"com.ownspec.center.model"},
-        basePackageClasses = {Jsr310JpaConverters.class}
+    basePackages = {"com.ownspec.center.model"},
+    basePackageClasses = {Jsr310JpaConverters.class}
 )
 public class OsCenterConfiguration {
 
-    @Value("${git.repository.path.components}")
-    private String componentsGitRepositoryPath;
+  @Value("${git.repository.path.components}")
+  private String componentsGitRepositoryPath;
 
-    @Autowired
-    private SecurityService securityService;
+  @Autowired
+  private SecurityService securityService;
 
-    @Bean
-    public Git git() throws IOException, GitAPIException {
-        Git git = Git.init().setDirectory(new File(componentsGitRepositoryPath)).call();
-        git.add().addFilepattern(".").call();
-        git.commit().setMessage("Adding all files under directory [" + componentsGitRepositoryPath + "]").call();
-        return git;
-    }
+  @Bean
+  public Git git() throws IOException, GitAPIException {
+    Git git = Git.init().setDirectory(new File(componentsGitRepositoryPath)).call();
+    git.add().addFilepattern(".").call();
+    git.commit().setMessage("Adding all files under directory [" + componentsGitRepositoryPath + "]").call();
+    return git;
+  }
 
-    @Bean
-    public AuditorAware auditorAware() {
-        return () -> securityService.getAuthentifiedUser();
-    }
+  @Bean
+  public AuditorAware auditorAware() {
+    return () -> securityService.getAuthentifiedUser();
+  }
 
 
-    public ResourceBundle translation() {
-        return ResourceBundle.getBundle(
-                "translation",
-                LocaleUtils.toLocale(securityService.getAuthentifiedUser().getPreference().getLanguage())
-        );
-    }
+  public ResourceBundle translation() {
+    return ResourceBundle.getBundle(
+        "translation",
+        LocaleUtils.toLocale(securityService.getAuthentifiedUser().getPreference().getLanguage())
+    );
+  }
 
-    @Bean
-    public Module collectionModule(){
-        return new GuavaModule();
-        //.registerModule(new HppcModule())
-        //.registerModule(new PCollectionsModule())
-    }
+  @Bean
+  public Module collectionModule() {
+    return new GuavaModule();
+    //.registerModule(new HppcModule())
+    //.registerModule(new PCollectionsModule())
+  }
 }

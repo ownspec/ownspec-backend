@@ -20,43 +20,42 @@ import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 /**
- *
  * A reference is an oriented path between a source
- *
+ * <p>
  * Created by nlabrot on 23/09/16.
  */
 @Data
 @Entity
 public class ComponentReference implements Persistable<Long>, Auditable<User> {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    @ManyToOne
-    private Component source;
+  @ManyToOne
+  private Component source;
 
-    private Long sourceWorkflowInstanceId;
+  private Long sourceWorkflowInstanceId;
 
 
-    @ManyToOne
-    private Component targetComponent;
-    // A reference target a component in a specific workflow cycle
-    private Long targetWorkflowInstanceId;
+  @ManyToOne
+  private Component targetComponent;
+  // A reference target a component in a specific workflow cycle
+  private Long targetWorkflowInstanceId;
 
-    @CreatedDate
-    protected Instant createdDate;
-    @ManyToOne
-    @CreatedBy
-    protected User createdUser;
-    @LastModifiedDate
-    protected Instant lastModifiedDate;
-    @ManyToOne
-    @LastModifiedBy
-    protected User lastModifiedUser;
+  @CreatedDate
+  protected Instant createdDate;
+  @ManyToOne
+  @CreatedBy
+  protected User createdUser;
+  @LastModifiedDate
+  protected Instant lastModifiedDate;
+  @ManyToOne
+  @LastModifiedBy
+  protected User lastModifiedUser;
 
-    @Override
-    public boolean isNew() {
-        return null == getId();
-    }
+  @Override
+  public boolean isNew() {
+    return null == getId();
+  }
 }

@@ -12,13 +12,13 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class UserPreference {
 
-    private String language;
+  private String language;
 
-    private String timezone;
+  private String timezone;
 
-    @Column(columnDefinition = "boolean default true")
-    private boolean notifyMeOnNewTask;
+  @Column(columnDefinition = "boolean default true")
+  private boolean notifyMeOnNewTask;
 
-    @Column(columnDefinition = "boolean default true")
-    private boolean notifyMeOnWatchedDocumentChange;
+  @Column(columnDefinition = "boolean default true")
+  private boolean notifyMeOnWatchedDocumentChange;
 }

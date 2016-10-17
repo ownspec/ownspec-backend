@@ -25,55 +25,55 @@ import java.util.Map;
 @Entity
 public class Component implements Auditable<User>, Persistable<Long> {
 
-    @Id
-    @GeneratedValue
-    protected Long id;
+  @Id
+  @GeneratedValue
+  protected Long id;
 
-    protected String title;
-    protected String filePath;
-
-
-    // Project which owns this WorkflowStatus
-    @ManyToOne
-    protected Project project;
+  protected String title;
+  protected String filePath;
 
 
-    // Denormalized from workflow status
-    @Enumerated(EnumType.STRING)
-    protected Status currentStatus;
-    protected String currentGitReference;
+  // Project which owns this WorkflowStatus
+  @ManyToOne
+  protected Project project;
 
 
-    @ElementCollection
-    protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
+  // Denormalized from workflow status
+  @Enumerated(EnumType.STRING)
+  protected Status currentStatus;
+  protected String currentGitReference;
 
-    @Enumerated(EnumType.STRING)
-    protected ComponentType type;
 
-    @Column(columnDefinition = "boolean default true")
-    protected boolean editable;
-    @Column(columnDefinition = "boolean default false")
-    protected boolean secret;
-    @Column(columnDefinition = "boolean default false")
-    protected boolean confidential;
-    @CreatedDate
-    protected Instant createdDate;
-    @ManyToOne
-    @CreatedBy
-    protected User createdUser;
-    @LastModifiedDate
-    protected Instant lastModifiedDate;
-    @ManyToOne
-    @LastModifiedBy
-    protected User lastModifiedUser;
+  @ElementCollection
+  protected Map<UserCategory, Quantifiable> quantifiableMap = new HashMap<>();
 
-    @Column(columnDefinition = "boolean default false")
-    protected boolean requiredTest;
+  @Enumerated(EnumType.STRING)
+  protected ComponentType type;
 
-    @Override
-    @Transient
-    public boolean isNew() {
-        return null == getId();
-    }
+  @Column(columnDefinition = "boolean default true")
+  protected boolean editable;
+  @Column(columnDefinition = "boolean default false")
+  protected boolean secret;
+  @Column(columnDefinition = "boolean default false")
+  protected boolean confidential;
+  @CreatedDate
+  protected Instant createdDate;
+  @ManyToOne
+  @CreatedBy
+  protected User createdUser;
+  @LastModifiedDate
+  protected Instant lastModifiedDate;
+  @ManyToOne
+  @LastModifiedBy
+  protected User lastModifiedUser;
+
+  @Column(columnDefinition = "boolean default false")
+  protected boolean requiredTest;
+
+  @Override
+  @Transient
+  public boolean isNew() {
+    return null == getId();
+  }
 
 }

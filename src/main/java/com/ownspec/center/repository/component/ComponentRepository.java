@@ -13,8 +13,8 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
  */
 public interface ComponentRepository extends JpaRepository<Component, Long>, QueryDslPredicateExecutor<Component> {
 
-    Component findByTitle(String title);
+  Component findByTitle(String title);
 
-    Component findByType(ComponentType componentType);
+  Component findByType(ComponentType componentType);
 
 }

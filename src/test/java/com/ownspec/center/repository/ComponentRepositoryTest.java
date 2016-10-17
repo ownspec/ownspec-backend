@@ -14,16 +14,15 @@ import com.ownspec.center.model.component.Component;
 public class ComponentRepositoryTest extends AbstractTest {
 
 
-    @Test
-    @Transactional
-    public void name() throws Exception {
-        ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
-                .content("doo")
-                .title("title").build();
+  @Test
+  @Transactional
+  public void name() throws Exception {
+    ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
+        .content("doo")
+        .title("title").build();
 
-        Component component = componentService.create(componentDto);
+    Component component = componentService.create(componentDto);
 
 
-
-    }
+  }
 }

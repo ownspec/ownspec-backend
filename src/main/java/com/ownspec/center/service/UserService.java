@@ -26,102 +26,102 @@ import static java.util.Objects.requireNonNull;
 @Slf4j
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private EmailService emailService;
+  @Autowired
+  private EmailService emailService;
 
-    @Autowired
-    private PasswordEncoder encoder;
+  @Autowired
+  private PasswordEncoder encoder;
 
-    @Autowired
-    private CompositionService compositionService;
+  @Autowired
+  private CompositionService compositionService;
 
-    @Override
-    public User loadUserByUsername(String username) throws UsernameNotFoundException {
-        User foundUser = userRepository.findByUsername(username);
-        if (foundUser == null) {
-            throw new UsernameNotFoundException("Cannot found username [" + username + "]");
-        }
-        return foundUser;
+  @Override
+  public User loadUserByUsername(String username) throws UsernameNotFoundException {
+    User foundUser = userRepository.findByUsername(username);
+    if (foundUser == null) {
+      throw new UsernameNotFoundException("Cannot found username [" + username + "]");
+    }
+    return foundUser;
+  }
+
+  public User logIn(User user) {
+    return null;
+  }
+
+  public void logOut(User user) {
+
+  }
+
+  public User create(UserDto source) {
+    String username = source.getUsername();
+    if (null != userRepository.findByUsername(username)) {
+      throw new UserAlreadyExistsException(username);
     }
 
-    public User logIn(User user) {
-        return null;
-    }
+    User user = new User();
+    user.setUsername(source.getUsername());
+    user.setPassword(encoder.encode(source.getPassword()));
+    user.setFirstName(source.getFirstName());
+    user.setLastName(source.getLastName());
+    user.setEmail(source.getEmail());
+    user.setRole(source.getRole());
+    user.setEnabled(false);
+    user.setAccountNonLocked(false);
+    user.setSignature(buildDefaultSignature(user));
 
-    public void logOut(User user) {
+    //todo: Set token
+    AbstractMimeMessage message = getConfirmRegistrationMessage(user);
+    emailService.send(message);
 
-    }
+    userRepository.save(user);
+    return user;
+  }
 
-    public User create(UserDto source) {
-        String username = source.getUsername();
-        if (null != userRepository.findByUsername(username)) {
-            throw new UserAlreadyExistsException(username);
-        }
+  public User update(UserDto source, Long id) {
+    User target = requireNonNull(userRepository.findOne(id));
+    mergeWithNotNullProperties(source, target);
+    return userRepository.save(target);
+  }
 
-        User user = new User();
-        user.setUsername(source.getUsername());
-        user.setPassword(encoder.encode(source.getPassword()));
-        user.setFirstName(source.getFirstName());
-        user.setLastName(source.getLastName());
-        user.setEmail(source.getEmail());
-        user.setRole(source.getRole());
-        user.setEnabled(false);
-        user.setAccountNonLocked(false);
-        user.setSignature(buildDefaultSignature(user));
+  public void delete(Long id) {
+    userRepository.delete(id);
+  }
 
-        //todo: Set token
-        AbstractMimeMessage message = getConfirmRegistrationMessage(user);
-        emailService.send(message);
+  public void resetPassword(Long id) {
+    User target = requireNonNull(userRepository.findOne(id));
+    AbstractMimeMessage message = getResetPasswordMessage(target);
+    emailService.send(message);
+  }
 
-        userRepository.save(user);
-        return user;
-    }
+  public List<User> findAll() {
+    return userRepository.findAll();
+  }
 
-    public User update(UserDto source, Long id) {
-        User target = requireNonNull(userRepository.findOne(id));
-        mergeWithNotNullProperties(source, target);
-        return userRepository.save(target);
-    }
+  private AbstractMimeMessage getResetPasswordMessage(User user) {
+    return null;
+  }
 
-    public void delete(Long id) {
-        userRepository.delete(id);
-    }
+  private AbstractMimeMessage getConfirmRegistrationMessage(User user) {
+    String confirmationLink;
+    AbstractMimeMessage message = AbstractMimeMessage.builder()
+        .addRecipient(user.getEmail())
+        .subject("Account registration") //todo to be internationalized
+        .body("Dear "); //todo
 
-    public void resetPassword(Long id) {
-        User target = requireNonNull(userRepository.findOne(id));
-        AbstractMimeMessage message = getResetPasswordMessage(target);
-        emailService.send(message);
-    }
+    return message;
+  }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
+  private String buildDefaultSignature(User user) {
+    Map<String, Object> model = new HashMap<>();
+    model.put("firstname", user.getFirstName());
+    model.put("lastname", user.getLastName());
+    model.put("phone", user.getPhone());
+    model.put("email", user.getEmail());
 
-    private AbstractMimeMessage getResetPasswordMessage(User user) {
-        return null;
-    }
-
-    private AbstractMimeMessage getConfirmRegistrationMessage(User user) {
-        String confirmationLink;
-        AbstractMimeMessage message = AbstractMimeMessage.builder()
-                .addRecipient(user.getEmail())
-                .subject("Account registration") //todo to be internationalized
-                .body("Dear "); //todo
-
-        return message;
-    }
-
-    private String buildDefaultSignature(User user) {
-        Map<String, Object> model = new HashMap<>();
-        model.put("firstname", user.getFirstName());
-        model.put("lastname", user.getLastName());
-        model.put("phone", user.getPhone());
-        model.put("email", user.getEmail());
-
-        return compositionService.compose("templates/email/signature.ftl", model);
-    }
+    return compositionService.compose("templates/email/signature.ftl", model);
+  }
 
 }

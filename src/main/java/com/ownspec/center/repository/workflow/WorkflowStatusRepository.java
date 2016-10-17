@@ -14,11 +14,11 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
  */
 public interface WorkflowStatusRepository extends JpaRepository<WorkflowStatus, Long> {
 
-    List<WorkflowStatus> findAllByComponentId(long id, Sort sort);
+  List<WorkflowStatus> findAllByComponentId(long id, Sort sort);
 
-    @Query("FROM WorkflowStatus status WHERE status.component.id=:id AND status.id IN " +
-            "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.component.id=:id)")
-    WorkflowStatus findLatestStatusByComponentId(@Param("id") Long id);
+  @Query("FROM WorkflowStatus status WHERE status.component.id=:id AND status.id IN " +
+      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.component.id=:id)")
+  WorkflowStatus findLatestStatusByComponentId(@Param("id") Long id);
 
 
 }

@@ -10,5 +10,5 @@ import javax.persistence.Embeddable;
 @Data
 @Embeddable
 public class Quantifiable {
-    private Double hours;
+  private Double hours;
 }

@@ -18,9 +18,9 @@ import com.ownspec.center.model.workflow.Status;
 @JsonSerialize(as = ImmutableChangeDto.class)
 @JsonDeserialize(as = ImmutableChangeDto.class)
 public interface ChangeDto {
-    String getRevision();
+  String getRevision();
 
-    Instant getDate();
+  Instant getDate();
 
-    UserDto getUser();
+  UserDto getUser();
 }

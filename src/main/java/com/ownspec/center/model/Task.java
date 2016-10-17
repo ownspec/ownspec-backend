@@ -18,19 +18,19 @@ import java.util.Date;
 @Entity
 public class Task {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    private String description;
+  private String description;
 
-    private Double progress;
+  private Double progress;
 
-    @CreatedDate
-    private Instant createdDate;
+  @CreatedDate
+  private Instant createdDate;
 
-    private Date deadline;
+  private Date deadline;
 
-    @ManyToOne
-    private User owner;
+  @ManyToOne
+  private User owner;
 }

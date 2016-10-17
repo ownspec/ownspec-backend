@@ -25,28 +25,28 @@ import lombok.Data;
 @Entity
 public class WorkflowStatus implements Auditable<User> {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    @ManyToOne
-    private Component component;
+  @ManyToOne
+  private Component component;
 
-    @Enumerated(EnumType.STRING)
-    protected Status status;
+  @Enumerated(EnumType.STRING)
+  protected Status status;
 
-    private String firstGitReference;
-    private String lastGitReference;
+  private String firstGitReference;
+  private String lastGitReference;
 
-    @CreatedDate
-    protected Instant createdDate;
-    @ManyToOne
-    @CreatedBy
-    protected User createdUser;
-    @LastModifiedDate
-    protected Instant lastModifiedDate;
-    @ManyToOne
-    @LastModifiedBy
-    protected User lastModifiedUser;
+  @CreatedDate
+  protected Instant createdDate;
+  @ManyToOne
+  @CreatedBy
+  protected User createdUser;
+  @LastModifiedDate
+  protected Instant lastModifiedDate;
+  @ManyToOne
+  @LastModifiedBy
+  protected User lastModifiedUser;
 
 }

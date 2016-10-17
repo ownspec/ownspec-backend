@@ -29,71 +29,71 @@ import static org.apache.naming.SelectorContext.prefix;
 @RestController("/api/bootstrap")
 public class BootstrapController {
 
-    @Autowired
-    protected ComponentService componentService;
+  @Autowired
+  protected ComponentService componentService;
 
-    @Autowired
-    protected ProjectRepository projectRepository;
-
-
-    @RequestMapping
-    @Transactional
-    public void init(@RequestParam(value = "projectName", required = false) String projectName,
-                     @RequestParam(value = "nbComponents", defaultValue = "5") Integer nbComponents,
-                     @RequestParam(value = "nbRequirements", defaultValue = "5") Integer nbRequirements,
-                     @RequestParam(value = "nbDocuments", defaultValue = "5") Integer nbDocuments
-    ) {
-
-        Long projectId = null;
-        Project project = null;
-
-        if (projectName != null) {
-            project = new Project();
-            project.setTitle(projectName);
-            project = projectRepository.save(project);
-            projectId = project.getId();
-        }
+  @Autowired
+  protected ProjectRepository projectRepository;
 
 
-        String prefix = "";
-        if (project != null){
-            prefix = "[Project " + projectId + "]";
-        }
+  @RequestMapping
+  @Transactional
+  public void init(@RequestParam(value = "projectName", required = false) String projectName,
+                   @RequestParam(value = "nbComponents", defaultValue = "5") Integer nbComponents,
+                   @RequestParam(value = "nbRequirements", defaultValue = "5") Integer nbRequirements,
+                   @RequestParam(value = "nbDocuments", defaultValue = "5") Integer nbDocuments
+  ) {
 
-        for (Integer index = 0; index < nbComponents; index++) {
-            ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
-                    .title(prefix + " COMPONENT " + index)
-                    .type(ComponentType.COMPONENT)
-                    .content("test1")
-                    .projectId(projectId)
-                    .build();
+    Long projectId = null;
+    Project project = null;
 
-            Component component = componentService.create(componentDto);
-        }
-
-
-        for (Integer index = 0; index < nbRequirements; index++) {
-            ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
-                    .title(prefix + " REQUIREMENT " + index)
-                    .type(ComponentType.REQUIREMENT)
-                    .content("test1")
-                    .projectId(projectId)
-                    .build();
-
-            Component component = componentService.create(componentDto);
-        }
-
-
-        for (Integer index = 0; index < nbDocuments; index++) {
-            ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
-                    .title(prefix + " DOCUMENT " + index)
-                    .type(ComponentType.DOCUMENT)
-                    .content("test1")
-                    .projectId(projectId)
-                    .build();
-
-            Component component = componentService.create(componentDto);
-        }
-
+    if (projectName != null) {
+      project = new Project();
+      project.setTitle(projectName);
+      project = projectRepository.save(project);
+      projectId = project.getId();
     }
+
+
+    String prefix = "";
+    if (project != null) {
+      prefix = "[Project " + projectId + "]";
+    }
+
+    for (Integer index = 0; index < nbComponents; index++) {
+      ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
+          .title(prefix + " COMPONENT " + index)
+          .type(ComponentType.COMPONENT)
+          .content("test1")
+          .projectId(projectId)
+          .build();
+
+      Component component = componentService.create(componentDto);
+    }
+
+
+    for (Integer index = 0; index < nbRequirements; index++) {
+      ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
+          .title(prefix + " REQUIREMENT " + index)
+          .type(ComponentType.REQUIREMENT)
+          .content("test1")
+          .projectId(projectId)
+          .build();
+
+      Component component = componentService.create(componentDto);
+    }
+
+
+    for (Integer index = 0; index < nbDocuments; index++) {
+      ComponentDto componentDto = ImmutableComponentDto.newComponentDto()
+          .title(prefix + " DOCUMENT " + index)
+          .type(ComponentType.DOCUMENT)
+          .content("test1")
+          .projectId(projectId)
+          .build();
+
+      Component component = componentService.create(componentDto);
+    }
+
+  }
 }

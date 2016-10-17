@@ -11,11 +11,11 @@ import com.ownspec.center.model.user.User;
 @Service
 public class SecurityService {
 
-    @Autowired
-    private User user;
+  @Autowired
+  private User user;
 
 
-    public User getAuthentifiedUser() {
-        return user;
-    }
+  public User getAuthentifiedUser() {
+    return user;
+  }
 }

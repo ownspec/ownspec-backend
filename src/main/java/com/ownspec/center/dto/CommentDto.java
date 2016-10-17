@@ -19,24 +19,24 @@ import com.ownspec.center.model.user.User;
 @JsonDeserialize(as = ImmutableCommentDto.class)
 public interface CommentDto {
 
-    @Nullable
-    Long getId();
+  @Nullable
+  Long getId();
 
-    String getValue();
+  String getValue();
 
-    @Nullable
-    Instant getCreatedDate();
+  @Nullable
+  Instant getCreatedDate();
 
-    @Nullable
-    UserDto getCreatedUser();
+  @Nullable
+  UserDto getCreatedUser();
 
 
-    static CommentDto createFromComment(Comment user) {
-        return ImmutableCommentDto.newCommentDto()
-                .id(user.getId())
-                .createdUser(UserDto.createFromUser(user.getCreatedUser()))
-                .createdDate(user.getCreatedDate())
-                .value(user.getValue())
-                .build();
-    }
+  static CommentDto createFromComment(Comment user) {
+    return ImmutableCommentDto.newCommentDto()
+        .id(user.getId())
+        .createdUser(UserDto.createFromUser(user.getCreatedUser()))
+        .createdDate(user.getCreatedDate())
+        .value(user.getValue())
+        .build();
+  }
 }

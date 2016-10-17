@@ -14,19 +14,19 @@ import java.time.Instant;
 @Entity
 public class Notification {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+  @Id
+  @GeneratedValue
+  private Long id;
 
-    private String content;
+  private String content;
 
-    @Column(columnDefinition = "boolean default true")
-    private boolean unread;
+  @Column(columnDefinition = "boolean default true")
+  private boolean unread;
 
-    @ManyToOne
-    private User recipient;
+  @ManyToOne
+  private User recipient;
 
-    @CreatedDate
-    private Instant createdDate;
+  @CreatedDate
+  private Instant createdDate;
 
 }

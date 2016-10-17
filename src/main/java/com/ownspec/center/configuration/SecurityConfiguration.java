@@ -21,16 +21,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
-    @Autowired
-    private UserDetailsService accountService;
+  @Autowired
+  private UserDetailsService accountService;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.authorizeRequests().anyRequest().permitAll();
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http.csrf().disable();
+    http.authorizeRequests().anyRequest().permitAll();
 //        http
 //                .exceptionHandling().and()
 //                .anonymous().and()
@@ -49,26 +49,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .antMatchers("/api/*").hasRole("USER")
 //                .anyRequest().fullyAuthenticated()
 //        ;
-    }
+  }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder
-                .userDetailsService(accountService)
-                .passwordEncoder(encoder());
-    }
+  @Override
+  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+    authenticationManagerBuilder
+        .userDetailsService(accountService)
+        .passwordEncoder(encoder());
+  }
 
-    @Bean
-    protected PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  protected PasswordEncoder encoder() {
+    return new BCryptPasswordEncoder();
+  }
 
 
-    // TODO: 29/09/16 temporary until we handle authentication
-    @Bean
-    public User currentUser() {
-        return userRepository.findOne(1L);
-        //return new User();
-    }
+  // TODO: 29/09/16 temporary until we handle authentication
+  @Bean
+  public User currentUser() {
+    return userRepository.findOne(1L);
+    //return new User();
+  }
 
 }

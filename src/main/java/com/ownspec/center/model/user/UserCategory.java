@@ -10,7 +10,7 @@ import javax.persistence.Embeddable;
 @Data
 @Embeddable
 public class UserCategory {
-    private String category;
+  private String category;
 
-    private Double hourlyPrice;
+  private Double hourlyPrice;
 }

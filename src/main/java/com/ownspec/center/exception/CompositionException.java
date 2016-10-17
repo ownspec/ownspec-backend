@@ -5,11 +5,11 @@ package com.ownspec.center.exception;
  */
 public class CompositionException extends RuntimeException {
 
-    public CompositionException(Throwable cause) {
-        super(cause);
-    }
+  public CompositionException(Throwable cause) {
+    super(cause);
+  }
 
-    public CompositionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public CompositionException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

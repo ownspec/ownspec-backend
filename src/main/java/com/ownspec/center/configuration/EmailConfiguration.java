@@ -15,31 +15,31 @@ import javax.mail.Session;
 @Configuration
 public class EmailConfiguration {
 
-    @Value("${email.host}")
-    private String emailHost;
+  @Value("${email.host}")
+  private String emailHost;
 
-    @Value("${email.port}")
-    private int emailPort;
+  @Value("${email.port}")
+  private int emailPort;
 
-    @Value("${email.protocol}")
-    private String emailProtocol;
+  @Value("${email.protocol}")
+  private String emailProtocol;
 
-    @Bean
-    public SmtpConnectionPool smtpConnectionPool() {
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxTotal(1);
-        config.setJmxEnabled(false);
+  @Bean
+  public SmtpConnectionPool smtpConnectionPool() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    config.setJmxEnabled(false);
 
-        return new SmtpConnectionPool(SmtpConnectionFactoryBuilder.newSmtpBuilder()
-                .host(emailHost)
-                .port(emailPort)
-                .protocol(emailProtocol)
-                .build() , config);
-    }
+    return new SmtpConnectionPool(SmtpConnectionFactoryBuilder.newSmtpBuilder()
+        .host(emailHost)
+        .port(emailPort)
+        .protocol(emailProtocol)
+        .build(), config);
+  }
 
-    @Bean
-    public Session session() {
-        return smtpConnectionPool().getSession();
-    }
+  @Bean
+  public Session session() {
+    return smtpConnectionPool().getSession();
+  }
 
 }

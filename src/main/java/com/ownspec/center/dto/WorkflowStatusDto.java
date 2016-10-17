@@ -31,28 +31,29 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 @JsonSerialize(as = ImmutableWorkflowStatusDto.class)
 @JsonDeserialize(as = ImmutableWorkflowStatusDto.class)
 public interface WorkflowStatusDto {
-    Long getId();
+  Long getId();
 
-    Status getStatus();
+  Status getStatus();
 
-    @Nullable
-    Instant getCreatedDate();
-    @Nullable
-    UserDto getCreatedUser();
+  @Nullable
+  Instant getCreatedDate();
 
-    List<ChangeDto> getChanges();
+  @Nullable
+  UserDto getCreatedUser();
+
+  List<ChangeDto> getChanges();
 
 
-    static ImmutableWorkflowStatusDto.Builder newBuilderFromWorkflowStatus(WorkflowStatus user) {
-        ImmutableWorkflowStatusDto.Builder builder = ImmutableWorkflowStatusDto.newWorkflowStatusDto()
-                .id(user.getId())
-                .status(user.getStatus())
-                .createdDate(user.getCreatedDate());
+  static ImmutableWorkflowStatusDto.Builder newBuilderFromWorkflowStatus(WorkflowStatus user) {
+    ImmutableWorkflowStatusDto.Builder builder = ImmutableWorkflowStatusDto.newWorkflowStatusDto()
+        .id(user.getId())
+        .status(user.getStatus())
+        .createdDate(user.getCreatedDate());
 
-        if (user.getCreatedUser() != null){
-            builder.createdUser(UserDto.createFromUser(user.getCreatedUser()));
-        }
-
-        return builder;
+    if (user.getCreatedUser() != null) {
+      builder.createdUser(UserDto.createFromUser(user.getCreatedUser()));
     }
+
+    return builder;
+  }
 }

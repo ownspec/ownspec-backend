@@ -11,8 +11,8 @@ import com.ownspec.center.OsCenterApplication;
 @SpringBootTest(classes = OsCenterApplication.class)
 public class OwnspecCenterAng2bootApplicationTests {
 
-	@Test
-	public void contextLoads() {
-	}
+  @Test
+  public void contextLoads() {
+  }
 
 }

@@ -21,26 +21,26 @@ import lombok.Data;
 @Entity
 public class Project implements Persistable<Long>, Auditable<User> {
 
-    @Id
-    @GeneratedValue
-    private Long id;
-    private String title;
-    private String description;
+  @Id
+  @GeneratedValue
+  private Long id;
+  private String title;
+  private String description;
 
-    @CreatedDate
-    protected Instant createdDate;
-    @ManyToOne
-    @CreatedBy
-    protected User createdUser;
-    @LastModifiedDate
-    protected Instant lastModifiedDate;
-    @ManyToOne
-    @LastModifiedBy
-    protected User lastModifiedUser;
+  @CreatedDate
+  protected Instant createdDate;
+  @ManyToOne
+  @CreatedBy
+  protected User createdUser;
+  @LastModifiedDate
+  protected Instant lastModifiedDate;
+  @ManyToOne
+  @LastModifiedBy
+  protected User lastModifiedUser;
 
-    @Override
-    @Transient
-    public boolean isNew() {
-        return null == getId();
-    }
+  @Override
+  @Transient
+  public boolean isNew() {
+    return null == getId();
+  }
 }

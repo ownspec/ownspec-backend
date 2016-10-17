@@ -10,22 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EmailServiceTest extends AbstractTest {
 
-    @Autowired
-    private EmailService emailService;
+  @Autowired
+  private EmailService emailService;
 
-    @Test
-    public void send() throws Exception {
-        AbstractMimeMessage message = AbstractMimeMessage.builder()
-                .subject("Moien2")
-                .body("Dear User, \n...")
-                .addRecipient("lyrold.careto@gmail.com");
+  @Test
+  public void send() throws Exception {
+    AbstractMimeMessage message = AbstractMimeMessage.builder()
+        .subject("Moien2")
+        .body("Dear User, \n...")
+        .addRecipient("lyrold.careto@gmail.com");
 
-        emailService.send(message);
-    }
+    emailService.send(message);
+  }
 
-    @Test
-    public void sendConfirmRegistrationNotification() throws Exception {
+  @Test
+  public void sendConfirmRegistrationNotification() throws Exception {
 
-    }
+  }
 
 }

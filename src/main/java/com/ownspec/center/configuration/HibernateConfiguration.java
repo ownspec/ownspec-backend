@@ -17,18 +17,17 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 @Configuration
 public class HibernateConfiguration extends HibernateJpaAutoConfiguration {
 
-    public HibernateConfiguration(DataSource dataSource, JpaProperties jpaProperties, ObjectProvider<JtaTransactionManager> jtaTransactionManagerProvider) {
-        super(dataSource, jpaProperties, jtaTransactionManagerProvider);
-    }
+  public HibernateConfiguration(DataSource dataSource, JpaProperties jpaProperties, ObjectProvider<JtaTransactionManager> jtaTransactionManagerProvider) {
+    super(dataSource, jpaProperties, jtaTransactionManagerProvider);
+  }
 
-    @Bean
-    @Override
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            EntityManagerFactoryBuilder factoryBuilder)
-    {
-        LocalContainerEntityManagerFactoryBean ret = super.entityManagerFactory(factoryBuilder);
-        ret.setMappingResources("META-INF/orm.xml");
-        return ret;
-    }
+  @Bean
+  @Override
+  public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+      EntityManagerFactoryBuilder factoryBuilder) {
+    LocalContainerEntityManagerFactoryBean ret = super.entityManagerFactory(factoryBuilder);
+    ret.setMappingResources("META-INF/orm.xml");
+    return ret;
+  }
 }
 

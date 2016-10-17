@@ -18,18 +18,18 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(as = ImmutableProjectDto.class)
 public interface ProjectDto {
 
-    @Nullable
-    Long getId();
+  @Nullable
+  Long getId();
 
-    String getTitle();
+  String getTitle();
 
-    @Nullable
-    String getDescription();
+  @Nullable
+  String getDescription();
 
 
-    @Nullable
-    Instant getCreatedDate();
+  @Nullable
+  Instant getCreatedDate();
 
-    @Nullable
-    UserDto getCreatedUser();
+  @Nullable
+  UserDto getCreatedUser();
 }

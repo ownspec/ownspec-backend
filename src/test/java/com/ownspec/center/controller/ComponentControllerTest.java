@@ -22,32 +22,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class ComponentControllerTest extends AbstractTest {
 
-    @Value("classpath:/controller/findall.json")
-    private Resource resourceFindAll;
+  @Value("classpath:/controller/findall.json")
+  private Resource resourceFindAll;
 
-    @Value("classpath:/controller/findall_by_types.json")
-    private Resource resourceFindAllByType;
+  @Value("classpath:/controller/findall_by_types.json")
+  private Resource resourceFindAllByType;
 
 
+  @Test
+  public void testFindAll() throws Exception {
 
-    @Test
-    public void testFindAll() throws Exception {
-
-        try (InputStream is = resourceFindAll.getInputStream()) {
-            MvcResult mvcResult = mockMvc.perform(get("/api/components"))
-                    .andExpect(content().json(IOUtils.toString(is, UTF_8)))
-                    .andReturn();
-        }
+    try (InputStream is = resourceFindAll.getInputStream()) {
+      MvcResult mvcResult = mockMvc.perform(get("/api/components"))
+          .andExpect(content().json(IOUtils.toString(is, UTF_8)))
+          .andReturn();
     }
+  }
 
 
-    @Test
-    public void testFindAllByType() throws Exception {
+  @Test
+  public void testFindAllByType() throws Exception {
 
-        try (InputStream is = resourceFindAllByType.getInputStream()) {
-            MvcResult mvcResult = mockMvc.perform(get("/api/components?types=REQUIREMENT"))
-                    .andExpect(content().json(IOUtils.toString(is, UTF_8)))
-                    .andReturn();
-        }
+    try (InputStream is = resourceFindAllByType.getInputStream()) {
+      MvcResult mvcResult = mockMvc.perform(get("/api/components?types=REQUIREMENT"))
+          .andExpect(content().json(IOUtils.toString(is, UTF_8)))
+          .andReturn();
     }
+  }
 }

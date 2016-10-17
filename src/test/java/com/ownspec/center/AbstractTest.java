@@ -28,30 +28,30 @@ import java.io.IOException;
 @AutoConfigureMockMvc
 public abstract class AbstractTest {
 
-    @Value("${composition.outputDirectory}")
-    private String outputDirectory;
+  @Value("${composition.outputDirectory}")
+  private String outputDirectory;
 
-    @Autowired
-    protected MockMvc mockMvc;
+  @Autowired
+  protected MockMvc mockMvc;
 
-    @Autowired
-    protected ComponentRepository componentRepository;
+  @Autowired
+  protected ComponentRepository componentRepository;
 
-    @Autowired
-    protected ComponentService componentService;
+  @Autowired
+  protected ComponentService componentService;
 
-    @Autowired
-    protected WorkflowStatusRepository workflowStatusRepository;
+  @Autowired
+  protected WorkflowStatusRepository workflowStatusRepository;
 
-    @Autowired
-    protected GitService gitService;
+  @Autowired
+  protected GitService gitService;
 
-    @PersistenceContext
-    protected EntityManager entityManager;
+  @PersistenceContext
+  protected EntityManager entityManager;
 
-    @Before
-    public void init() throws IOException {
-        FileUtils.forceMkdir(new File(outputDirectory));
-    }
+  @Before
+  public void init() throws IOException {
+    FileUtils.forceMkdir(new File(outputDirectory));
+  }
 
 }
