@@ -2,6 +2,7 @@ package com.ownspec.center.service;
 
 import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.model.QComment.comment;
 import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
@@ -49,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -216,10 +218,12 @@ public class ComponentService {
   }
 
   public List<Comment> getComments(Long componentId) {
-    return commentRepository.findAllByComponentId(componentId);
+    return commentRepository.findAllByComponentId(componentId, new Sort(Sort.Direction.DESC,  "id"));
   }
 
-  public Comment addCommentForComponent(Long id, Comment comment) {
+  public Comment addComment(Long id, String value) {
+    Comment comment = new Comment();
+    comment.setValue(value);;
     Component target = requireNonNull(componentRepository.findOne(id));
     comment.setComponent(target);
     return commentRepository.save(comment);
@@ -268,10 +272,15 @@ public class ComponentService {
       }
 
       ImmutableWorkflowStatusDto.Builder builder = newBuilderFromWorkflowStatus(workflowStatus);
+
+      Collections.reverse(changeDtos);
+
       builder.changes(changeDtos);
 
       workflowStatusDtos.add(builder.build());
     }
+
+    Collections.reverse(workflowStatusDtos);
 
     return workflowStatusDtos;
 

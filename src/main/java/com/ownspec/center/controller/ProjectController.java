@@ -1,9 +1,11 @@
 package com.ownspec.center.controller;
 
+import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ImmutableProjectDto;
 import com.ownspec.center.dto.ProjectDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Project;
+import com.ownspec.center.model.component.Component;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.util.OsUtils;
 
@@ -26,10 +28,17 @@ public class ProjectController {
   @Autowired
   private ProjectRepository repository;
 
+  @RequestMapping("/{id}")
+  public ProjectDto get(@PathVariable("id") Long id) {
+    return toDto(repository.findOne(id));
+  }
+
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   @ResponseBody
-  public ResponseEntity create(@RequestBody Project project) {
-
+  public ResponseEntity create(@RequestBody ProjectDto projectDto) {
+    Project project = new Project();
+    OsUtils.mergeWithNotNullProperties(projectDto, project);
+    repository.save(project);
     return ResponseEntity.ok("Project successfully created");
   }
 
@@ -61,15 +70,19 @@ public class ProjectController {
   @RequestMapping
   public List<ProjectDto> findAll() {
     return repository.findAll().stream()
-        .map(p -> newProjectDto()
-            .id(p.getId())
-            .title(p.getTitle())
-            .description(p.getDescription())
-            .createdDate(p.getCreatedDate())
-            .createdUser(UserDto.createFromUser(p.getCreatedUser()))
-            .build())
+        .map(this::toDto)
         .collect(Collectors.toList());
   }
 
+
+  private ProjectDto toDto(Project p){
+    return newProjectDto()
+        .id(p.getId())
+        .title(p.getTitle())
+        .description(p.getDescription())
+        .createdDate(p.getCreatedDate())
+        .createdUser(UserDto.createFromUser(p.getCreatedUser()))
+        .build();
+  }
 
 }

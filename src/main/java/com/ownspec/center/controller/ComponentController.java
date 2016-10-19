@@ -33,7 +33,6 @@ import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
-import static com.ownspec.center.model.QComment.comment;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -53,17 +52,7 @@ public class ComponentController {
       @RequestParam(value = "projectId", required = false) Long projectId
   ) {
     return componentService.findAll(projectId, types).stream()
-        .map(c -> {
-          return newComponentDto()
-              .id(c.getId())
-              .title(c.getTitle())
-              .type(c.getType())
-              .content(componentService.getContent(c))
-              .currentStatus(c.getCurrentStatus())
-              .createdDate(c.getCreatedDate())
-              .createdUser(UserDto.createFromUser(c.getCreatedUser()))
-              .build();
-        })
+        .map(c -> toDto(c, true, false, false))
         .collect(Collectors.toList());
   }
 
@@ -71,8 +60,7 @@ public class ComponentController {
   public ComponentDto get(@PathVariable("id") Long id,
                           @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
                           @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
-                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments
-  ) {
+                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments) {
     Component c = componentService.findOne(id);
 
     return toDto(c, content, workflow, comments);
@@ -109,15 +97,15 @@ public class ComponentController {
 
   @RequestMapping(value = "/{id}/update-content", method = RequestMethod.POST)
   @ResponseBody
-  public ResponseEntity updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
-    Map<Component,byte[]> innerDraftComponents = componentService.searchForInnerDraftComponents(content);
-    componentService.updateContent(id, content);
-    if (!innerDraftComponents.isEmpty()) {
+  public ComponentDto updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
+    Map<Component, byte[]> innerDraftComponents = componentService.searchForInnerDraftComponents(content);
+    Component component = componentService.updateContent(id, content);
+    /*if (!innerDraftComponents.isEmpty()) {
       for (Component component : innerDraftComponents.keySet()) {
         componentService.updateContent(component, innerDraftComponents.get(component));
       }
-    }
-    return ResponseEntity.ok().build();
+    }*/
+    return toDto(component, true, true, true);
   }
 
   @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
@@ -135,9 +123,9 @@ public class ComponentController {
 
   @RequestMapping(value = "/{id}/comments/add", method = RequestMethod.POST)
   @ResponseBody
-  public ResponseEntity addComment(@PathVariable("id") Long id, @RequestBody Comment comment) {
-    componentService.addCommentForComponent(id, comment);
-    return ResponseEntity.ok().build();
+  public ComponentDto addComment(@PathVariable("id") Long id, @RequestBody String comment) {
+    componentService.addComment(id, comment);
+    return toDto(id, true, true, true);
   }
 
   @RequestMapping(value = "/{id}/revisions", method = RequestMethod.GET)
@@ -148,21 +136,26 @@ public class ComponentController {
 
   @PostMapping(value = "/import")
   @ResponseBody
-  public ResponseEntity importFrom(@RequestBody Object source){
+  public ResponseEntity importFrom(@RequestBody Object source) {
 
     return null;
   }
 
   @GetMapping(value = "/{id}/export")
   @ResponseBody
-  public ResponseEntity export(@RequestBody Long id){
+  public ResponseEntity export(@RequestBody Long id) {
     return null;
   }
 
-  private ComponentDto toDto(Component c, boolean content, boolean workflow, Boolean comments) {
+  private ComponentDto toDto(Long id, boolean content, boolean workflow, Boolean comments) {
+    return toDto(componentService.findOne(id), content, workflow, comments);
+  }
 
+
+  private ComponentDto toDto(Component c, boolean content, boolean workflow, Boolean comments) {
     ImmutableComponentDto.Builder builder = newComponentDto()
         .id(c.getId())
+        .projectId(c.getProject() != null ? c.getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getType())
         .currentStatus(c.getCurrentStatus())
