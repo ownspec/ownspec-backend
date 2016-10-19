@@ -15,6 +15,7 @@ import java.util.stream.Stream;
  * Created by lyrold on 09/10/2016.
  */
 @Data
+// Why abstract ?
 public class AbstractMimeMessage {
   private String from;
   private String subject = "";
@@ -22,7 +23,7 @@ public class AbstractMimeMessage {
   private List<String> recipients = new ArrayList<>();
   private List<String> recipientsCc = new ArrayList<>();
   private List<String> recipientsBcc = new ArrayList<>();
-  private List<String> attachmentsPaths = new ArrayList<>();
+  private List<Resource> attachments = new ArrayList<>();
 
   public static AbstractMimeMessage builder() {
     return new AbstractMimeMessage();

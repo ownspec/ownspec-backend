@@ -9,12 +9,13 @@ import org.nlab.smtp.transport.connection.ClosableSmtpConnection;
 import org.nlab.smtp.transport.factory.SmtpConnectionFactory;
 import org.nlab.smtp.transport.factory.SmtpConnectionFactoryBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.Objects;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -38,19 +39,23 @@ public class EmailService {
   private String defaultFromAddress;
 
   private SmtpConnectionPool smtpConnectionPool;
-  private Session session;
 
   @PostConstruct
   public void init() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
+
     SmtpConnectionFactory smtpConnectionFactory = SmtpConnectionFactoryBuilder.newSmtpBuilder()
                                                                               .host(emailHost)
                                                                               .port(emailPort)
                                                                               .protocol(emailProtocol)
                                                                               .build();
     smtpConnectionPool = new SmtpConnectionPool(smtpConnectionFactory, config);
-    session = smtpConnectionPool.getSession();
+
+  }
+
+  @PreDestroy
+  public void destroy(){
+    smtpConnectionPool.close();
   }
 
 
@@ -58,7 +63,7 @@ public class EmailService {
     boolean messageIsValid = validate(abstractMimeMessage);
     if (messageIsValid) {
       try (ClosableSmtpConnection transport = smtpConnectionPool.borrowObject()) {
-        MimeMessage message = buildMessageFrom(abstractMimeMessage);
+        MimeMessage message = buildMessageFrom(abstractMimeMessage, transport.getSession());
         transport.sendMessage(message);
       } catch (Exception e) {
         throw new EmailServiceException(e);
@@ -70,8 +75,7 @@ public class EmailService {
     return true;
   }
 
-  private MimeMessage buildMessageFrom(AbstractMimeMessage abstractMimeMessage) throws MessagingException {
-    Objects.requireNonNull(session);
+  private MimeMessage buildMessageFrom(AbstractMimeMessage abstractMimeMessage, Session session) throws MessagingException {
     MimeMessage mimeMessage = new MimeMessage(session);
     MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false);
 
@@ -92,10 +96,9 @@ public class EmailService {
       mimeMessageHelper.addBcc(recipientBcc);
     }
 
-    //Add attachmentsPaths
-    for (String attachmentPath : abstractMimeMessage.getAttachmentsPaths()) {
-      File file = new File(attachmentPath);
-      mimeMessageHelper.addAttachment(file.getName(), file);
+    //Add attachments
+    for (Resource attachment : abstractMimeMessage.getAttachments()) {
+      mimeMessageHelper.addAttachment(attachment.getFilename(), attachment);
     }
 
     return mimeMessage;
