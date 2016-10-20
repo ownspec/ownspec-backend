@@ -223,7 +223,7 @@ public class ComponentService {
 
   public Comment addComment(Long id, String value) {
     Comment comment = new Comment();
-    comment.setValue(value);;
+    comment.setValue(value);
     Component target = requireNonNull(componentRepository.findOne(id));
     comment.setComponent(target);
     return commentRepository.save(comment);
