@@ -3,6 +3,7 @@ package com.ownspec.center.configuration;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -13,13 +14,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.UUID;
+
 /**
  * Created by lyrold on 23/08/2016.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-
 
   @Autowired
   private UserDetailsService accountService;
@@ -37,11 +39,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .servletApi().and()
 //                .headers()
 //                .cacheControl()
-//        ;
-//
-//        http
-//                .formLogin().loginPage("/login").permitAll().and()
-//                .logout().logoutUrl("/logout").logoutSuccessUrl("/login")
 //        ;
 //
 //        http.authorizeRequests()
@@ -71,4 +68,30 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     //return new User();
   }
 
+
+  @Bean
+  public FilterRegistrationBean jwtFilter() {
+    final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+    registrationBean.setFilter(new JwtFilter());
+    registrationBean.addUrlPatterns("/api/*");
+
+    return registrationBean;
+  }
+
+  @Bean
+  public SecretKey secretKey() {
+    return new SecretKey(UUID.randomUUID().toString());
+  }
+
+  public final class SecretKey {
+    private String value;
+
+    public SecretKey(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+  }
 }

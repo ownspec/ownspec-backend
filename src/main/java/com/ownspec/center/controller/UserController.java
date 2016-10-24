@@ -9,6 +9,7 @@ import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.UserService;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(value = "/api/users")
+@Slf4j
 public class UserController {
 
   @Autowired
@@ -95,7 +97,8 @@ public class UserController {
 
   @PostMapping(value = "/login")
   @ResponseBody
-  public String login(@RequestBody UserDto source) {
+  public ResponseEntity login(@RequestBody UserDto source) {
+    LOG.info("Request login with username [{}]", source.getUsername());
     return userService.login(source);
   }
 
