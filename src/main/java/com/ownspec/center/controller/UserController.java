@@ -1,6 +1,9 @@
 package com.ownspec.center.controller;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.collect.ImmutableMap;
+import com.ownspec.center.dto.StatusDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
@@ -18,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by nlabrot on 29/09/16.
@@ -52,7 +57,7 @@ public class UserController {
     UserDto userDto = UserDto.createFromUser(userService.loadUserByUsername("admin"));
 
     ImmutableMap.Builder<Object, Object> propertiesBuilder = ImmutableMap.builder();
-    propertiesBuilder.put("statuses", Status.values());
+    propertiesBuilder.put("statuses", Arrays.stream(Status.values()).map(StatusDto::createFromStatus).collect(toList()));
 
     return ResponseEntity.ok(ImmutableMap.builder()
         .put("user", userDto)

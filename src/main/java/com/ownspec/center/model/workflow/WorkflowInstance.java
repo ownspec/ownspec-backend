@@ -1,50 +1,41 @@
-package com.ownspec.center.model.component;
+package com.ownspec.center.model.workflow;
 
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-
 import java.time.Instant;
 
-import com.ownspec.center.model.workflow.WorkflowInstance;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.domain.Persistable;
 
 import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 /**
- * A reference is an oriented path between a source
- * <p>
- * Created by nlabrot on 23/09/16.
+ * Created by nlabrot on 24/09/16.
  */
 @Data
 @Entity
-public class ComponentReference implements Persistable<Long>, Auditable<User> {
+public class WorkflowInstance implements Auditable<User> {
 
   @Id
   @GeneratedValue
   private Long id;
 
   @ManyToOne
-  private Component source;
-  @ManyToOne
-  private WorkflowInstance sourceWorkflowInstance;
+  private Component component;
 
-
-  @ManyToOne
-  private Component targetComponent;
-  // A reference target a component in a specific workflow cycle
-  @ManyToOne
-  private WorkflowInstance targetWorkflowInstance;
-
+  // Denormalized from workflow status
+  @Enumerated(EnumType.STRING)
+  protected Status currentStatus;
+  protected String currentGitReference;
 
   @CreatedDate
   protected Instant createdDate;
@@ -57,8 +48,5 @@ public class ComponentReference implements Persistable<Long>, Auditable<User> {
   @LastModifiedBy
   protected User lastModifiedUser;
 
-  @Override
-  public boolean isNew() {
-    return null == getId();
-  }
+
 }

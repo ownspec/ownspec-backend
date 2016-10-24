@@ -6,6 +6,7 @@ import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.model.workflow.Status;
+import com.ownspec.center.model.workflow.WorkflowInstance;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -33,15 +34,14 @@ public class Component implements Auditable<User>, Persistable<Long> {
   protected String filePath;
 
 
+  // WorkflowInstance which owns this WorkflowStatus
+  @ManyToOne
+  private WorkflowInstance currentWorkflowInstance;
+
+
   // Project which owns this WorkflowStatus
   @ManyToOne
   protected Project project;
-
-
-  // Denormalized from workflow status
-  @Enumerated(EnumType.STRING)
-  protected Status currentStatus;
-  protected String currentGitReference;
 
 
   @ElementCollection

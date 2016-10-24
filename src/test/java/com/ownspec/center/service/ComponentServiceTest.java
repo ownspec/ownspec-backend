@@ -4,13 +4,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Assert;
 import org.junit.Test;
+import org.outerj.daisy.diff.DaisyDiff;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 
 import com.google.common.collect.LinkedListMultimap;
@@ -25,10 +29,16 @@ import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
+import org.xml.sax.InputSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jdt.internal.compiler.parser.Parser.name;
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * Created by nlabrot on 01/10/16.
@@ -41,24 +51,24 @@ public class ComponentServiceTest extends AbstractTest {
     ImmutableComponentDto componentDto = ImmutableComponentDto.newComponentDto()
         .title("test")
         .type(ComponentType.COMPONENT)
-        .content("test1")
+        .content("test0")
         .build();
 
     // Create the component
     Component component = componentService.create(componentDto);
 
     // save its git reference - update content #1
-    String startGitReference1 = component.getCurrentGitReference();
+    String startGitReference1 = component.getCurrentWorkflowInstance().getCurrentGitReference();
     // Update content #2
-    componentService.updateContent(component.getId(), "test2".getBytes(UTF_8));
+    componentService.updateContent(component.getId(), "test1".getBytes(UTF_8));
     // Update content #3
-    component = componentService.updateContent(component.getId(), "test3".getBytes(UTF_8));
+    component = componentService.updateContent(component.getId(), "test2".getBytes(UTF_8));
     // save git reference of last update content #3
-    String endGitReference1 = component.getCurrentGitReference();
+    String endGitReference1 = component.getCurrentWorkflowInstance().getCurrentGitReference();
 
     // Change status, no content update
     component = componentService.updateStatus(component.getId(), Status.OPEN);
-    Assert.assertNull(component.getCurrentGitReference());
+    Assert.assertNull(component.getCurrentWorkflowInstance().getCurrentGitReference());
 
 
     // Change status
@@ -66,16 +76,18 @@ public class ComponentServiceTest extends AbstractTest {
     // Update content #1
     component = componentService.updateContent(component.getId(), "test4".getBytes(UTF_8));
     // save its git reference - update content #1
-    String startGitReference2 = component.getCurrentGitReference();
+    String startGitReference2 = component.getCurrentWorkflowInstance().getCurrentGitReference();
 
     // Update content #2
     component = componentService.updateContent(component.getId(), "test5".getBytes(UTF_8));
     // save git reference of last update content #2
-    String endGitReference2 = component.getCurrentGitReference();
+    String endGitReference2 = component.getCurrentWorkflowInstance().getCurrentGitReference();
 
-    List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowStatuses(component.getId());
+    List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowStatuses(component.getId()).get(0).getWorkflowStatuses();
 
-    System.out.println(workflowStatuses);
+
+    Resource file = gitService.getFile(component.getFilePath(), endGitReference1);
+
 
     Assert.assertEquals(3, workflowStatuses.get(0).getChanges().size());
     Assert.assertEquals(startGitReference1, workflowStatuses.get(0).getChanges().get(0).getRevision());
@@ -86,7 +98,6 @@ public class ComponentServiceTest extends AbstractTest {
     Assert.assertEquals(2, workflowStatuses.get(2).getChanges().size());
     Assert.assertEquals(startGitReference2, workflowStatuses.get(2).getChanges().get(0).getRevision());
     Assert.assertEquals(endGitReference2, workflowStatuses.get(2).getChanges().get(1).getRevision());
-
-
   }
+
 }

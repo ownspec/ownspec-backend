@@ -48,12 +48,11 @@ public interface ComponentDto {
   String getContent();
 
   @Nullable
-  Status getCurrentStatus();
+  StatusDto getCurrentStatus();
 
   @Nullable
-  List<WorkflowStatusDto> getWorkflowStatuses();
+  List<WorkflowInstanceDto> getWorkflowInstances();
 
   @Nullable
   List<CommentDto> getComments();
-
 }

@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.ownspec.center.dto.StatusDto;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -134,6 +136,15 @@ public class ComponentController {
     return componentService.getRevisionsForComponent(id);
   }
 
+  @RequestMapping(value = "/{id}/diff", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+  @ResponseBody
+  public Resource diff(@PathVariable("id") Long id, @RequestParam(value = "from", required = false) String fromRevision,
+                       @RequestParam(value = "to", required = false) String toRevision) {
+    return componentService.diff(id, fromRevision, toRevision);
+  }
+
+
+
   @PostMapping(value = "/import")
   @ResponseBody
   public ResponseEntity importFrom(@RequestBody Object source) {
@@ -158,7 +169,7 @@ public class ComponentController {
         .projectId(c.getProject() != null ? c.getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getType())
-        .currentStatus(c.getCurrentStatus())
+        .currentStatus(StatusDto.createFromStatus(c.getCurrentWorkflowInstance().getCurrentStatus()))
         .createdDate(c.getCreatedDate())
         .createdUser(UserDto.createFromUser(c.getCreatedUser()));
 
@@ -167,7 +178,7 @@ public class ComponentController {
     }
 
     if (workflow) {
-      builder.workflowStatuses(componentService.getWorkflowStatuses(c.getId()));
+      builder.workflowInstances(componentService.getWorkflowStatuses(c.getId()));
     }
 
     if (comments) {

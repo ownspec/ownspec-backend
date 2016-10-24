@@ -200,6 +200,19 @@
             <artifactId>freemarker</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.outerj.daisy</groupId>
+            <artifactId>daisydiff</artifactId>
+            <version>1.2-NX4-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>
