@@ -69,7 +69,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
 
-  @Bean
+//  @Bean
   public FilterRegistrationBean jwtFilter() {
     final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
     registrationBean.setFilter(new JwtFilter());

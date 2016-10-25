@@ -1,6 +1,9 @@
 package com.ownspec.center.service;
 
+import static com.ownspec.center.dto.ComponentDto.newBuilderFromComponent;
 import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
+import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
+import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
 import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
@@ -13,6 +16,7 @@ import static org.cyberneko.html.HTMLEntities.get;
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ComponentReferenceDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
@@ -21,6 +25,7 @@ import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
@@ -29,6 +34,7 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.CommentRepository;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.UserRepository;
+import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
@@ -38,20 +44,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
+import org.cyberneko.html.parsers.DOMParser;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.nlab.xml.stream.XmlStreamSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import javax.xml.transform.dom.DOMSource;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -66,6 +78,9 @@ public class ComponentService {
 
   @Autowired
   private ComponentRepository componentRepository;
+
+  @Autowired
+  private ComponentReferenceRepository componentReferenceRepository;
 
   @Autowired
   private WorkflowInstanceRepository workflowInstanceRepository;
@@ -206,6 +221,8 @@ public class ComponentService {
     component.getCurrentWorkflowInstance().setCurrentGitReference(hash);
     componentRepository.save(component);
 
+    extractAndCreateReference(component, content);
+
     return component;
   }
 
@@ -260,7 +277,7 @@ public class ComponentService {
 
     for (WorkflowInstance workflowInstance : workflowInstanceRepository.findAllByComponentId(component.getId(), new Sort("id"))) {
 
-      ImmutableWorkflowInstanceDto.Builder workflowInstanceDto = WorkflowInstanceDto.newBuilderFromWorkflowInstance(workflowInstance);
+      ImmutableWorkflowInstanceDto.Builder workflowInstanceDto = newBuilderFromWorkflowInstance(workflowInstance);
 
       List<WorkflowStatusDto> workflowStatusDtos = new ArrayList<>();
 
@@ -313,23 +330,84 @@ public class ComponentService {
   }
 
 
+  public void extractAndCreateReference(Component c, byte[] contentAsByteArray) {
+
+    Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(c.getId(),
+        c.getCurrentWorkflowInstance().getId());
+
+    List<Pair<Long, Long>> references = extractReference(new String(contentAsByteArray));
+
+    LOG.debug("Deleted {}", deletedRef);
+
+    for (Pair<Long, Long> reference : references) {
+      ComponentReference componentReference = new ComponentReference();
+
+      componentReference.setSource(c);
+      componentReference.setSourceWorkflowInstance(c.getCurrentWorkflowInstance());
+
+      componentReference.setTarget(componentRepository.findOne(reference.getLeft()));
+      componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(reference.getRight()));
+
+      componentReferenceRepository.save(componentReference);
+
+    }
+
+
+  }
+
+
+  public List<Pair<Long, Long>> extractReference(String content) {
+    try {
+      DOMParser parser = new DOMParser();
+      parser.parse(new InputSource(new StringReader(content)));
+
+      return XmlStreamSpec.with(new DOMSource(parser.getDocument())).stream()
+          .css("DIV[data-requirement-id]")
+          .map(c -> Pair.of(
+              Long.valueOf(c.getNode().getAttribute("data-requirement-id")),
+              Long.valueOf(c.getNode().getAttribute("data-workflow-instance-id"))))
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
 
-    if (fromRevision == null){
+    if (fromRevision == null) {
       List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getFilePath())));
 
       for (int i = 0; i < commits.size(); i++) {
-        if (commits.get(i).getId().name().equals(toRevision)){
-          if (i != 0){
-            fromRevision = commits.get(i-1).getId().name();
+        if (commits.get(i).getId().name().equals(toRevision)) {
+          if (i != 0) {
+            fromRevision = commits.get(i - 1).getId().name();
             break;
-          }else{
+          } else {
             return null;
           }
         }
       }
     }
-    return gitService.doDiff(component.getFilePath() , fromRevision, toRevision);
+    return gitService.doDiff(component.getFilePath(), fromRevision, toRevision);
   }
+
+
+  public List<ComponentReferenceDto> getComponentReferences(Long componentId){
+    Component component = findOne(componentId);
+
+    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId() , component.getCurrentWorkflowInstance().getId())
+    .stream()
+    .map(r -> newComponentReferenceDto()
+          .source(newBuilderFromComponent(component).build())
+          .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
+          .target(newBuilderFromComponent(r.getTarget()).build())
+          .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
+          .build()
+    ).collect(Collectors.toList());
+  }
+
+
+
 }

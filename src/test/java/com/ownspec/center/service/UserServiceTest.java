@@ -4,6 +4,7 @@ import com.ownspec.center.AbstractTest;
 import com.ownspec.center.dto.ImmutableUserDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 
 /**
@@ -25,7 +26,7 @@ public class UserServiceTest extends AbstractTest {
                                                .username("lyrold")
                                                .password("lyrold")
                                                .build();
-    String token = userService.login(userDto);
+    ResponseEntity token = userService.login(userDto);
 
 //    Assert.assertEquals("", token); todo
   }

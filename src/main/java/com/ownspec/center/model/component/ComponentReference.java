@@ -35,12 +35,13 @@ public class ComponentReference implements Persistable<Long>, Auditable<User> {
 
   @ManyToOne
   private Component source;
+  // A reference target a component in a specific workflow cycle
   @ManyToOne
   private WorkflowInstance sourceWorkflowInstance;
 
 
   @ManyToOne
-  private Component targetComponent;
+  private Component target;
   // A reference target a component in a specific workflow cycle
   @ManyToOne
   private WorkflowInstance targetWorkflowInstance;

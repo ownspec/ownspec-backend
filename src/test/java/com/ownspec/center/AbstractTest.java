@@ -4,6 +4,7 @@ package com.ownspec.center;
  * Created by nlabrot on 26/09/16.
  */
 
+import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
@@ -42,6 +43,9 @@ public abstract class AbstractTest {
 
   @Autowired
   protected WorkflowStatusRepository workflowStatusRepository;
+
+  @Autowired
+  protected ComponentReferenceRepository componentReferenceRepository;
 
   @Autowired
   protected GitService gitService;

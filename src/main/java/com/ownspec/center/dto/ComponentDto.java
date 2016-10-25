@@ -1,10 +1,13 @@
 package com.ownspec.center.dto;
 
+import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
+
 import javax.annotation.Nullable;
 
 import java.time.Instant;
 import java.util.List;
 
+import com.ownspec.center.model.component.Component;
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -55,4 +58,23 @@ public interface ComponentDto {
 
   @Nullable
   List<CommentDto> getComments();
+
+  @Nullable
+  List<ComponentReferenceDto> getComponentReferences();
+
+  static ImmutableComponentDto.Builder newBuilderFromComponent(Component c){
+    return newComponentDto()
+        .id(c.getId())
+        .projectId(c.getProject() != null ? c.getProject().getId() : null)
+        .title(c.getTitle())
+        .type(c.getType())
+        .currentStatus(StatusDto.createFromStatus(c.getCurrentWorkflowInstance().getCurrentStatus()))
+        .createdDate(c.getCreatedDate())
+        .createdUser(UserDto.createFromUser(c.getCreatedUser()));
+  }
+
+
+
+
+
 }

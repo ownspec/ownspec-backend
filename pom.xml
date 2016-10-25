@@ -213,6 +213,24 @@
             <version>1.2-NX4-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.staxmate</groupId>
+            <artifactId>staxmate</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.2</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.github.nithril</groupId>
+            <artifactId>xml-stream-css</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

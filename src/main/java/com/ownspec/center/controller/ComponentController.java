@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.ownspec.center.dto.StatusDto;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ImmutableComponentDto;
-import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
@@ -33,8 +31,6 @@ import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
-
-import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -51,10 +47,14 @@ public class ComponentController {
   @RequestMapping
   public List<ComponentDto> findAll(
       @RequestParam(value = "types", required = false) ComponentType[] types,
-      @RequestParam(value = "projectId", required = false) Long projectId
+      @RequestParam(value = "projectId", required = false) Long projectId,
+      @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
+      @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
+      @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
+      @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references
   ) {
     return componentService.findAll(projectId, types).stream()
-        .map(c -> toDto(c, true, false, false))
+        .map(c -> toDto(c, content, workflow, comments, references))
         .collect(Collectors.toList());
   }
 
@@ -62,10 +62,11 @@ public class ComponentController {
   public ComponentDto get(@PathVariable("id") Long id,
                           @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
                           @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
-                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments) {
+                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
+                          @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references) {
     Component c = componentService.findOne(id);
 
-    return toDto(c, content, workflow, comments);
+    return toDto(c, content, workflow, comments, references);
   }
 
 
@@ -85,9 +86,9 @@ public class ComponentController {
 
   @RequestMapping(value = "/{id}/workflow-statuses/{nextStatus}", method = RequestMethod.POST)
   @ResponseBody
-  public ComponentDto updatetWorkflowStatuses(@PathVariable("id") Long id, @PathVariable("nextStatus") Status nextStatus) {
+  public ComponentDto updateWorkflowStatuses(@PathVariable("id") Long id, @PathVariable("nextStatus") Status nextStatus) {
     Component c = componentService.updateStatus(id, nextStatus);
-    return toDto(c, true, true, true);
+    return toDto(c, true, true, true, true);
   }
 
   @RequestMapping(value = "/{id}/update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -107,7 +108,7 @@ public class ComponentController {
         componentService.updateContent(component, innerDraftComponents.get(component));
       }
     }*/
-    return toDto(component, true, true, true);
+    return toDto(component, true, true, true, true);
   }
 
   @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
@@ -127,7 +128,7 @@ public class ComponentController {
   @ResponseBody
   public ComponentDto addComment(@PathVariable("id") Long id, @RequestBody String comment) {
     componentService.addComment(id, comment);
-    return toDto(id, true, true, true);
+    return toDto(id, true, true, true, true);
   }
 
   @RequestMapping(value = "/{id}/revisions", method = RequestMethod.GET)
@@ -158,20 +159,13 @@ public class ComponentController {
     return null;
   }
 
-  private ComponentDto toDto(Long id, boolean content, boolean workflow, Boolean comments) {
-    return toDto(componentService.findOne(id), content, workflow, comments);
+  private ComponentDto toDto(Long id, boolean content, boolean workflow, boolean comments, boolean references) {
+    return toDto(componentService.findOne(id), content, workflow, comments, references);
   }
 
 
-  private ComponentDto toDto(Component c, boolean content, boolean workflow, Boolean comments) {
-    ImmutableComponentDto.Builder builder = newComponentDto()
-        .id(c.getId())
-        .projectId(c.getProject() != null ? c.getProject().getId() : null)
-        .title(c.getTitle())
-        .type(c.getType())
-        .currentStatus(StatusDto.createFromStatus(c.getCurrentWorkflowInstance().getCurrentStatus()))
-        .createdDate(c.getCreatedDate())
-        .createdUser(UserDto.createFromUser(c.getCreatedUser()));
+  private ComponentDto toDto(Component c, boolean content, boolean workflow, boolean comments, boolean references) {
+    ImmutableComponentDto.Builder builder = ComponentDto.newBuilderFromComponent(c);
 
     if (content) {
       builder.content(componentService.getContent(c));
@@ -185,6 +179,10 @@ public class ComponentController {
       builder.comments(componentService.getComments(c.getId()).stream()
           .map(CommentDto::createFromComment)
           .collect(Collectors.toList()));
+    }
+
+    if (references){
+      builder.componentReferences(componentService.getComponentReferences(c.getId()));
     }
 
     return builder.build();
