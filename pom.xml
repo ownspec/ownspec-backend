@@ -229,7 +229,7 @@
         <dependency>
             <groupId>com.github.nithril</groupId>
             <artifactId>xml-stream-css</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0-RC3</version>
         </dependency>
     </dependencies>
 
