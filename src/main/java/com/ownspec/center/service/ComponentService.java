@@ -11,7 +11,6 @@ import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.cyberneko.html.HTMLEntities.get;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;

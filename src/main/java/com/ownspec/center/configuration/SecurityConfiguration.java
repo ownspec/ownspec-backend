@@ -3,6 +3,7 @@ package com.ownspec.center.configuration;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,9 @@ import java.util.UUID;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+  @Value("${server.session.cookie.name}")
+  private String cookieName;
 
   @Autowired
   private UserDetailsService accountService;
@@ -72,7 +76,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //  @Bean
   public FilterRegistrationBean jwtFilter() {
     final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-    registrationBean.setFilter(new JwtFilter());
+    registrationBean.setFilter(new JwtFilter(cookieName, secretKey()));
     registrationBean.addUrlPatterns("/api/*");
 
     return registrationBean;

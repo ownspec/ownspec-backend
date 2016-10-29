@@ -2,8 +2,6 @@ package com.ownspec.center.configuration;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
@@ -25,34 +23,36 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class JwtFilter extends GenericFilterBean {
 
-  @Value("${server.session.cookie.name}")
   private String cookieName;
-
-  @Autowired
   private SecurityConfiguration.SecretKey secretKey;
+
+  public JwtFilter(String cookieName, SecurityConfiguration.SecretKey secretKey) {
+    this.cookieName = cookieName;
+    this.secretKey = secretKey;
+  }
 
   @Override
   public void doFilter(final ServletRequest req,
                        final ServletResponse res,
                        final FilterChain chain) throws IOException, ServletException {
     final HttpServletRequest request = (HttpServletRequest) req;
-    try {
-      //Get cookie
-      Cookie requestCookie = Arrays.stream(request.getCookies())
-                            .filter(cookie -> cookie.getName().equals(cookieName))
-                            .findFirst().get();
+    if (!request.getRequestURI().equals("/api/users/login")) {
+      try {
+        //Get cookie
+        Cookie requestCookie = Arrays.stream(request.getCookies())
+                                     .filter(cookie -> cookie.getName().equals(cookieName))
+                                     .findFirst().get();
 
-      //Check token
-      final Claims claims = Jwts.parser()
-                                .setSigningKey(secretKey.getValue())
-                                .parseClaimsJws(requestCookie.getValue())
-                                .getBody();
-      request.setAttribute("claims", claims);
-
-    } catch (Exception exception) {
-      throw new ServletException("Missing or invalid token");
+        //Check token
+        final Claims claims = Jwts.parser()
+                                  .setSigningKey(secretKey.getValue())
+                                  .parseClaimsJws(requestCookie.getValue())
+                                  .getBody();
+        req.setAttribute("claims", claims);
+      } catch (Exception exception) {
+        throw new ServletException("Missing or invalid token");
+      }
     }
-
     chain.doFilter(req, res);
   }
 }

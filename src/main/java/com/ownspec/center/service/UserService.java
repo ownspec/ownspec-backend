@@ -24,6 +24,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,12 +67,14 @@ public class UserService implements UserDetailsService {
   }
 
   public ResponseEntity login(UserDto source) {
+    LOG.info("Request login with username [{}]", source.getUsername());
     User target = userRepository.findByUsername(source.getUsername());
     if (target == null) {
       throw new UsernameNotFoundException("Unknown username");
     }
     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(source.getUsername(), source.getPassword());
     if (authenticationManager.authenticate(token).isAuthenticated()) {
+      LOG.info("Authentication succeed");
       String jwtToken = Jwts.builder()
                             .setSubject(target.getUsername())
                             .claim("company", target.getCompany())
@@ -78,17 +82,19 @@ public class UserService implements UserDetailsService {
                             .signWith(SignatureAlgorithm.HS256, secretKey.getValue())
                             .compact();
 
-      HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.add(cookieName, jwtToken);
+      LOG.info("Built token is [{}]", jwtToken);
 
+      HttpHeaders httpHeaders = new HttpHeaders();
+      httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", cookieName, jwtToken));
       return new ResponseEntity<String>(httpHeaders, HttpStatus.OK);
     } else {
+      LOG.warn("Authentication failed");
       return ResponseEntity.badRequest().build();
     }
   }
 
-  public void logOut(User user) {
-
+  public ResponseEntity logOut(Long id) {
+    return ResponseEntity.ok().build();
   }
 
   public User create(UserDto source) {
