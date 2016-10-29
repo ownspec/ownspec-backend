@@ -33,7 +33,7 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 public interface WorkflowStatusDto {
   Long getId();
 
-  Status getStatus();
+  StatusDto getStatus();
 
   @Nullable
   Instant getCreatedDate();
@@ -44,14 +44,14 @@ public interface WorkflowStatusDto {
   List<ChangeDto> getChanges();
 
 
-  static ImmutableWorkflowStatusDto.Builder newBuilderFromWorkflowStatus(WorkflowStatus user) {
+  static ImmutableWorkflowStatusDto.Builder newBuilderFromWorkflowStatus(WorkflowStatus workflowStatus) {
     ImmutableWorkflowStatusDto.Builder builder = ImmutableWorkflowStatusDto.newWorkflowStatusDto()
-        .id(user.getId())
-        .status(user.getStatus())
-        .createdDate(user.getCreatedDate());
+        .id(workflowStatus.getId())
+        .status(StatusDto.createFromStatus(workflowStatus.getStatus()))
+        .createdDate(workflowStatus.getCreatedDate());
 
-    if (user.getCreatedUser() != null) {
-      builder.createdUser(UserDto.createFromUser(user.getCreatedUser()));
+    if (workflowStatus.getCreatedUser() != null) {
+      builder.createdUser(UserDto.createFromUser(workflowStatus.getCreatedUser()));
     }
 
     return builder;
