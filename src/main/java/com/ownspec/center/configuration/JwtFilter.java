@@ -1,7 +1,11 @@
 package com.ownspec.center.configuration;
 
+import com.ownspec.center.model.user.User;
+import com.ownspec.center.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
@@ -25,10 +29,12 @@ public class JwtFilter extends GenericFilterBean {
 
   private String cookieName;
   private SecurityConfiguration.SecretKey secretKey;
+  private UserService userService;
 
-  public JwtFilter(String cookieName, SecurityConfiguration.SecretKey secretKey) {
+  public JwtFilter(String cookieName, SecurityConfiguration.SecretKey secretKey, UserService userService) {
     this.cookieName = cookieName;
     this.secretKey = secretKey;
+    this.userService = userService;
   }
 
   @Override
@@ -48,9 +54,14 @@ public class JwtFilter extends GenericFilterBean {
                                   .setSigningKey(secretKey.getValue())
                                   .parseClaimsJws(requestCookie.getValue())
                                   .getBody();
-        req.setAttribute("claims", claims);
+
+        User user = userService.loadUserByUsername(claims.getSubject());
+
+        SecurityContextHolder
+            .getContext()
+            .setAuthentication(new PreAuthenticatedAuthenticationToken(user, claims, user.getAuthorities()));
       } catch (Exception exception) {
-        throw new ServletException("Missing or invalid token");
+        throw new ServletException("Missing or invalid token", exception);
       }
     }
     chain.doFilter(req, res);

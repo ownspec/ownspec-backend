@@ -19,13 +19,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class UserService implements UserDetailsService {
-  @Value("${server.session.cookie.name}")
+  @Value("${jwt.cookie.name}")
   private String cookieName;
 
   @Autowired
@@ -73,8 +73,10 @@ public class UserService implements UserDetailsService {
       throw new UsernameNotFoundException("Unknown username");
     }
     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(source.getUsername(), source.getPassword());
-    if (authenticationManager.authenticate(token).isAuthenticated()) {
+    Authentication authentication = authenticationManager.authenticate(token);
+    if (authentication.isAuthenticated()) {
       LOG.info("Authentication succeed");
+      SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwtToken = Jwts.builder()
                             .setSubject(target.getUsername())
                             .claim("company", target.getCompany())
@@ -83,7 +85,6 @@ public class UserService implements UserDetailsService {
                             .compact();
 
       LOG.info("Built token is [{}]", jwtToken);
-
       HttpHeaders httpHeaders = new HttpHeaders();
       httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", cookieName, jwtToken));
       return new ResponseEntity<String>(httpHeaders, HttpStatus.OK);

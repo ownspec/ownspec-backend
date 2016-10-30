@@ -124,7 +124,7 @@ public class ComponentService {
   public Component create(ComponentDto source) {
     // TODO: 27/09/16 handle case if transaction fails
     Pair<File, String> pair = gitService.createAndCommit(
-        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), securityService.getAuthentifiedUser(), "");
+        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), securityService.getAuthenticatedUser(), "");
 
     Project project = null;
 
@@ -202,7 +202,7 @@ public class ComponentService {
       throw new RuntimeException("Cannot edit");
     }
 
-    String hash = gitService.updateAndCommit(new ByteArrayResource(content), component.getFilePath(), securityService.getAuthentifiedUser(), "");
+    String hash = gitService.updateAndCommit(new ByteArrayResource(content), component.getFilePath(), securityService.getAuthenticatedUser(), "");
 
     if (hash == null) {
       return component;
@@ -240,7 +240,7 @@ public class ComponentService {
 
   public void remove(Long id) {
     Component target = requireNonNull(componentRepository.findOne(id));
-    gitService.deleteAndCommit(target.getFilePath(), securityService.getAuthentifiedUser(), "");
+    gitService.deleteAndCommit(target.getFilePath(), securityService.getAuthenticatedUser(), "");
     componentRepository.delete(id);
   }
 
