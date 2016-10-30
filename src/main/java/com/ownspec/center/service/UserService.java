@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -86,7 +88,7 @@ public class UserService implements UserDetailsService {
 
       LOG.info("Built token is [{}]", jwtToken);
       HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", cookieName, jwtToken));
+      httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", cookieName, jwtToken) + "; path=/");
       return new ResponseEntity<String>(httpHeaders, HttpStatus.OK);
     } else {
       LOG.warn("Authentication failed");
@@ -94,8 +96,13 @@ public class UserService implements UserDetailsService {
     }
   }
 
-  public ResponseEntity logOut(Long id) {
-    return ResponseEntity.ok().build();
+  public HttpServletResponse logOut(HttpServletResponse response) {
+    LOG.info("Request logout");
+    Cookie cookie = new Cookie(cookieName, "");
+    cookie.setPath("/");
+    cookie.setMaxAge(0);
+    response.addCookie(cookie);
+    return response;
   }
 
   public User create(UserDto source) {

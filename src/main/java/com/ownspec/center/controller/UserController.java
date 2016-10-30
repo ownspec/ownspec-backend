@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by nlabrot on 29/09/16.
@@ -95,10 +96,9 @@ public class UserController {
     return userService.login(source);
   }
 
-  @PostMapping(value = "/{id}/logout")
-  @ResponseBody
-  public ResponseEntity logout(@PathVariable("id") Long id){
-    return userService.logOut(id);
+  @PostMapping(value = "/logout")
+  public HttpServletResponse logout(HttpServletResponse response){
+    return userService.logOut(response);
   }
 
 
