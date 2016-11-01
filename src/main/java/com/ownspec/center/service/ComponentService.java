@@ -5,6 +5,7 @@ import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
 import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.model.DistributionLevel.PUBLIC;
 import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
@@ -21,8 +22,10 @@ import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.Comment;
+import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
+import com.ownspec.center.model.Task;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
@@ -32,11 +35,13 @@ import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.CommentRepository;
 import com.ownspec.center.repository.ProjectRepository;
+import com.ownspec.center.repository.TaskRepository;
 import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.InputSource;
@@ -98,6 +104,12 @@ public class ComponentService {
 
   @Autowired
   private ProjectRepository projectRepository;
+
+  @Autowired
+  private EmailService emailService;
+
+  @Autowired
+  private TaskRepository taskRepository;
 
 
   public List<Component> findAll(Long projectId, ComponentType[] types) {
@@ -295,10 +307,10 @@ public class ComponentService {
             User commiter = userRepository.findByUsername(revCommit.getAuthorIdent().getName());
 
             changeDtos.add(newChangeDto()
-                .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
-                .revision(revCommit.name())
-                .user(UserDto.createFromUser(commiter))
-                .build());
+                               .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
+                               .revision(revCommit.name())
+                               .user(UserDto.createFromUser(commiter))
+                               .build());
 
             if (revCommit.name().equals(workflowStatus.getLastGitReference())) {
               commitIndex++;
@@ -309,14 +321,14 @@ public class ComponentService {
         }
 
         workflowStatusDtos.add(newBuilderFromWorkflowStatus(workflowStatus)
-            .changes(changeDtos)
-            .build());
+                                   .changes(changeDtos)
+                                   .build());
 
 
       }
       workflowInstanceDtos.add(workflowInstanceDto
-          .workflowStatuses(workflowStatusDtos)
-          .build());
+                                   .workflowStatuses(workflowStatusDtos)
+                                   .build());
     }
 
     return workflowInstanceDtos;
@@ -332,7 +344,7 @@ public class ComponentService {
   public void extractAndCreateReference(Component c, byte[] contentAsByteArray) {
 
     Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(c.getId(),
-        c.getCurrentWorkflowInstance().getId());
+                                                                                               c.getCurrentWorkflowInstance().getId());
 
     List<Pair<Long, Long>> references = extractReference(new String(contentAsByteArray));
 
@@ -361,11 +373,11 @@ public class ComponentService {
       parser.parse(new InputSource(new StringReader(content)));
 
       return XmlStreamSpec.with(new DOMSource(parser.getDocument())).stream()
-          .css("DIV[data-requirement-id]")
-          .map(c -> Pair.of(
-              Long.valueOf(c.getNode().getAttribute("data-requirement-id")),
-              Long.valueOf(c.getNode().getAttribute("data-workflow-instance-id"))))
-          .collect(Collectors.toList());
+                          .css("DIV[data-requirement-id]")
+                          .map(c -> Pair.of(
+                              Long.valueOf(c.getNode().getAttribute("data-requirement-id")),
+                              Long.valueOf(c.getNode().getAttribute("data-workflow-instance-id"))))
+                          .collect(Collectors.toList());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -393,20 +405,96 @@ public class ComponentService {
   }
 
 
-  public List<ComponentReferenceDto> getComponentReferences(Long componentId){
+  public List<ComponentReferenceDto> getComponentReferences(Long componentId) {
     Component component = findOne(componentId);
 
-    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId() , component.getCurrentWorkflowInstance().getId())
-    .stream()
-    .map(r -> newComponentReferenceDto()
-          .source(newBuilderFromComponent(component).build())
-          .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
-          .target(newBuilderFromComponent(r.getTarget()).build())
-          .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
-          .build()
-    ).collect(Collectors.toList());
+    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId(), component.getCurrentWorkflowInstance().getId())
+                                       .stream()
+                                       .map(r -> newComponentReferenceDto()
+                                                .source(newBuilderFromComponent(component).build())
+                                                .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
+                                                .target(newBuilderFromComponent(r.getTarget()).build())
+                                                .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
+                                                .build()
+                                           ).collect(Collectors.toList());
   }
 
+  public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {
+    Component component = findOne(componentId);
+    User requester = securityService.getAuthenticatedUser();
+    User assignedUser = userRepository.findOne(userId);
 
+    // Check distribution level regarding user, if grantUserAccess option is not ticked
+    if (!PUBLIC.equals(component.getDistributionLevel())) {
+      if (autoGrantUserAccess) {
+        grantUserAccess(component, requester, assignedUser);
+      } else {
+        checkDistributionLevel(component, requester, assignedUser);
+      }
+    }
 
+    // Update and assign component to user
+    WorkflowInstance currentWorkflowInstance = component.getCurrentWorkflowInstance();
+    currentWorkflowInstance.setCurrentStatus(editable ? Status.OPEN : Status.IN_VALIDATION); //todo does make it sense?
+    component.setCurrentWorkflowInstance(currentWorkflowInstance);
+    component.setEditable(editable);
+    component.setAssignedTo(assignedUser);
+
+    // Notify user
+    AbstractMimeMessage message = AbstractMimeMessage.builder()
+                                                     .addRecipient(assignedUser.getEmail())
+                                                     .addRecipientCc(requester.getEmail())
+                                                     .subject(component.getType() + "-" + component.getId() + " has been assigned to you")
+                                                     .body("Click on the following link..."); //todo create body
+    emailService.send(message);
+
+    //Create new task for assigned user
+    Task task = new Task();
+    task.setOwner(assignedUser);
+
+    // Track and save change
+    componentRepository.save(component);
+    userRepository.save(assignedUser);
+    taskRepository.save(task);
+
+    return ResponseEntity.ok().build();
+  }
+
+  private void checkDistributionLevel(Component component, User requester, User assignedUser) {
+    DistributionLevel componentDistributionLevel = component.getDistributionLevel();
+    switch (componentDistributionLevel) {
+      case INTERNAL:
+        break;
+
+      case RESTRICTED:
+        break;
+
+      case SECRET:
+        break;
+    }
+  }
+
+  private String grantUserAccess(Component component, User requester, User user) {
+    DistributionLevel componentDistributionLevel = component.getDistributionLevel();
+
+    switch (componentDistributionLevel) {
+      case INTERNAL:
+        // Check user company or role in case of admin
+        break;
+
+      case RESTRICTED:
+        break;
+
+      case SECRET:
+        if (!"admin".equals(requester.getRole())) {
+          // Request admin granted access for user
+          return "A SECRET EMPOWERMENT request, for user [" + user.getUsername() + "] has been to your admin";
+
+        } else {
+          return "Success";
+        }
+    }
+
+    return "";
+  }
 }

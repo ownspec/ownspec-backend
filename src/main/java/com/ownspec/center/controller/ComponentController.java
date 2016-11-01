@@ -29,7 +29,6 @@ import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
-import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
 
 /**
@@ -41,9 +40,6 @@ public class ComponentController {
   @Autowired
   private ComponentService componentService;
 
-  @Autowired
-  private WorkflowStatusRepository workflowStatusRepository;
-
   @RequestMapping
   public List<ComponentDto> findAll(
       @RequestParam(value = "types", required = false) ComponentType[] types,
@@ -52,10 +48,10 @@ public class ComponentController {
       @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
       @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
       @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references
-  ) {
+                                   ) {
     return componentService.findAll(projectId, types).stream()
-        .map(c -> toDto(c, content, workflow, comments, references))
-        .collect(Collectors.toList());
+                           .map(c -> toDto(c, content, workflow, comments, references))
+                           .collect(Collectors.toList());
   }
 
   @RequestMapping("/{id}")
@@ -144,8 +140,6 @@ public class ComponentController {
     return componentService.diff(id, fromRevision, toRevision);
   }
 
-
-
   @PostMapping(value = "/import")
   @ResponseBody
   public ResponseEntity importFrom(@RequestBody Object source) {
@@ -158,6 +152,18 @@ public class ComponentController {
   public ResponseEntity export(@RequestBody Long id) {
     return null;
   }
+
+
+  @PostMapping(value = "/{id}/assign/{userId}")
+  @ResponseBody
+  public ResponseEntity assignTo(
+      @PathVariable("id") Long id,
+      @PathVariable("userId") Long userId,
+      @RequestParam(value = "autoGrantUserAccess", defaultValue = "false", required = false) boolean autoGrantUserAccess,
+      @RequestParam(value = "editable", defaultValue = "false", required = false) boolean editable) {
+    return componentService.assignTo(id, userId, autoGrantUserAccess, editable);
+  }
+
 
   private ComponentDto toDto(Long id, boolean content, boolean workflow, boolean comments, boolean references) {
     return toDto(componentService.findOne(id), content, workflow, comments, references);
@@ -177,11 +183,11 @@ public class ComponentController {
 
     if (comments) {
       builder.comments(componentService.getComments(c.getId()).stream()
-          .map(CommentDto::createFromComment)
-          .collect(Collectors.toList()));
+                                       .map(CommentDto::createFromComment)
+                                       .collect(Collectors.toList()));
     }
 
-    if (references){
+    if (references) {
       builder.componentReferences(componentService.getComponentReferences(c.getId()));
     }
 

@@ -1,11 +1,11 @@
 package com.ownspec.center.model.component;
 
+import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Quantifiable;
 import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserCategory;
-import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
@@ -14,10 +14,18 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -52,10 +60,6 @@ public class Component implements Auditable<User>, Persistable<Long> {
 
   @Column(columnDefinition = "boolean default true")
   protected boolean editable;
-  @Column(columnDefinition = "boolean default false")
-  protected boolean secret;
-  @Column(columnDefinition = "boolean default false")
-  protected boolean confidential;
   @CreatedDate
   protected Instant createdDate;
   @ManyToOne
@@ -69,6 +73,12 @@ public class Component implements Auditable<User>, Persistable<Long> {
 
   @Column(columnDefinition = "boolean default false")
   protected boolean requiredTest;
+
+  @ManyToOne
+  protected User assignedTo;
+
+  @Enumerated(EnumType.STRING)
+  protected DistributionLevel distributionLevel;
 
   @Override
   @Transient

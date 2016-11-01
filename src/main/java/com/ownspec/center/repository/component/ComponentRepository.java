@@ -1,10 +1,7 @@
 package com.ownspec.center.repository.component;
 
-import java.util.List;
-
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 
