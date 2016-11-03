@@ -5,13 +5,13 @@ import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
 import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.model.DistributionLevel.PUBLIC;
 import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.cyberneko.html.HTMLEntities.get;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
@@ -22,8 +22,10 @@ import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.Comment;
+import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
+import com.ownspec.center.model.Task;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
@@ -33,11 +35,13 @@ import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.CommentRepository;
 import com.ownspec.center.repository.ProjectRepository;
+import com.ownspec.center.repository.TaskRepository;
 import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +57,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +109,12 @@ public class ComponentService {
   @Autowired
   private ProjectRepository projectRepository;
 
+  @Autowired
+  private EmailService emailService;
+
+  @Autowired
+  private TaskRepository taskRepository;
+
 
   public List<Component> findAll(Long projectId, ComponentType[] types) {
 
@@ -129,7 +140,7 @@ public class ComponentService {
   public Component create(ComponentDto source) {
     // TODO: 27/09/16 handle case if transaction fails
     Pair<File, String> pair = gitService.createAndCommit(
-        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), securityService.getAuthentifiedUser(), "");
+        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), securityService.getAuthenticatedUser(), "");
 
     Project project = null;
 
@@ -222,7 +233,7 @@ public class ComponentService {
 
   public void remove(Long id) {
     Component target = requireNonNull(componentRepository.findOne(id));
-    gitService.deleteAndCommit(target.getFilePath(), securityService.getAuthentifiedUser(), "");
+    gitService.deleteAndCommit(target.getFilePath(), securityService.getAuthenticatedUser(), "");
     componentRepository.delete(id);
   }
 
@@ -277,10 +288,10 @@ public class ComponentService {
             User commiter = userRepository.findByUsername(revCommit.getAuthorIdent().getName());
 
             changeDtos.add(newChangeDto()
-                .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
-                .revision(revCommit.name())
-                .user(UserDto.createFromUser(commiter))
-                .build());
+                               .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
+                               .revision(revCommit.name())
+                               .user(UserDto.createFromUser(commiter))
+                               .build());
 
             if (revCommit.name().equals(workflowStatus.getLastGitReference())) {
               commitIndex++;
@@ -291,14 +302,14 @@ public class ComponentService {
         }
 
         workflowStatusDtos.add(newBuilderFromWorkflowStatus(workflowStatus)
-            .changes(changeDtos)
-            .build());
+                                   .changes(changeDtos)
+                                   .build());
 
 
       }
       workflowInstanceDtos.add(workflowInstanceDto
-          .workflowStatuses(workflowStatusDtos)
-          .build());
+                                   .workflowStatuses(workflowStatusDtos)
+                                   .build());
     }
 
     return workflowInstanceDtos;
@@ -309,7 +320,6 @@ public class ComponentService {
     //todo
     return null;
   }
-
 
 
 
@@ -450,7 +460,6 @@ public class ComponentService {
     }
   }
 
-
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
 
@@ -486,5 +495,82 @@ public class ComponentService {
         ).collect(Collectors.toList());
   }
 
+  public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {
+    Component component = findOne(componentId);
+    User requester = securityService.getAuthenticatedUser();
+    User assignedUser = userRepository.findOne(userId);
 
+    // Check distribution level regarding user, if grantUserAccess option is not ticked
+    if (!PUBLIC.equals(component.getDistributionLevel())) {
+      if (autoGrantUserAccess) {
+        grantUserAccess(component, requester, assignedUser);
+      } else {
+        checkDistributionLevel(component, requester, assignedUser);
+      }
+    }
+
+    // Update and assign component to user
+    WorkflowInstance currentWorkflowInstance = component.getCurrentWorkflowInstance();
+    currentWorkflowInstance.setCurrentStatus(editable ? Status.OPEN : Status.IN_VALIDATION); //todo does make it sense?
+    component.setCurrentWorkflowInstance(currentWorkflowInstance);
+    component.setEditable(editable);
+    component.setAssignedTo(assignedUser);
+
+    // Notify user
+    AbstractMimeMessage message = AbstractMimeMessage.builder()
+                                                     .addRecipient(assignedUser.getEmail())
+                                                     .addRecipientCc(requester.getEmail())
+                                                     .subject(component.getType() + "-" + component.getId() + " has been assigned to you")
+                                                     .body("Click on the following link..."); //todo create body
+    emailService.send(message);
+
+    //Create new task for assigned user
+    Task task = new Task();
+    task.setOwner(assignedUser);
+
+    // Track and save change
+    componentRepository.save(component);
+    userRepository.save(assignedUser);
+    taskRepository.save(task);
+
+    return ResponseEntity.ok().build();
+  }
+
+  private void checkDistributionLevel(Component component, User requester, User assignedUser) {
+    DistributionLevel componentDistributionLevel = component.getDistributionLevel();
+    switch (componentDistributionLevel) {
+      case INTERNAL:
+        break;
+
+      case RESTRICTED:
+        break;
+
+      case SECRET:
+        break;
+    }
+  }
+
+  private String grantUserAccess(Component component, User requester, User user) {
+    DistributionLevel componentDistributionLevel = component.getDistributionLevel();
+
+    switch (componentDistributionLevel) {
+      case INTERNAL:
+        // Check user company or role in case of admin
+        break;
+
+      case RESTRICTED:
+        break;
+
+      case SECRET:
+        if (!"admin".equals(requester.getRole())) {
+          // Request admin granted access for user
+          return "A SECRET EMPOWERMENT request, for user [" + user.getUsername() + "] has been to your admin";
+
+        } else {
+          return "Success";
+        }
+    }
+
+    return "";
+  }
 }

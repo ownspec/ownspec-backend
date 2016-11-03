@@ -1,9 +1,8 @@
 package com.ownspec.center.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.ownspec.center.model.user.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by nlabrot on 02/10/16.
@@ -11,11 +10,7 @@ import com.ownspec.center.model.user.User;
 @Service
 public class SecurityService {
 
-  @Autowired
-  private User user;
-
-
-  public User getAuthentifiedUser() {
-    return user;
+  public User getAuthenticatedUser() {
+    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
   }
 }

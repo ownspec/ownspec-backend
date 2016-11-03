@@ -2,7 +2,6 @@ package com.ownspec.center.configuration;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.SecurityService;
 import org.apache.commons.lang.LocaleUtils;
 import org.eclipse.jgit.api.Git;
@@ -52,14 +51,14 @@ public class OsCenterConfiguration {
 
   @Bean
   public AuditorAware auditorAware() {
-    return () -> securityService.getAuthentifiedUser();
+    return () -> securityService.getAuthenticatedUser();
   }
 
 
   public ResourceBundle translation() {
     return ResourceBundle.getBundle(
         "translation",
-        LocaleUtils.toLocale(securityService.getAuthentifiedUser().getPreference().getLanguage())
+        LocaleUtils.toLocale(securityService.getAuthenticatedUser().getPreference().getLanguage())
     );
   }
 

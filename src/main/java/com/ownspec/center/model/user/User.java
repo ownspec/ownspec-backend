@@ -66,6 +66,8 @@ public class User implements UserDetails, Auditable<User> {
   private boolean accountNonLocked;
   @Column(columnDefinition = "boolean default true")
   private boolean credentialsNonExpired;
+  @Column(columnDefinition = "boolean default false")
+  private boolean empoweredSecret;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

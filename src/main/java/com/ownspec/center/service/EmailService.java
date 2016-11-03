@@ -1,7 +1,6 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.exception.EmailServiceException;
-import com.ownspec.center.model.Task;
 import com.ownspec.center.util.AbstractMimeMessage;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.nlab.smtp.pool.SmtpConnectionPool;
@@ -13,7 +12,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.mail.MessagingException;
@@ -57,7 +55,6 @@ public class EmailService {
   public void destroy(){
     smtpConnectionPool.close();
   }
-
 
   public void send(AbstractMimeMessage abstractMimeMessage) {
     boolean messageIsValid = validate(abstractMimeMessage);
@@ -104,7 +101,4 @@ public class EmailService {
     return mimeMessage;
   }
 
-  public void sendNewTaskNotification(Task task) {
-
-  }
 }

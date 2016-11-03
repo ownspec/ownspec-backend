@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -34,7 +38,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class UserService implements UserDetailsService {
-  @Value("${server.session.cookie.name}")
+  @Value("${jwt.cookie.name}")
   private String cookieName;
 
   @Autowired
@@ -65,12 +69,16 @@ public class UserService implements UserDetailsService {
   }
 
   public ResponseEntity login(UserDto source) {
+    LOG.info("Request login with username [{}]", source.getUsername());
     User target = userRepository.findByUsername(source.getUsername());
     if (target == null) {
       throw new UsernameNotFoundException("Unknown username");
     }
     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(source.getUsername(), source.getPassword());
-    if (authenticationManager.authenticate(token).isAuthenticated()) {
+    Authentication authentication = authenticationManager.authenticate(token);
+    if (authentication.isAuthenticated()) {
+      LOG.info("Authentication succeed");
+      SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwtToken = Jwts.builder()
                             .setSubject(target.getUsername())
                             .claim("company", target.getCompany())
@@ -78,17 +86,23 @@ public class UserService implements UserDetailsService {
                             .signWith(SignatureAlgorithm.HS256, secretKey.getValue())
                             .compact();
 
+      LOG.info("Built token is [{}]", jwtToken);
       HttpHeaders httpHeaders = new HttpHeaders();
-      httpHeaders.add(cookieName, jwtToken);
-
+      httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", cookieName, jwtToken) + "; path=/");
       return new ResponseEntity<String>(httpHeaders, HttpStatus.OK);
     } else {
+      LOG.warn("Authentication failed");
       return ResponseEntity.badRequest().build();
     }
   }
 
-  public void logOut(User user) {
-
+  public HttpServletResponse logOut(HttpServletResponse response) {
+    LOG.info("Request logout");
+    Cookie cookie = new Cookie(cookieName, "");
+    cookie.setPath("/");
+    cookie.setMaxAge(0);
+    response.addCookie(cookie);
+    return response;
   }
 
   public User create(UserDto source) {

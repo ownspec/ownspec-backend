@@ -8,10 +8,9 @@ import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.UserService;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,21 +23,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by nlabrot on 29/09/16.
  */
 @RestController
 @RequestMapping(value = "/api/users")
-@Slf4j
 public class UserController {
 
   @Autowired
   private UserService userService;
 
-  @Autowired
-  private User currentUser;
 
   @RequestMapping
   @ResponseBody
@@ -48,15 +44,14 @@ public class UserController {
 
   @GetMapping(value = "/me")
   @ResponseBody
-  public UserDto me() {
-    return UserDto.createFromUser(currentUser);
+  public UserDto me(@AuthenticationPrincipal User user) {
+    return UserDto.createFromUser(user);
   }
 
-  @GetMapping(value = "/me/profil")
+  @GetMapping(value = "/me/profile")
   @ResponseBody
-  public ResponseEntity profile() {
-    //todo : que voulais-tu faire ici ?
-    UserDto userDto = UserDto.createFromUser(userService.loadUserByUsername("admin"));
+  public ResponseEntity profile(@AuthenticationPrincipal User user) {
+    UserDto userDto = UserDto.createFromUser(user);
 
     ImmutableMap.Builder<Object, Object> propertiesBuilder = ImmutableMap.builder();
     propertiesBuilder.put("statuses", Arrays.stream(Status.values()).map(StatusDto::createFromStatus).collect(toList()));
@@ -98,8 +93,12 @@ public class UserController {
   @PostMapping(value = "/login")
   @ResponseBody
   public ResponseEntity login(@RequestBody UserDto source) {
-    LOG.info("Request login with username [{}]", source.getUsername());
     return userService.login(source);
+  }
+
+  @PostMapping(value = "/logout")
+  public HttpServletResponse logout(HttpServletResponse response){
+    return userService.logOut(response);
   }
 
 
