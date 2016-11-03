@@ -420,7 +420,7 @@ public class ComponentService {
 
       // Update content
       String content = parent.html();
-      String hash = gitService.updateAndCommit(new ByteArrayResource(content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthentifiedUser(), "");
+      String hash = gitService.updateAndCommit(new ByteArrayResource(content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthenticatedUser(), "");
       if (hash == null) {
         return;
       }

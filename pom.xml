@@ -203,7 +203,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.9.2</version>
+            <version>1.10.1</version>
         </dependency>
 
 
@@ -232,11 +232,6 @@
             <version>1.0.0-RC3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.10.1</version>
-        </dependency>
     </dependencies>
 
     <build>
