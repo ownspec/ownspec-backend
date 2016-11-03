@@ -44,26 +44,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
-import org.cyberneko.html.parsers.DOMParser;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.nlab.xml.stream.XmlStreamSpec;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.xml.transform.dom.DOMSource;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -72,6 +73,9 @@ import javax.xml.transform.dom.DOMSource;
 @Transactional
 @Slf4j
 public class ComponentService {
+
+  @Value("${component.content.summary-length:80}")
+  private int summaryLength;
 
   @Autowired
   private GitService gitService;
@@ -196,30 +200,7 @@ public class ComponentService {
   }
 
   public Component updateContent(Component component, byte[] content) {
-    WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId());
 
-    if (!workflowStatus.getStatus().isEditable()) {
-      // TODO: 28/09/16 better exception
-      throw new RuntimeException("Cannot edit");
-    }
-
-    String hash = gitService.updateAndCommit(new ByteArrayResource(content), component.getFilePath(), securityService.getAuthentifiedUser(), "");
-
-    if (hash == null) {
-      return component;
-    }
-
-    if (workflowStatus.getFirstGitReference() == null) {
-      workflowStatus.setFirstGitReference(hash);
-      workflowStatus.setLastGitReference(hash);
-    } else {
-      workflowStatus.setLastGitReference(hash);
-    }
-
-    workflowStatusRepository.save(workflowStatus);
-
-    component.getCurrentWorkflowInstance().setCurrentGitReference(hash);
-    componentRepository.save(component);
 
     extractAndCreateReference(component, content);
 
@@ -330,43 +311,140 @@ public class ComponentService {
   }
 
 
-  public void extractAndCreateReference(Component c, byte[] contentAsByteArray) {
 
-    Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(c.getId(),
-        c.getCurrentWorkflowInstance().getId());
 
-    List<Pair<Long, Long>> references = extractReference(new String(contentAsByteArray));
+  public Pair<String, String> generateContent(Component c){
 
-    LOG.debug("Deleted {}", deletedRef);
+    String content = getContent(c);
 
-    for (Pair<Long, Long> reference : references) {
-      ComponentReference componentReference = new ComponentReference();
+    Document document = Jsoup.parse(content);
 
-      componentReference.setSource(c);
-      componentReference.setSourceWorkflowInstance(c.getCurrentWorkflowInstance());
+    Element body = document.getElementsByTag("body").first();
 
-      componentReference.setTarget(componentRepository.findOne(reference.getLeft()));
-      componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(reference.getRight()));
+    generateContent(c, document, body);
 
-      componentReferenceRepository.save(componentReference);
+    String substring = body.text().replaceAll("(?<=.{"+summaryLength+"})\\b.*", "...");
 
+    return Pair.of(body.html() , substring);
+  }
+
+  private void generateContent(Component c, Document doc, Element parent) {
+
+
+    Deque<Element> stack = new LinkedList<>(parent.children());
+
+    while (!stack.isEmpty()) {
+      Element element = stack.pop();
+
+      if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
+        Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
+        Component nestedComponent = componentRepository.findOne(targetComponentId);
+
+        Document nestedDocument = Jsoup.parse(getContent(nestedComponent));
+        Element nestedBody = nestedDocument.getElementsByTag("body").first();
+
+        // Create title tag
+        element.appendChild(doc.createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+
+        // Extract reference from the nested reference content (second children, first children is the title)
+        generateContent(nestedComponent, nestedDocument, nestedBody);
+
+        //Create content tag
+        Element nestedContent = doc.createElement("div").addClass("requirements-content");
+        new ArrayList<>(nestedBody.childNodes()).forEach(nestedContent::appendChild);
+        element.appendChild(nestedContent);
+
+      } else {
+        stack.addAll(element.children());
+      }
     }
-
 
   }
 
 
-  public List<Pair<Long, Long>> extractReference(String content) {
-    try {
-      DOMParser parser = new DOMParser();
-      parser.parse(new InputSource(new StringReader(content)));
+  public void extractAndCreateReference(Component c, byte[] contentAsByteArray) {
+    extractReference(c, new String(contentAsByteArray));
+  }
 
-      return XmlStreamSpec.with(new DOMSource(parser.getDocument())).stream()
-          .css("DIV[data-requirement-id]")
-          .map(c -> Pair.of(
-              Long.valueOf(c.getNode().getAttribute("data-requirement-id")),
-              Long.valueOf(c.getNode().getAttribute("data-workflow-instance-id"))))
-          .collect(Collectors.toList());
+
+  public void extractReference(Component component, String content) {
+    try {
+      Document document = Jsoup.parse(content);
+
+      extractReference(component, document, document.getElementsByTag("body").first());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
+  public void extractReference(Component component, Document document, Element parent) {
+    try {
+      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId());
+
+      if (!workflowStatus.getStatus().isEditable()) {
+        LOG.info("Component [{}] is not editable", component);
+        return;
+      }
+
+
+      List<Pair<Long, Long>> references = new ArrayList<>();
+
+      Deque<Element> stack = new LinkedList<>(parent.children());
+
+      while (!stack.isEmpty()) {
+        Element element = stack.pop();
+
+        if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
+          Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
+          references.add(Pair.of(targetComponentId, Long.valueOf(element.attr("data-workflow-instance-id"))));
+          Component nestedComponent = componentRepository.findOne(targetComponentId);
+          // extract reference from the nested reference content (second children, first children is the title)
+          extractReference(nestedComponent, document, element.children().get(1));
+          // remove all the childrens to keep only the reference
+          element.empty();
+        } else {
+          stack.addAll(element.children());
+        }
+      }
+
+      // Update content
+      String content = parent.html();
+      String hash = gitService.updateAndCommit(new ByteArrayResource(content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthentifiedUser(), "");
+      if (hash == null) {
+        return;
+      }
+
+      if (workflowStatus.getFirstGitReference() == null) {
+        workflowStatus.setFirstGitReference(hash);
+        workflowStatus.setLastGitReference(hash);
+      } else {
+        workflowStatus.setLastGitReference(hash);
+      }
+
+      workflowStatusRepository.save(workflowStatus);
+
+      component.getCurrentWorkflowInstance().setCurrentGitReference(hash);
+      componentRepository.save(component);
+
+
+      // Delete old refs
+      Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(),
+          component.getCurrentWorkflowInstance().getId());
+
+      // Save the new references
+      for (Pair<Long, Long> reference : references) {
+        ComponentReference componentReference = new ComponentReference();
+        componentReference.setSource(component);
+        componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
+        componentReference.setTarget(componentRepository.findOne(reference.getLeft()));
+        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(reference.getRight()));
+        componentReferenceRepository.save(componentReference);
+      }
+
+      LOG.info("Component [{}], Deleted [{}], Created [{}]", component, deletedRef, references.size());
+
+
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -394,20 +472,19 @@ public class ComponentService {
   }
 
 
-  public List<ComponentReferenceDto> getComponentReferences(Long componentId){
+  public List<ComponentReferenceDto> getComponentReferences(Long componentId) {
     Component component = findOne(componentId);
 
-    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId() , component.getCurrentWorkflowInstance().getId())
-    .stream()
-    .map(r -> newComponentReferenceDto()
-          .source(newBuilderFromComponent(component).build())
-          .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
-          .target(newBuilderFromComponent(r.getTarget()).build())
-          .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
-          .build()
-    ).collect(Collectors.toList());
+    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId(), component.getCurrentWorkflowInstance().getId())
+        .stream()
+        .map(r -> newComponentReferenceDto()
+            .source(newBuilderFromComponent(component).build())
+            .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
+            .target(newBuilderFromComponent(r.getTarget()).build())
+            .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
+            .build()
+        ).collect(Collectors.toList());
   }
-
 
 
 }

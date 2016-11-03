@@ -76,4 +76,14 @@ public class Component implements Auditable<User>, Persistable<Long> {
     return null == getId();
   }
 
+
+  @Override
+  public String toString() {
+    return "Component{" +
+        "id=" + id +
+        ", title='" + title + '\'' +
+        ", filePath='" + filePath + '\'' +
+        ", type=" + type +
+        '}';
+  }
 }

@@ -51,6 +51,9 @@ public interface ComponentDto {
   String getContent();
 
   @Nullable
+  String getSummary();
+
+  @Nullable
   StatusDto getCurrentStatus();
 
   @Nullable
