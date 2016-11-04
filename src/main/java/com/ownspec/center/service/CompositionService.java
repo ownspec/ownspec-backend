@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 /**
@@ -41,6 +43,8 @@ public class CompositionService {
 
   @PostConstruct
   public void init() throws IOException {
+    Files.createDirectories(Paths.get(componentLoaderPath));
+
     TemplateLoader[] loaders = new TemplateLoader[]{
         new FileTemplateLoader(new ClassPathResource(resourceLoaderPath).getFile()),
         new FileTemplateLoader(new File(componentLoaderPath))

@@ -4,6 +4,8 @@ package com.ownspec.center;
  * Created by nlabrot on 26/09/16.
  */
 
+import com.ownspec.center.model.user.User;
+import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
@@ -16,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.intercept.RunAsUserToken;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -53,9 +58,15 @@ public abstract class AbstractTest {
   @PersistenceContext
   protected EntityManager entityManager;
 
+  @Autowired
+  private UserRepository userRepository;
+
+
   @Before
   public void init() throws IOException {
     FileUtils.forceMkdir(new File(outputDirectory));
+    SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(userRepository.findOne(0l) , ""));
   }
+
 
 }

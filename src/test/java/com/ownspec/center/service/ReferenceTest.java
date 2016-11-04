@@ -47,24 +47,24 @@ public class ReferenceTest extends AbstractTest {
         .replace("$COMPWFID3$", component3.getCurrentWorkflowInstance().getId().toString());
 
 
-    componentService.extractReference(component0, content);
+    componentService.updateContent(component0, content.getBytes(UTF_8));
 
 
     Assert.assertEquals("<p>test1</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\"" + component1.getId() + "\" data-workflow-instance-id=\"" + component1.getCurrentWorkflowInstance().getId() + "\"></div> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getContent(component0));
+        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component0));
     Assert.assertEquals("<p>ddddddddddddddddddd</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\"" + component2.getId() + "\" data-workflow-instance-id=\"" + component2.getCurrentWorkflowInstance().getId() + "\"></div> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getContent(component1));
+        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component1));
     Assert.assertEquals("<p>ddddddddddddddddddd</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\""+component3.getId()+"\" data-workflow-instance-id=\""+component3.getCurrentWorkflowInstance().getId()+"\"></div> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getContent(component2));
-    Assert.assertEquals("<p>test1</p>", componentService.getContent(component3));
+        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component2));
+    Assert.assertEquals("<p>test1</p>", componentService.getRawContent(component3));
 
 
     // Update component 3 status
@@ -84,10 +84,10 @@ public class ReferenceTest extends AbstractTest {
     // Check component 2 content is updated
     Assert.assertEquals("<p>modified</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\""+component3.getId()+"\" data-workflow-instance-id=\""+component3.getCurrentWorkflowInstance().getId()+"\"></div> \n" +
-        "<p>modified</p>", componentService.getContent(component2));
+        "<p>modified</p>", componentService.getRawContent(component2));
 
     // But not component 3 as it is IN_VALIDATION
-    Assert.assertEquals("<p>test1</p>", componentService.getContent(component3));
+    Assert.assertEquals("<p>test1</p>", componentService.getRawContent(component3));
 
 
     String expected = IOUtils.toString(new ClassPathResource("/reference/expected_content.html").getInputStream(), UTF_8);

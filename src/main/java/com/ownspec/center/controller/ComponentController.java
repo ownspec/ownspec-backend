@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -173,9 +174,14 @@ public class ComponentController {
   private ComponentDto toDto(Component c, boolean content, boolean workflow, boolean comments, boolean references) {
     ImmutableComponentDto.Builder builder = ComponentDto.newBuilderFromComponent(c);
 
+    Pair<String, String> contentPair = componentService.generateContent(c);
+
     if (content) {
-      builder.content(componentService.getContent(c));
+      builder.content(contentPair.getLeft());
     }
+
+    builder.summary(contentPair.getRight());
+
 
     if (workflow) {
       builder.workflowInstances(componentService.getWorkflowStatuses(c.getId()));

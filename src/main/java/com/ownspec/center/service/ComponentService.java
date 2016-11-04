@@ -27,7 +27,6 @@ import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.Task;
 import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
@@ -41,6 +40,7 @@ import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
@@ -49,11 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -65,8 +61,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,8 +73,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ComponentService {
 
-  @Value("${component.content.summary-length:80}")
-  private int summaryLength;
 
   @Autowired
   private GitService gitService;
@@ -115,6 +107,8 @@ public class ComponentService {
   @Autowired
   private TaskRepository taskRepository;
 
+  @Autowired
+  private ContentConfiguration contentConfiguration;
 
   public List<Component> findAll(Long projectId, ComponentType[] types) {
 
@@ -211,14 +205,17 @@ public class ComponentService {
   }
 
   public Component updateContent(Component component, byte[] content) {
-
-
-    extractAndCreateReference(component, content);
-
+    contentConfiguration.htmlContentSaver().save(component, content);
     return component;
   }
 
-  public String getContent(Component c) {
+
+  public Pair<String, String> generateContent(Component c) {
+    return contentConfiguration.htmlContentGenerator().generate(c);
+  }
+
+
+  public String getRawContent(Component c) {
     try {
       if (c.getFilePath() != null) {
 
@@ -230,6 +227,7 @@ public class ComponentService {
       throw new RuntimeException(e);
     }
   }
+
 
   public void remove(Long id) {
     Component target = requireNonNull(componentRepository.findOne(id));
@@ -255,15 +253,9 @@ public class ComponentService {
 
   public List<WorkflowInstanceDto> getWorkflowStatuses(Long id) {
     Component component = findOne(id);
-
-
-    //List<WorkflowStatus> workflowStatuses = workflowStatusRepository.findAllByWorkflowInstanceComponentId(component.getId(), new Sort("id"));
-
     List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getFilePath())));
 
-
     int commitIndex = 0;
-
 
     List<WorkflowInstanceDto> workflowInstanceDtos = new ArrayList<>();
 
@@ -274,12 +266,9 @@ public class ComponentService {
       List<WorkflowStatusDto> workflowStatusDtos = new ArrayList<>();
 
       for (WorkflowStatus workflowStatus : workflowStatusRepository.findAllByWorkflowInstanceId(workflowInstance.getId(), new Sort("id"))) {
-
         List<ChangeDto> changeDtos = new ArrayList<>();
 
         if (workflowStatus.getFirstGitReference() != null) {
-
-
           Validate.isTrue(commits.get(commitIndex).name().equals(workflowStatus.getFirstGitReference()));
 
           while (commitIndex < commits.size()) {
@@ -288,10 +277,10 @@ public class ComponentService {
             User commiter = userRepository.findByUsername(revCommit.getAuthorIdent().getName());
 
             changeDtos.add(newChangeDto()
-                               .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
-                               .revision(revCommit.name())
-                               .user(UserDto.createFromUser(commiter))
-                               .build());
+                .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
+                .revision(revCommit.name())
+                .user(UserDto.createFromUser(commiter))
+                .build());
 
             if (revCommit.name().equals(workflowStatus.getLastGitReference())) {
               commitIndex++;
@@ -300,16 +289,13 @@ public class ComponentService {
             commitIndex++;
           }
         }
-
         workflowStatusDtos.add(newBuilderFromWorkflowStatus(workflowStatus)
-                                   .changes(changeDtos)
-                                   .build());
-
-
+            .changes(changeDtos)
+            .build());
       }
       workflowInstanceDtos.add(workflowInstanceDto
-                                   .workflowStatuses(workflowStatusDtos)
-                                   .build());
+          .workflowStatuses(workflowStatusDtos)
+          .build());
     }
 
     return workflowInstanceDtos;
@@ -321,144 +307,6 @@ public class ComponentService {
     return null;
   }
 
-
-
-  public Pair<String, String> generateContent(Component c){
-
-    String content = getContent(c);
-
-    Document document = Jsoup.parse(content);
-
-    Element body = document.getElementsByTag("body").first();
-
-    generateContent(c, document, body);
-
-    String substring = body.text().replaceAll("(?<=.{"+summaryLength+"})\\b.*", "...");
-
-    return Pair.of(body.html() , substring);
-  }
-
-  private void generateContent(Component c, Document doc, Element parent) {
-
-
-    Deque<Element> stack = new LinkedList<>(parent.children());
-
-    while (!stack.isEmpty()) {
-      Element element = stack.pop();
-
-      if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
-        Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
-        Component nestedComponent = componentRepository.findOne(targetComponentId);
-
-        Document nestedDocument = Jsoup.parse(getContent(nestedComponent));
-        Element nestedBody = nestedDocument.getElementsByTag("body").first();
-
-        // Create title tag
-        element.appendChild(doc.createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
-
-        // Extract reference from the nested reference content (second children, first children is the title)
-        generateContent(nestedComponent, nestedDocument, nestedBody);
-
-        //Create content tag
-        Element nestedContent = doc.createElement("div").addClass("requirements-content");
-        new ArrayList<>(nestedBody.childNodes()).forEach(nestedContent::appendChild);
-        element.appendChild(nestedContent);
-
-      } else {
-        stack.addAll(element.children());
-      }
-    }
-
-  }
-
-
-  public void extractAndCreateReference(Component c, byte[] contentAsByteArray) {
-    extractReference(c, new String(contentAsByteArray));
-  }
-
-
-  public void extractReference(Component component, String content) {
-    try {
-      Document document = Jsoup.parse(content);
-
-      extractReference(component, document, document.getElementsByTag("body").first());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-
-  public void extractReference(Component component, Document document, Element parent) {
-    try {
-      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId());
-
-      if (!workflowStatus.getStatus().isEditable()) {
-        LOG.info("Component [{}] is not editable", component);
-        return;
-      }
-
-
-      List<Pair<Long, Long>> references = new ArrayList<>();
-
-      Deque<Element> stack = new LinkedList<>(parent.children());
-
-      while (!stack.isEmpty()) {
-        Element element = stack.pop();
-
-        if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
-          Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
-          references.add(Pair.of(targetComponentId, Long.valueOf(element.attr("data-workflow-instance-id"))));
-          Component nestedComponent = componentRepository.findOne(targetComponentId);
-          // extract reference from the nested reference content (second children, first children is the title)
-          extractReference(nestedComponent, document, element.children().get(1));
-          // remove all the childrens to keep only the reference
-          element.empty();
-        } else {
-          stack.addAll(element.children());
-        }
-      }
-
-      // Update content
-      String content = parent.html();
-      String hash = gitService.updateAndCommit(new ByteArrayResource(content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthenticatedUser(), "");
-      if (hash == null) {
-        return;
-      }
-
-      if (workflowStatus.getFirstGitReference() == null) {
-        workflowStatus.setFirstGitReference(hash);
-        workflowStatus.setLastGitReference(hash);
-      } else {
-        workflowStatus.setLastGitReference(hash);
-      }
-
-      workflowStatusRepository.save(workflowStatus);
-
-      component.getCurrentWorkflowInstance().setCurrentGitReference(hash);
-      componentRepository.save(component);
-
-
-      // Delete old refs
-      Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(),
-          component.getCurrentWorkflowInstance().getId());
-
-      // Save the new references
-      for (Pair<Long, Long> reference : references) {
-        ComponentReference componentReference = new ComponentReference();
-        componentReference.setSource(component);
-        componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
-        componentReference.setTarget(componentRepository.findOne(reference.getLeft()));
-        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(reference.getRight()));
-        componentReferenceRepository.save(componentReference);
-      }
-
-      LOG.info("Component [{}], Deleted [{}], Created [{}]", component, deletedRef, references.size());
-
-
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
@@ -518,10 +366,10 @@ public class ComponentService {
 
     // Notify user
     AbstractMimeMessage message = AbstractMimeMessage.builder()
-                                                     .addRecipient(assignedUser.getEmail())
-                                                     .addRecipientCc(requester.getEmail())
-                                                     .subject(component.getType() + "-" + component.getId() + " has been assigned to you")
-                                                     .body("Click on the following link..."); //todo create body
+        .addRecipient(assignedUser.getEmail())
+        .addRecipientCc(requester.getEmail())
+        .subject(component.getType() + "-" + component.getId() + " has been assigned to you")
+        .body("Click on the following link..."); //todo create body
     emailService.send(message);
 
     //Create new task for assigned user

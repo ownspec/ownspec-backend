@@ -68,6 +68,7 @@ public class UserService implements UserDetailsService {
     return foundUser;
   }
 
+  // TODO: a service must not return a response entity, the login must be done by the controller or a facade called by the controller
   public ResponseEntity login(UserDto source) {
     LOG.info("Request login with username [{}]", source.getUsername());
     User target = userRepository.findByUsername(source.getUsername());
