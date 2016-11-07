@@ -1,5 +1,6 @@
 package com.ownspec.center.controller;
 
+import static com.ownspec.center.dto.StatusDto.createFromStatuses;
 import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.ImmutableMap;
@@ -54,7 +55,7 @@ public class UserController {
     UserDto userDto = UserDto.createFromUser(user);
 
     ImmutableMap.Builder<Object, Object> propertiesBuilder = ImmutableMap.builder();
-    propertiesBuilder.put("statuses", Arrays.stream(Status.values()).map(StatusDto::createFromStatus).collect(toList()));
+    propertiesBuilder.put("statuses", createFromStatuses());
 
     return ResponseEntity.ok(ImmutableMap.builder()
         .put("user", userDto)
