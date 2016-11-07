@@ -172,8 +172,15 @@ public class ComponentService {
     return componentRepository.findOne(id);
   }
 
+  /**
+   * Update component
+   * The component is locked to ensure concurrent modification
+   * @param source
+   * @param id
+   * @return
+   */
   public Component update(ComponentDto source, Long id) {
-    Component target = requireNonNull(componentRepository.findOne(id));
+    Component target = requireNonNull(componentRepository.findOneAndLock(id));
     mergeWithNotNullProperties(source, target);
 
     if (source.getContent() != null) {
@@ -184,7 +191,7 @@ public class ComponentService {
   }
 
   public Component updateStatus(Long id, Status nextStatus) {
-    Component component = requireNonNull(componentRepository.findOne(id));
+    Component component = requireNonNull(componentRepository.findOneAndLock(id));
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(nextStatus);
@@ -201,7 +208,7 @@ public class ComponentService {
   }
 
   public Component updateContent(Long id, byte[] content) {
-    return updateContent(requireNonNull(componentRepository.findOne(id)), content);
+    return updateContent(requireNonNull(componentRepository.findOneAndLock(id)), content);
   }
 
   public Component updateContent(Component component, byte[] content) {
