@@ -35,10 +35,6 @@ public class WorkflowStatus implements Auditable<User> {
   @Enumerated(EnumType.STRING)
   protected Status status;
 
-  // WorkflowInstance which owns this WorkflowStatus
-  @ManyToOne
-  private WorkflowInstance currentWorkflowInstance;
-
 
 
   private String firstGitReference;

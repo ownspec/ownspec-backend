@@ -1,18 +1,27 @@
 package com.ownspec.center.service.content;
 
+import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.common.collect.Lists;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
+import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.ComponentService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,10 +30,12 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by nlabrot on 03/11/16.
@@ -32,6 +43,8 @@ import java.util.Map;
 @Slf4j
 public class HtmlContentSaver {
 
+  public static final String DATA_REQUIREMENT_ID = "data-requirement-id";
+  public static final String DATA_WORKFLOW_INSTANCE_ID = "data-workflow-instance-id";
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
@@ -50,7 +63,14 @@ public class HtmlContentSaver {
   @Autowired
   private SecurityService securityService;
 
-  private Map<Long, List<Pair<Long, Long>>> referencesByComponent = new HashMap<>();
+  @Autowired
+  private ComponentService componentService;
+
+  // Keep the insertion order, insertion order are reversed depth first
+  // eg nested components A => B => C will be inserted C => B => A
+  private Map<String, ComponentContent> referencesByComponent = new LinkedHashMap<>();
+
+  DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 
   public void save(Component c, byte[] contentAsByteArray) {
@@ -59,18 +79,50 @@ public class HtmlContentSaver {
 
 
   public void save(Component component, String content) {
-    try {
-      Document document = Jsoup.parse(content);
-
-      extractReference(component, document.body());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    extractReferences(component, content);
+    save();
   }
 
 
-  private void extractReference(Component component, Element parent) {
-    try {
+  private void extractReferences(Component component, String content) {
+    ComponentContent componentContent = new ComponentContent(component.getId().toString());
+    componentContent.componentId = component.getId();
+    componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
+
+    graph.addVertex(componentContent.tempId);
+
+    parseComponent(content, new SaveParseCallBack(componentContent));
+  }
+
+
+  protected void save() {
+
+    // Detect cycle
+    CycleDetector<String, DefaultEdge> cycleDetector = new CycleDetector(graph);
+
+    if (cycleDetector.detectCycles()) {
+      throw new ComponentCycleException(cycleDetector.findCycles());
+    }
+
+    for (String tempId : referencesByComponent.keySet()) {
+
+      ComponentContent componentContent = referencesByComponent.get(tempId);
+
+      Component component;
+
+      if (componentContent.componentId == null) {
+        // Create the component
+        component = componentService.create(newComponentDto()
+            .title("TBD")
+            .type(ComponentType.COMPONENT).build());
+        componentContent.componentId = component.getId();
+        componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
+
+      } else {
+        // Find the component
+        component = componentRepository.findOne(componentContent.componentId);
+      }
+
       WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId());
 
       if (!workflowStatus.getStatus().isEditable()) {
@@ -78,33 +130,22 @@ public class HtmlContentSaver {
         return;
       }
 
-
-      List<Pair<Long, Long>> references = new ArrayList<>();
-
-      Deque<Element> stack = new LinkedList<>(parent.children());
-
-      while (!stack.isEmpty()) {
-        Element element = stack.pop();
-
-        if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
-          Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
-          references.add(Pair.of(targetComponentId, Long.valueOf(element.attr("data-workflow-instance-id"))));
-          Component nestedComponent = componentRepository.findOne(targetComponentId);
-          // extract reference from the nested reference content (second children, first children is the title)
-          extractReference(nestedComponent, element.children().get(1));
-          // remove all the childrens to keep only the reference
-          element.empty();
-        } else {
-          stack.addAll(element.children());
-        }
+      if (!componentContent.workflowInstanceId.equals(workflowStatus.getWorkflowInstance().getId())) {
+        LOG.info("Current workflowInstanceId [{}] is not equal to the submitted one provided [{}]",
+            workflowStatus.getWorkflowInstance().getId(), componentContent.workflowInstanceId);
+        return;
       }
 
+
+      Document document = Jsoup.parse(componentContent.content);
+      parseComponent(document.body(), new UpdateReferenceCallBack(componentContent));
+      componentContent.content = document.body().html();
+
       // Update content
-      String content = parent.html();
-      String hash = gitService.updateAndCommit(new ByteArrayResource(content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthenticatedUser(), "");
+      String hash = gitService.updateAndCommit(new ByteArrayResource(componentContent.content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthenticatedUser(), "");
       if (hash == null) {
-        // No modification
-        return;
+        // No modification continue
+        continue;
       }
 
       if (workflowStatus.getFirstGitReference() == null) {
@@ -120,30 +161,141 @@ public class HtmlContentSaver {
       componentRepository.save(component);
 
 
-      // Delete old refs
-      Long deletedRef = componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(),
-          component.getCurrentWorkflowInstance().getId());
+      Long deletedRef = 0L;
+
+      if (!componentContent.created) {
+        // Delete old refs if not created
+        componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowStatus.getWorkflowInstance().getId());
+      }
 
       // Save the new references
-      for (Pair<Long, Long> reference : references) {
+      for (String refTempId : componentContent.references) {
+        ComponentContent referenceComponentContent = referencesByComponent.get(refTempId);
+
         ComponentReference componentReference = new ComponentReference();
         componentReference.setSource(component);
         componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
-        componentReference.setTarget(componentRepository.findOne(reference.getLeft()));
-        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(reference.getRight()));
+        componentReference.setTarget(componentRepository.findOne(referenceComponentContent.componentId));
+        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(referenceComponentContent.workflowInstanceId));
         componentReferenceRepository.save(componentReference);
       }
-
-      referencesByComponent.put(component.getId() , references);
-
-      LOG.info("Component [{}], Deleted [{}], Created [{}]", component, deletedRef, references.size());
-
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
   }
 
   public Map<Long, List<Pair<Long, Long>>> getReferencesByComponent() {
-    return referencesByComponent;
+    return null;
   }
+
+
+  private static class ComponentContent {
+    private String tempId;
+    private Long componentId;
+    private Long workflowInstanceId;
+    private String content;
+    private List<String> references = new ArrayList<>();
+    private boolean created = false;
+
+    public ComponentContent(String tempId) {
+      this.tempId = tempId;
+    }
+
+    public ComponentContent() {
+      tempId = UUID.randomUUID().toString();
+      created = true;
+    }
+  }
+
+
+  private interface ParseCallBack<T> {
+    void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId);
+
+    T endComponent(Element parent);
+  }
+
+
+  class UpdateReferenceCallBack implements ParseCallBack {
+
+    ComponentContent componentContent;
+    int referenceIndex = 0;
+
+    public UpdateReferenceCallBack(ComponentContent componentContent) {
+      this.componentContent = componentContent;
+    }
+
+    @Override
+    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId) {
+      ComponentContent refComponentContent = referencesByComponent.get(componentContent.references.get(referenceIndex++));
+      element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
+      element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
+    }
+
+    @Override
+    public Object endComponent(Element parent) {
+      return null;
+    }
+  }
+
+  class SaveParseCallBack implements ParseCallBack {
+    ComponentContent componentContent;
+
+    public SaveParseCallBack(ComponentContent componentContent) {
+      this.componentContent = componentContent;
+    }
+
+    @Override
+    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId) {
+
+      ComponentContent nestedComponent;
+
+      if (!nestedComponentId.startsWith("_")) {
+        nestedComponent = new ComponentContent(nestedComponentId);
+        nestedComponent.componentId = Long.valueOf(nestedComponentId);
+        nestedComponent.workflowInstanceId = Long.valueOf(nestedWorkflowInstanceId);
+      } else {
+        nestedComponent = new ComponentContent();
+      }
+      graph.addVertex(nestedComponent.tempId);
+      graph.addEdge(componentContent.tempId, nestedComponent.tempId);
+
+      componentContent.references.add(nestedComponent.tempId);
+
+      // extract reference from the nested reference content (second children, first children is the title)
+      parseComponent(element.children().get(1), new SaveParseCallBack(nestedComponent));
+      // remove all the childrens to keep only the reference
+      element.empty();
+    }
+
+    @Override
+    public ComponentContent endComponent(Element parent) {
+      componentContent.content = parent.html();
+      referencesByComponent.put(componentContent.tempId, componentContent);
+      return componentContent;
+    }
+  }
+
+
+  private <T> T parseComponent(String content, ParseCallBack<T> cb) {
+    Document document = Jsoup.parse(content);
+    return parseComponent(document.body(), cb);
+  }
+
+
+  private <T> T parseComponent(Element parent, ParseCallBack<T> cb) {
+    Deque<Element> stack = new LinkedList<>(parent.children());
+    while (!stack.isEmpty()) {
+      Element element = stack.pop();
+
+      if ("div".equals(element.nodeName()) && element.hasAttr(DATA_REQUIREMENT_ID)) {
+        String nestedComponentId = element.attr(DATA_REQUIREMENT_ID);
+        String nestedWorkflowInstanceId = element.attr(DATA_WORKFLOW_INSTANCE_ID);
+
+        cb.parseReference(element, nestedComponentId, nestedWorkflowInstanceId);
+
+      } else {
+        stack.addAll(element.children());
+      }
+    }
+    return cb.endComponent(parent);
+  }
+
 }
