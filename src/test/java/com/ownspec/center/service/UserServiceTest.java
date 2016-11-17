@@ -2,6 +2,7 @@ package com.ownspec.center.service;
 
 import com.ownspec.center.AbstractTest;
 import com.ownspec.center.dto.ImmutableUserDto;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,9 @@ public class UserServiceTest extends AbstractTest {
                                                .username("lyrold")
                                                .password("lyrold")
                                                .build();
-    ResponseEntity token = userService.login(userDto);
 
-//    Assert.assertEquals("", token); todo
+    userService.getLoginToken(userDto);
+
   }
 
   @Test(expected = BadCredentialsException.class)
@@ -38,7 +39,7 @@ public class UserServiceTest extends AbstractTest {
                                                .username("lyrold")
                                                .password("foo")
                                                .build();
-    userService.login(userDto);
+    userService.getLoginToken(userDto);
   }
 
 }

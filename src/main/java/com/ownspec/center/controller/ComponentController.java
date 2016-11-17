@@ -150,8 +150,8 @@ public class ComponentController {
 
   @GetMapping(value = "/{id}/export")
   @ResponseBody
-  public ResponseEntity export(@RequestBody Long id) {
-    return null;
+  public ResponseEntity export(@PathVariable Long id) {
+    return componentService.export(id);
   }
 
 

@@ -2,7 +2,6 @@ package com.ownspec.center.configuration;
 
 import com.ownspec.center.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +22,7 @@ import java.util.UUID;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-  @Value("${jwt.cookie.name}")
-  private String cookieName;
+  public static final String TOKEN_COOKIE_NAME = "token";
 
   @Autowired
   private UserService userService;
@@ -51,7 +49,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Bean
   public FilterRegistrationBean jwtFilter() {
     final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-    registrationBean.setFilter(new JwtFilter(cookieName, secretKey(), userService));
+    registrationBean.setFilter(new JwtFilter(TOKEN_COOKIE_NAME, secretKey(), userService));
     registrationBean.addUrlPatterns("/api/*");
 
     return registrationBean;
