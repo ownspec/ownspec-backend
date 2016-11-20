@@ -19,6 +19,9 @@ public class UserServiceTest extends AbstractTest {
   @Autowired
   UserService userService;
 
+  @Autowired
+  private AuthenticationService authenticationService;
+
   @Test
   public void login_success() throws Exception {
 
@@ -26,7 +29,7 @@ public class UserServiceTest extends AbstractTest {
                                                .username("lyrold")
                                                .password("lyrold")
                                                .build();
-    ResponseEntity token = userService.login(userDto);
+    ResponseEntity token = authenticationService.login(userDto);
 
 //    Assert.assertEquals("", token); todo
   }
@@ -38,7 +41,7 @@ public class UserServiceTest extends AbstractTest {
                                                .username("lyrold")
                                                .password("foo")
                                                .build();
-    userService.login(userDto);
+    authenticationService.login(userDto);
   }
 
 }

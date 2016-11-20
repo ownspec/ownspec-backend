@@ -1,13 +1,23 @@
 package com.ownspec.center.service;
 
+import static com.ownspec.center.model.component.QComponent.component;
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Spliterators;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.user.User;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +31,7 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -58,6 +69,27 @@ public class GitService {
   private Git git;
 
   public String updateAndCommit(Resource resource, String filePath, User user, String message) {
+    File contentFile = new File(filePath);
+    LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
+
+    try (FileOutputStream os = new FileOutputStream(contentFile); InputStream is = resource.getInputStream()) {
+      IOUtils.copy(is, os);
+    } catch (Exception e) {
+      LOG.error("An error has occurred when writing file", e);
+      // TODO: 24/09/16 Create custom exception
+      throw new RuntimeException(e);
+    }
+    return commit(contentFile.getAbsolutePath(), user, message);
+  }
+
+  public String updateAndCommit(Resource resource, String filePath, String fromRevision, User user, String message) throws GitAPIException {
+
+    RevCommit latestRevision = getLatestRevision(filePath);
+
+    if (latestRevision.getId().toString().equals(fromRevision)){
+      System.out.println("equals");
+    }
+
     File contentFile = new File(filePath);
     LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
 
@@ -120,6 +152,15 @@ public class GitService {
     }
   }
 
+  public RevCommit getLatestRevision(String filePath) {
+    try {
+      return Iterables.getFirst(git.log().addPath(relativize(filePath)).call(), null);
+    } catch (GitAPIException e) {
+      // TODO: 24/09/16 Create custom exception
+      throw new RuntimeException(e);
+    }
+  }
+
   public Git getGit() {
     return git;
   }
@@ -159,6 +200,26 @@ public class GitService {
     }
     return new ByteArrayResource(byteArrayOutputStream.toByteArray());
 
+  }
+
+
+  public Resource diff(String filePath, String fromRevision, String toRevision) {
+
+    if (fromRevision == null) {
+      List<RevCommit> commits = Lists.reverse(Lists.newArrayList(getHistoryFor(filePath)));
+
+      for (int i = 0; i < commits.size(); i++) {
+        if (commits.get(i).getId().name().equals(toRevision)) {
+          if (i != 0) {
+            fromRevision = commits.get(i - 1).getId().name();
+            break;
+          } else {
+            return null;
+          }
+        }
+      }
+    }
+    return doDiff(filePath, fromRevision, toRevision);
   }
 
 

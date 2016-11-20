@@ -198,8 +198,6 @@ public class ComponentService {
     workflowStatus.setWorkflowInstance(component.getCurrentWorkflowInstance());
 
     component.getCurrentWorkflowInstance().setCurrentStatus(nextStatus);
-    component.getCurrentWorkflowInstance().setCurrentGitReference(null);
-
 
     component = componentRepository.save(component);
     workflowStatus = workflowStatusRepository.save(workflowStatus);
@@ -229,6 +227,18 @@ public class ComponentService {
         return FileUtils.readFileToString(new File(c.getFilePath()), "UTF-8");
       } else {
         return "";
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Resource getRawContent(Component c, String ref) {
+    try {
+      if (c.getFilePath() != null) {
+        return gitService.getFile(c.getFilePath(), ref);
+      } else {
+        throw new IllegalStateException("component file does not exist");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -317,22 +327,7 @@ public class ComponentService {
 
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
-
-    if (fromRevision == null) {
-      List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getFilePath())));
-
-      for (int i = 0; i < commits.size(); i++) {
-        if (commits.get(i).getId().name().equals(toRevision)) {
-          if (i != 0) {
-            fromRevision = commits.get(i - 1).getId().name();
-            break;
-          } else {
-            return null;
-          }
-        }
-      }
-    }
-    return gitService.doDiff(component.getFilePath(), fromRevision, toRevision);
+    return gitService.diff(component.getFilePath(), fromRevision, toRevision);
   }
 
 

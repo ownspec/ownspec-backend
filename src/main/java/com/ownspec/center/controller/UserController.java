@@ -8,6 +8,7 @@ import com.ownspec.center.dto.StatusDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
+import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,10 @@ public class UserController {
 
   @Autowired
   private UserService userService;
+
+
+  @Autowired
+  private AuthenticationService authenticationService;
 
 
   @RequestMapping
@@ -89,17 +94,6 @@ public class UserController {
   public ResponseEntity resetPassword(@PathVariable("id") Long id) {
     userService.resetPassword(id);
     return ResponseEntity.ok().build();
-  }
-
-  @PostMapping(value = "/login")
-  @ResponseBody
-  public ResponseEntity login(@RequestBody UserDto source) {
-    return userService.login(source);
-  }
-
-  @PostMapping(value = "/logout")
-  public HttpServletResponse logout(HttpServletResponse response){
-    return userService.logOut(response);
   }
 
 

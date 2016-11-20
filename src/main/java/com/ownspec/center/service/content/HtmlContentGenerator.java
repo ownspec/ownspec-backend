@@ -1,7 +1,13 @@
 package com.ownspec.center.service.content;
 
+import static com.ownspec.center.service.content.HtmlContentSaver.DATA_REQUIREMENT_ID;
+import static com.ownspec.center.service.content.HtmlContentSaver.DATA_REQUIREMENT_SCM_REF;
+import static com.ownspec.center.service.content.HtmlContentSaver.DATA_WORKFLOW_INSTANCE_ID;
+
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.repository.component.ComponentRepository;
+import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.service.ComponentService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
@@ -10,6 +16,8 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -28,8 +36,11 @@ public class HtmlContentGenerator {
   @Value("${component.content.summary-length:80}")
   private int summaryLength;
 
+  @Autowired
+  private WorkflowInstanceRepository workflowInstanceRepository;
 
-  public Pair<String, String> generate(Component c){
+
+  public Pair<String, String> generate(Component c) {
 
     String content = componentService.getRawContent(c);
 
@@ -37,25 +48,40 @@ public class HtmlContentGenerator {
 
     Element body = document.getElementsByTag("body").first();
 
-    generateContent(c, document, body);
+    try {
+      generateContent(c, document, body);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
-    String substring = body.text().replaceAll("(?<=.{"+summaryLength+"})\\b.*", "...");
+    String substring = body.text().replaceAll("(?<=.{" + summaryLength + "})\\b.*", "...");
 
-    return Pair.of(body.html() , substring);
+    return Pair.of(body.html(), substring);
   }
 
-  private void generateContent(Component c, Document doc, Element parent) {
+  private void generateContent(Component c, Document doc, Element parent) throws IOException {
 
     Deque<Element> stack = new LinkedList<>(parent.children());
 
     while (!stack.isEmpty()) {
       Element element = stack.pop();
 
-      if ("div".equals(element.nodeName()) && element.hasAttr("data-requirement-id")) {
-        Long targetComponentId = Long.valueOf(element.attr("data-requirement-id"));
-        Component nestedComponent = componentRepository.findOne(targetComponentId);
+      if ("div".equals(element.nodeName()) && element.hasAttr(DATA_REQUIREMENT_ID)) {
+        Long nestedComponentId = Long.valueOf(element.attr(DATA_REQUIREMENT_ID));
+        Long nestedWorkflowInstanceId = Long.valueOf(element.attr(DATA_WORKFLOW_INSTANCE_ID));
 
-        Document nestedDocument = Jsoup.parse(componentService.getRawContent(nestedComponent));
+        Component nestedComponent = componentRepository.findOne(nestedComponentId);
+
+        WorkflowInstance nestedWorkflowInstance = workflowInstanceRepository.findOne(nestedWorkflowInstanceId);
+        // Add git ref attribute
+        //element.attr(DATA_REQUIREMENT_SCM_REF, nestedWorkflowInstance.getCurrentGitReference());
+
+
+        // Retrieve file content associated to the git reference
+        Document nestedDocument;
+        try (InputStream is = componentService.getRawContent(nestedComponent, nestedWorkflowInstance.getCurrentGitReference()).getInputStream()) {
+          nestedDocument = Jsoup.parse(is, "UTF-8", nestedComponent.getFilePath());
+        }
         Element nestedBody = nestedDocument.getElementsByTag("body").first();
 
         // Create title tag
@@ -66,6 +92,9 @@ public class HtmlContentGenerator {
 
         //Create content tag
         Element nestedContent = doc.createElement("div").addClass("requirements-content");
+
+        nestedContent.attr("contenteditable", Boolean.toString(nestedWorkflowInstance.getCurrentStatus().isEditable()));
+
         new ArrayList<>(nestedBody.childNodes()).forEach(nestedContent::appendChild);
         element.appendChild(nestedContent);
 

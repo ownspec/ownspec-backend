@@ -3,11 +3,9 @@ package com.ownspec.center.service.content;
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.collect.Lists;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
@@ -34,7 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -44,6 +41,7 @@ import java.util.UUID;
 public class HtmlContentSaver {
 
   public static final String DATA_REQUIREMENT_ID = "data-requirement-id";
+  public static final String DATA_REQUIREMENT_SCM_REF = "data-requirement-scm-ref";
   public static final String DATA_WORKFLOW_INSTANCE_ID = "data-workflow-instance-id";
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
@@ -117,6 +115,7 @@ public class HtmlContentSaver {
             .type(ComponentType.COMPONENT).build());
         componentContent.componentId = component.getId();
         componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
+        componentContent.scmReference = component.getCurrentWorkflowInstance().getCurrentGitReference();
 
       } else {
         // Find the component
@@ -127,13 +126,13 @@ public class HtmlContentSaver {
 
       if (!workflowStatus.getStatus().isEditable()) {
         LOG.info("Component [{}] is not editable", component);
-        return;
+        continue;
       }
 
       if (!componentContent.workflowInstanceId.equals(workflowStatus.getWorkflowInstance().getId())) {
         LOG.info("Current workflowInstanceId [{}] is not equal to the submitted one provided [{}]",
             workflowStatus.getWorkflowInstance().getId(), componentContent.workflowInstanceId);
-        return;
+        continue;
       }
 
 
@@ -142,7 +141,12 @@ public class HtmlContentSaver {
       componentContent.content = document.body().html();
 
       // Update content
-      String hash = gitService.updateAndCommit(new ByteArrayResource(componentContent.content.getBytes(UTF_8)), component.getFilePath(), securityService.getAuthenticatedUser(), "");
+
+
+      String hash = gitService.updateAndCommit(
+          new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
+          component.getFilePath(),
+          securityService.getAuthenticatedUser(), "");
       if (hash == null) {
         // No modification continue
         continue;
@@ -192,6 +196,7 @@ public class HtmlContentSaver {
     private Long componentId;
     private Long workflowInstanceId;
     private String content;
+    private String scmReference;
     private List<String> references = new ArrayList<>();
     private boolean created = false;
 
@@ -207,7 +212,7 @@ public class HtmlContentSaver {
 
 
   private interface ParseCallBack<T> {
-    void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId);
+    void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmRefernece);
 
     T endComponent(Element parent);
   }
@@ -223,7 +228,7 @@ public class HtmlContentSaver {
     }
 
     @Override
-    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId) {
+    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmRefernece) {
       ComponentContent refComponentContent = referencesByComponent.get(componentContent.references.get(referenceIndex++));
       element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
       element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
@@ -243,7 +248,7 @@ public class HtmlContentSaver {
     }
 
     @Override
-    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId) {
+    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmRefernece) {
 
       ComponentContent nestedComponent;
 
@@ -251,6 +256,7 @@ public class HtmlContentSaver {
         nestedComponent = new ComponentContent(nestedComponentId);
         nestedComponent.componentId = Long.valueOf(nestedComponentId);
         nestedComponent.workflowInstanceId = Long.valueOf(nestedWorkflowInstanceId);
+        nestedComponent.scmReference = nestedScmRefernece;
       } else {
         nestedComponent = new ComponentContent();
       }
@@ -288,8 +294,9 @@ public class HtmlContentSaver {
       if ("div".equals(element.nodeName()) && element.hasAttr(DATA_REQUIREMENT_ID)) {
         String nestedComponentId = element.attr(DATA_REQUIREMENT_ID);
         String nestedWorkflowInstanceId = element.attr(DATA_WORKFLOW_INSTANCE_ID);
+        String nestedScmReference = element.attr(DATA_REQUIREMENT_SCM_REF);
 
-        cb.parseReference(element, nestedComponentId, nestedWorkflowInstanceId);
+        cb.parseReference(element, nestedComponentId, nestedWorkflowInstanceId, nestedScmReference);
 
       } else {
         stack.addAll(element.children());
