@@ -3,6 +3,7 @@ package com.ownspec.center.service;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static java.util.Objects.requireNonNull;
 
+import com.ownspec.center.configuration.SecurityConfiguration;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.exception.UserAlreadyExistsException;
 import com.ownspec.center.model.user.User;
@@ -26,8 +27,6 @@ import java.util.Map;
 @Service
 @Slf4j
 public class UserService implements UserDetailsService {
-  @Value("${jwt.cookie.name}")
-  private String cookieName;
 
   @Autowired
   private UserRepository userRepository;
@@ -49,6 +48,24 @@ public class UserService implements UserDetailsService {
       throw new UsernameNotFoundException("Cannot found username [" + username + "]");
     }
     return foundUser;
+  }
+
+  // TODO: a service must not return a response entity, the getLoginToken must be done by the controller or a facade called by the controller
+  public String getLoginToken(UserDto source) {
+    User target = userRepository.findByUsername(source.getUsername());
+    if (target == null) {
+      throw new UsernameNotFoundException("Unknown username");
+    }
+    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(source.getUsername(), source.getPassword());
+    SecurityContextHolder.getContext().setAuthentication(authenticationManager.authenticate(token));
+    String jwtToken = Jwts.builder()
+                          .setSubject(target.getUsername())
+                          .claim("company", target.getCompany())
+                          .claim("role", target.getRole())
+                          .signWith(SignatureAlgorithm.HS256, secretKey.getValue())
+                          .compact();
+
+    return jwtToken;
   }
 
   public User create(UserDto source) {

@@ -1,17 +1,10 @@
 package com.ownspec.center.util;
 
-import java.io.Writer;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stax.StAXSource;
-import javax.xml.transform.stream.StreamResult;
 
 
 public final class StaxUtils {
