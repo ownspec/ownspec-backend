@@ -2,7 +2,7 @@ package com.ownspec.center.configuration;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.ownspec.center.service.SecurityService;
+import com.ownspec.center.service.AuthenticationService;
 import org.apache.commons.lang.LocaleUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -39,7 +39,7 @@ public class OsCenterConfiguration {
   private String componentsGitRepositoryPath;
 
   @Autowired
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
 
   @Bean
   public Git git() throws IOException, GitAPIException {
@@ -51,14 +51,14 @@ public class OsCenterConfiguration {
 
   @Bean
   public AuditorAware auditorAware() {
-    return () -> securityService.getAuthenticatedUser();
+    return () -> authenticationService.getAuthenticatedUser();
   }
 
 
   public ResourceBundle translation() {
     return ResourceBundle.getBundle(
         "translation",
-        LocaleUtils.toLocale(securityService.getAuthenticatedUser().getPreference().getLanguage())
+        LocaleUtils.toLocale(authenticationService.getAuthenticatedUser().getPreference().getLanguage())
     );
   }
 

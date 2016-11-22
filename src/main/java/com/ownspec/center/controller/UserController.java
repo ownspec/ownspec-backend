@@ -1,22 +1,15 @@
 package com.ownspec.center.controller;
 
-import static com.ownspec.center.configuration.SecurityConfiguration.TOKEN_COOKIE_NAME;
 import static com.ownspec.center.dto.StatusDto.createFromStatuses;
 
 import com.google.common.collect.ImmutableMap;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.service.SecurityService;
 import com.ownspec.center.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +21,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by nlabrot on 29/09/16.
@@ -41,12 +32,6 @@ public class UserController {
 
   @Autowired
   private UserService userService;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private AuthenticationService authenticationService;
 
 
   @RequestMapping
@@ -102,30 +87,5 @@ public class UserController {
     userService.resetPassword(id);
     return ResponseEntity.ok().build();
   }
-
-  @PostMapping(value = "/login")
-  @ResponseBody
-  public ResponseEntity login(@RequestBody UserDto source) {
-    LOG.info("Request login with username [{}]", source.getUsername());
-    String token = userService.getLoginToken(source);
-    LOG.info("Authentication succeed; built token is [{}]", token);
-
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(HttpHeaders.SET_COOKIE, String.join("=", TOKEN_COOKIE_NAME, token) + "; path=/");
-    return new ResponseEntity<String>(httpHeaders, HttpStatus.OK);
-
-  }
-
-  @PostMapping(value = "/logout")
-  public void logout(HttpServletResponse response) {
-    User user = securityService.getAuthenticatedUser();
-    //todo update user's lastConnection
-    LOG.info("Request logout for user with username [{}]", user.getUsername());
-    Cookie cookie = new Cookie(TOKEN_COOKIE_NAME, "");
-    cookie.setPath("/");
-    cookie.setMaxAge(0);
-    response.addCookie(cookie);
-  }
-
 
 }

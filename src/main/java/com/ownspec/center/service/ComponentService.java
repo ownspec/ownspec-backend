@@ -93,7 +93,7 @@ public class ComponentService {
   private CommentRepository commentRepository;
 
   @Autowired
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
 
   @Autowired
   private UserRepository userRepository;
@@ -134,7 +134,7 @@ public class ComponentService {
   public Component create(ComponentDto source) {
     // TODO: 27/09/16 handle case if transaction fails
     Pair<File, String> pair = gitService.createAndCommit(
-        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), securityService.getAuthenticatedUser(), "");
+        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), authenticationService.getAuthenticatedUser(), "");
 
     Project project = null;
 
@@ -248,7 +248,7 @@ public class ComponentService {
 
   public void remove(Long id) {
     Component target = requireNonNull(componentRepository.findOne(id));
-    gitService.deleteAndCommit(target.getFilePath(), securityService.getAuthenticatedUser(), "");
+    gitService.deleteAndCommit(target.getFilePath(), authenticationService.getAuthenticatedUser(), "");
     componentRepository.delete(id);
   }
 
@@ -347,7 +347,7 @@ public class ComponentService {
 
   public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {
     Component component = findOne(componentId);
-    User requester = securityService.getAuthenticatedUser();
+    User requester = authenticationService.getAuthenticatedUser();
     User assignedUser = userRepository.findOne(userId);
 
     // Check distribution level regarding user, if grantUserAccess option is not ticked

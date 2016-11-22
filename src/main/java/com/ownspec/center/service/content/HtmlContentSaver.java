@@ -11,9 +11,9 @@ import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.ComponentService;
 import com.ownspec.center.service.GitService;
-import com.ownspec.center.service.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
@@ -59,7 +59,7 @@ public class HtmlContentSaver {
   private WorkflowInstanceRepository workflowInstanceRepository;
 
   @Autowired
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
 
   @Autowired
   private ComponentService componentService;
@@ -146,7 +146,7 @@ public class HtmlContentSaver {
       String hash = gitService.updateAndCommit(
           new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
           component.getFilePath(),
-          securityService.getAuthenticatedUser(), "");
+          authenticationService.getAuthenticatedUser(), "");
       if (hash == null) {
         // No modification continue
         continue;

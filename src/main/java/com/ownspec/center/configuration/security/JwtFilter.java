@@ -2,6 +2,7 @@ package com.ownspec.center.configuration.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -64,7 +65,7 @@ public class JwtFilter extends GenericFilterBean {
       UserDetails user = userDetailsService.loadUserByUsername(claims.getSubject());
 
       SecurityContextHolder.getContext()
-          .setAuthentication(new PreAuthenticatedAuthenticationToken(user, claims, user.getAuthorities()));
+          .setAuthentication(new UsernamePasswordAuthenticationToken(user, claims, user.getAuthorities()));
 
       chain.doFilter(req, res);
 

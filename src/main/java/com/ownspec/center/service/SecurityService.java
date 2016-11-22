@@ -10,7 +10,5 @@ import org.springframework.stereotype.Service;
 @Service
 public class SecurityService {
 
-  public User getAuthenticatedUser() {
-    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-  }
+
 }
