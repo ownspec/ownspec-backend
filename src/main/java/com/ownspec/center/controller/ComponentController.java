@@ -148,13 +148,13 @@ public class ComponentController {
     return null;
   }
 
-  @GetMapping(value = "/{id}/export")
-  @ResponseBody
-  public ResponseEntity export(@PathVariable Long id) {
-    // TODO: ComponentService#export may be not commited
-    //return componentService.export(id);
-    return null;
-  }
+
+//
+//  @GetMapping(value = "/{id}/export")
+//  @ResponseBody
+//  public ResponseEntity export(@PathVariable Long id) {
+//    return componentService.export(id);
+//  }
 
 
   @PostMapping(value = "/{id}/assign/{userId}")
