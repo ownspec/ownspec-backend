@@ -39,7 +39,7 @@ public class SecurityConfiguration {
   @Bean
   public FilterChainProxy configure() throws Exception {
     return new FilterChainProxy(asList(
-        new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/auth/**")),
+        new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/auth/login")),
         new DefaultSecurityFilterChain(new AntPathRequestMatcher("/**"), jwtFilter())));
   }
 
