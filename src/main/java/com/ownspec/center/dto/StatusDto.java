@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @JsonDeserialize(as = ImmutableStatusDto.class)
 public interface StatusDto {
 
+  String getId();
+
   String getName();
 
   boolean isEditable();
@@ -30,6 +32,7 @@ public interface StatusDto {
 
   static StatusDto createFromStatus(Status status) {
     return ImmutableStatusDto.newStatusDto()
+        .id(status.name())
         .name(status.name())
         .isEditable(status.isEditable())
         .isFinal(status.isFinal())

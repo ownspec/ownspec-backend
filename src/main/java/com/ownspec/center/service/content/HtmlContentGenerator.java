@@ -6,8 +6,10 @@ import static com.ownspec.center.service.content.HtmlContentSaver.DATA_WORKFLOW_
 
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.workflow.WorkflowInstance;
+import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
+import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.ComponentService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
@@ -15,12 +17,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by nlabrot on 03/11/16.
@@ -38,6 +43,9 @@ public class HtmlContentGenerator {
 
   @Autowired
   private WorkflowInstanceRepository workflowInstanceRepository;
+
+  @Autowired
+  private WorkflowStatusRepository workflowStatusRepository;
 
 
   public Pair<String, String> generate(Component c) {
@@ -72,14 +80,22 @@ public class HtmlContentGenerator {
 
         Component nestedComponent = componentRepository.findOne(nestedComponentId);
 
-        WorkflowInstance nestedWorkflowInstance = workflowInstanceRepository.findOne(nestedWorkflowInstanceId);
+        List<WorkflowStatus> nestedWorkflowStatuses = workflowStatusRepository.findAllByWorkflowInstanceId(nestedWorkflowInstanceId , new Sort(Sort.Direction.DESC, "id" ));
+
+        String lastGitReference = nestedWorkflowStatuses.stream()
+            .map(WorkflowStatus::getLastGitReference)
+            .filter(Objects::nonNull)
+            .findFirst().get();
+
+        WorkflowStatus lastWorkflowStatus = nestedWorkflowStatuses.get(0);
+
         // Add git ref attribute
         //element.attr(DATA_REQUIREMENT_SCM_REF, nestedWorkflowInstance.getCurrentGitReference());
 
 
         // Retrieve file content associated to the git reference
         Document nestedDocument;
-        try (InputStream is = componentService.getRawContent(nestedComponent, nestedWorkflowInstance.getCurrentGitReference()).getInputStream()) {
+        try (InputStream is = componentService.getRawContent(nestedComponent, lastGitReference).getInputStream()) {
           nestedDocument = Jsoup.parse(is, "UTF-8", nestedComponent.getFilePath());
         }
         Element nestedBody = nestedDocument.getElementsByTag("body").first();
@@ -93,7 +109,7 @@ public class HtmlContentGenerator {
         //Create content tag
         Element nestedContent = doc.createElement("div").addClass("requirements-content");
 
-        nestedContent.attr("contenteditable", Boolean.toString(nestedWorkflowInstance.getCurrentStatus().isEditable()));
+        nestedContent.attr("contenteditable", Boolean.toString(lastWorkflowStatus.getStatus().isEditable()));
 
         new ArrayList<>(nestedBody.childNodes()).forEach(nestedContent::appendChild);
         element.appendChild(nestedContent);

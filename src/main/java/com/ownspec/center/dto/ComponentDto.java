@@ -54,7 +54,7 @@ public interface ComponentDto {
   String getSummary();
 
   @Nullable
-  StatusDto getCurrentStatus();
+  WorkflowStatusDto getCurrentWorkflowStatus();
 
   @Nullable
   List<WorkflowInstanceDto> getWorkflowInstances();
@@ -71,7 +71,6 @@ public interface ComponentDto {
         .projectId(c.getProject() != null ? c.getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getType())
-        .currentStatus(StatusDto.createFromStatus(c.getCurrentWorkflowInstance().getCurrentStatus()))
         .createdDate(c.getCreatedDate())
         .createdUser(UserDto.createFromUser(c.getCreatedUser()));
   }

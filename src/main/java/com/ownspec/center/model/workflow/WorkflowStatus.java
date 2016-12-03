@@ -35,8 +35,6 @@ public class WorkflowStatus implements Auditable<User> {
   @Enumerated(EnumType.STRING)
   protected Status status;
 
-
-
   private String firstGitReference;
   private String lastGitReference;
 

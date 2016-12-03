@@ -18,6 +18,6 @@ public class WorkflowStatusRepositoryTest extends AbstractTest {
   @Transactional
   public void testFindLast() throws Exception {
     Assert.assertEquals(Iterables.getLast(workflowStatusRepository.findAllByWorkflowInstanceComponentId(1L, new Sort("id"))).getId(),
-        workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(1L).getId());
+        workflowStatusRepository.findLatestWorkflowStatusByComponentId(1L).getId());
   }
 }

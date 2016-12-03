@@ -68,7 +68,7 @@ public class HtmlContentSaver {
   // eg nested components A => B => C will be inserted C => B => A
   private Map<String, ComponentContent> referencesByComponent = new LinkedHashMap<>();
 
-  DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+  private DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 
   public void save(Component c, byte[] contentAsByteArray) {
@@ -115,14 +115,16 @@ public class HtmlContentSaver {
             .type(ComponentType.COMPONENT).build());
         componentContent.componentId = component.getId();
         componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
-        componentContent.scmReference = component.getCurrentWorkflowInstance().getCurrentGitReference();
 
       } else {
         // Find the component
         component = componentRepository.findOne(componentContent.componentId);
       }
 
-      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId());
+      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusByComponentId(component.getId());
+
+      componentContent.scmReference = workflowStatus.getLastGitReference();
+
 
       if (!workflowStatus.getStatus().isEditable()) {
         LOG.info("Component [{}] is not editable", component);
@@ -161,7 +163,6 @@ public class HtmlContentSaver {
 
       workflowStatusRepository.save(workflowStatus);
 
-      component.getCurrentWorkflowInstance().setCurrentGitReference(hash);
       componentRepository.save(component);
 
 

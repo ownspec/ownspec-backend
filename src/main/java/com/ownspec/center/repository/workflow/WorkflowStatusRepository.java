@@ -20,7 +20,10 @@ public interface WorkflowStatusRepository extends JpaRepository<WorkflowStatus, 
 
   @Query("FROM WorkflowStatus status WHERE status.workflowInstance.component.id=:id AND status.id IN " +
       "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.component.id=:id)")
-  WorkflowStatus findLatestStatusByWorkflowInstanceComponentId(@Param("id") Long id);
+  WorkflowStatus findLatestWorkflowStatusByComponentId(@Param("id") Long id);
 
+  @Query("FROM WorkflowStatus status WHERE status.workflowInstance.id=:id AND status.id IN " +
+      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.id=:id)")
+  WorkflowStatus findLatestWorkflowStatusByWorkflowInstanceId(@Param("id") Long id);
 
 }

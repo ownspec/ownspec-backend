@@ -32,11 +32,6 @@ public class WorkflowInstance implements Auditable<User> {
   @ManyToOne
   private Component component;
 
-  // Denormalized from workflow status
-  @Enumerated(EnumType.STRING)
-  protected Status currentStatus;
-  protected String currentGitReference;
-
   @CreatedDate
   protected Instant createdDate;
   @ManyToOne

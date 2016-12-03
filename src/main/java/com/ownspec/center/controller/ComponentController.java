@@ -1,5 +1,7 @@
 package com.ownspec.center.controller;
 
+import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -12,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -184,6 +185,7 @@ public class ComponentController {
 
     builder.summary(contentPair.getRight());
 
+    builder.currentWorkflowStatus(newBuilderFromWorkflowStatus(componentService.getCurrentStatus(c.getId())).build());
 
     if (workflow) {
       builder.workflowInstances(componentService.getWorkflowStatuses(c.getId()));

@@ -32,7 +32,6 @@ public class ReferenceTest extends AbstractTest {
 
     // Create 3 component
     Component component0 = componentService.create(componentDto);
-
     Component component1 = componentService.create(componentDto);
     Component component2 = componentService.create(componentDto);
     Component component3 = componentService.create(componentDto);

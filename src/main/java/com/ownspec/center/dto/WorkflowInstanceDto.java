@@ -24,7 +24,7 @@ public interface WorkflowInstanceDto {
 
   Long getId();
 
-  StatusDto getCurrentStatus();
+  WorkflowStatusDto getCurrentWorkflowStatus();
 
   @Nullable
   Instant getCreatedDate();
@@ -41,7 +41,7 @@ public interface WorkflowInstanceDto {
   static ImmutableWorkflowInstanceDto.Builder newBuilderFromWorkflowInstance(WorkflowInstance workflowInstance) {
     ImmutableWorkflowInstanceDto.Builder builder = ImmutableWorkflowInstanceDto.newWorkflowInstanceDto()
         .id(workflowInstance.getId())
-        .currentStatus(StatusDto.createFromStatus(workflowInstance.getCurrentStatus()))
+        //.currentStatus(StatusDto.createFromStatus(workflowInstance.getCurrentStatus()))
         .createdDate(workflowInstance.getCreatedDate())
         .createdUser(UserDto.createFromUser(workflowInstance.getCreatedUser()));
 

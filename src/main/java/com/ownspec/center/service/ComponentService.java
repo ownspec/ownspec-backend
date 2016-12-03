@@ -12,6 +12,7 @@ import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static org.reflections.util.ConfigurationBuilder.build;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
@@ -148,8 +149,6 @@ public class ComponentService {
     component.setType(source.getType());
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
-    workflowInstance.setCurrentGitReference(pair.getRight());
-    workflowInstance.setCurrentStatus(Status.OPEN);
     workflowInstance.setComponent(component);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
@@ -197,8 +196,6 @@ public class ComponentService {
     workflowStatus.setStatus(nextStatus);
     workflowStatus.setWorkflowInstance(component.getCurrentWorkflowInstance());
 
-    component.getCurrentWorkflowInstance().setCurrentStatus(nextStatus);
-
     component = componentRepository.save(component);
     workflowStatus = workflowStatusRepository.save(workflowStatus);
 
@@ -217,6 +214,10 @@ public class ComponentService {
 
   public Pair<String, String> generateContent(Component c) {
     return contentConfiguration.htmlContentGenerator().generate(c);
+  }
+
+  public WorkflowStatus getCurrentStatus(Long id){
+    return workflowStatusRepository.findLatestWorkflowStatusByComponentId(id);
   }
 
 
@@ -312,6 +313,7 @@ public class ComponentService {
       }
       workflowInstanceDtos.add(workflowInstanceDto
           .workflowStatuses(workflowStatusDtos)
+          .currentWorkflowStatus(workflowStatusDtos.get(workflowStatusDtos.size()-1))
           .build());
     }
 
@@ -361,7 +363,10 @@ public class ComponentService {
 
     // Update and assign component to user
     WorkflowInstance currentWorkflowInstance = component.getCurrentWorkflowInstance();
-    currentWorkflowInstance.setCurrentStatus(editable ? Status.OPEN : Status.IN_VALIDATION); //todo does make it sense?
+
+    // TODO: does make it sense?
+    // NLA: I don't think so
+    updateStatus(componentId , editable ? Status.OPEN : Status.IN_VALIDATION);
     component.setCurrentWorkflowInstance(currentWorkflowInstance);
     component.setEditable(editable);
     component.setAssignedTo(assignedUser);

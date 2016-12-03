@@ -1,7 +1,5 @@
 package com.ownspec.center.service.content;
 
-import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
-import static com.ownspec.center.model.component.QComponent.component;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
@@ -21,6 +20,7 @@ import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.ComponentService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.SecurityService;
@@ -71,9 +71,17 @@ public class HtmlContentSaverTest {
   @Mock
   private ComponentService componentService;
 
+  @Mock
+  private AuthenticationService authenticationService;
+
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
+
+    User user = new User();
+    user.setUsername("foo");
+    user.setEmail("foo");
+    when(authenticationService.getAuthenticatedUser()).thenReturn(user);
   }
 
   @Test
@@ -247,8 +255,6 @@ public class HtmlContentSaverTest {
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setId(workflowInstanceId);
-    workflowInstance.setCurrentGitReference("abc");
-    workflowInstance.setCurrentStatus(Status.DRAFT);
     workflowInstance.setComponent(component);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
@@ -269,7 +275,7 @@ public class HtmlContentSaverTest {
       when(componentService.create(any())).thenReturn(component);
     }
     when(componentRepository.findOne(component.getId())).thenReturn(component);
-    when(workflowStatusRepository.findLatestStatusByWorkflowInstanceComponentId(component.getId())).thenReturn(workflowStatus);
+    when(workflowStatusRepository.findLatestWorkflowStatusByComponentId(component.getId())).thenReturn(workflowStatus);
     when(gitService.updateAndCommit(any(), eq(component.getFilePath()), any(), any())).thenReturn(hash);
     when(componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowInstance.getId())).thenReturn(1L);
     when(workflowInstanceRepository.findOne(workflowInstance.getId())).thenReturn(workflowInstance);
