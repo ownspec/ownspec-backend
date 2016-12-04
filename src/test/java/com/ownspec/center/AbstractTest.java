@@ -4,12 +4,11 @@ package com.ownspec.center;
  * Created by nlabrot on 26/09/16.
  */
 
-import com.ownspec.center.model.user.User;
 import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
-import com.ownspec.center.service.ComponentService;
+import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.GitService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.access.intercept.RunAsUserToken;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;

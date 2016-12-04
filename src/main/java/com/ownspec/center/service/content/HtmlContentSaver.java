@@ -12,7 +12,7 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
-import com.ownspec.center.service.ComponentService;
+import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.GitService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

@@ -1,16 +1,14 @@
 package com.ownspec.center.service.content;
 
 import static com.ownspec.center.service.content.HtmlContentSaver.DATA_REQUIREMENT_ID;
-import static com.ownspec.center.service.content.HtmlContentSaver.DATA_REQUIREMENT_SCM_REF;
 import static com.ownspec.center.service.content.HtmlContentSaver.DATA_WORKFLOW_INSTANCE_ID;
 
 import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
-import com.ownspec.center.service.ComponentService;
+import com.ownspec.center.service.component.ComponentService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,22 +47,26 @@ public class HtmlContentGenerator {
 
 
   public Pair<String, String> generate(Component c) {
-
-    String content = componentService.getRawContent(c);
-
-    Document document = Jsoup.parse(content);
-
-    Element body = document.getElementsByTag("body").first();
-
     try {
+      // find latest workflow status having a git reference
+      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByComponentId(c.getId());
+
+      Document document;
+      try (InputStream is = componentService.getRawContent(c, workflowStatus.getLastGitReference()).getInputStream()) {
+        document = Jsoup.parse(is, "UTF-8", c.getFilePath());
+      }
+
+      Element body = document.getElementsByTag("body").first();
+
       generateContent(c, document, body);
+
+      String substring = body.text().replaceAll("(?<=.{" + summaryLength + "})\\b.*", "...");
+
+      return Pair.of(body.html(), substring);
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
-    String substring = body.text().replaceAll("(?<=.{" + summaryLength + "})\\b.*", "...");
-
-    return Pair.of(body.html(), substring);
   }
 
   private void generateContent(Component c, Document doc, Element parent) throws IOException {
@@ -80,7 +82,7 @@ public class HtmlContentGenerator {
 
         Component nestedComponent = componentRepository.findOne(nestedComponentId);
 
-        List<WorkflowStatus> nestedWorkflowStatuses = workflowStatusRepository.findAllByWorkflowInstanceId(nestedWorkflowInstanceId , new Sort(Sort.Direction.DESC, "id" ));
+        List<WorkflowStatus> nestedWorkflowStatuses = workflowStatusRepository.findAllByWorkflowInstanceId(nestedWorkflowInstanceId, new Sort(Sort.Direction.DESC, "id"));
 
         String lastGitReference = nestedWorkflowStatuses.stream()
             .map(WorkflowStatus::getLastGitReference)

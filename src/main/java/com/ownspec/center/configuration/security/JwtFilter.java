@@ -2,6 +2,7 @@ package com.ownspec.center.configuration.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author lyrold
  * @since 2016-10-20
  */
+@Slf4j
 public class JwtFilter extends GenericFilterBean {
 
   private final String cookieName;
@@ -69,7 +71,8 @@ public class JwtFilter extends GenericFilterBean {
 
       chain.doFilter(req, res);
 
-    } catch (Exception exception) {
+    } catch (Exception e) {
+      LOG.error(e.getMessage() , e);
       response.setStatus(401);
     } finally {
       SecurityContextHolder.clearContext();

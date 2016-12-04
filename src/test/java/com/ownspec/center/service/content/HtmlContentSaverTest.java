@@ -21,7 +21,7 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
-import com.ownspec.center.service.ComponentService;
+import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.SecurityService;
 import org.apache.commons.io.IOUtils;

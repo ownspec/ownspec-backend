@@ -35,6 +35,11 @@ public enum Status {
     return getTransitions(this);
   }
 
+  public boolean isAllowedTransition(Status to){
+    return getTransitions().contains(to);
+  }
+
+
   public static List<Status> getTransitions(Status status) {
     switch (status) {
       case OPEN:

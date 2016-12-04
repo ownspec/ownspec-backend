@@ -1,4 +1,4 @@
-package com.ownspec.center.service;
+package com.ownspec.center.service.component;
 
 import static com.ownspec.center.dto.ComponentDto.newBuilderFromComponent;
 import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
@@ -12,17 +12,17 @@ import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.reflections.util.ConfigurationBuilder.build;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
+import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ComponentReferenceDto;
+import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
-import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
@@ -33,7 +33,6 @@ import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
-import com.ownspec.center.repository.CommentRepository;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.TaskRepository;
 import com.ownspec.center.repository.UserRepository;
@@ -41,12 +40,14 @@ import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.AuthenticationService;
+import com.ownspec.center.service.EmailService;
+import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -90,8 +91,6 @@ public class ComponentService {
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
-  @Autowired
-  private CommentRepository commentRepository;
 
   @Autowired
   private AuthenticationService authenticationService;
@@ -174,11 +173,13 @@ public class ComponentService {
   /**
    * Update component
    * The component is locked to ensure concurrent modification
+   *
    * @param source
    * @param id
    * @return
    */
   public Component update(ComponentDto source, Long id) {
+    // Lock
     Component target = requireNonNull(componentRepository.findOneAndLock(id));
     mergeWithNotNullProperties(source, target);
 
@@ -190,12 +191,58 @@ public class ComponentService {
   }
 
   public Component updateStatus(Long id, Status nextStatus) {
+    // Lock
     Component component = requireNonNull(componentRepository.findOneAndLock(id));
 
+    // Retrieve current workflow status
+    WorkflowStatus currentWorkflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
+
+    // Check if the transition is possible
+    if (!currentWorkflowStatus.getStatus().isAllowedTransition(nextStatus)) {
+      throw new IllegalStateException("Illegal transition");
+    }
+
+    // Create and stave the next status
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(nextStatus);
     workflowStatus.setWorkflowInstance(component.getCurrentWorkflowInstance());
+    workflowStatus = workflowStatusRepository.save(workflowStatus);
 
+    return component;
+  }
+
+  public Component newWorkflowInstance(Long id) {
+    // Lock
+    Component component = requireNonNull(componentRepository.findOneAndLock(id));
+
+    // Retrieve current workflow status
+    WorkflowStatus currentWorkflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
+
+    // Check if the current status is final
+    if (!currentWorkflowStatus.getStatus().isFinal()) {
+      throw new IllegalStateException("Illegal transition");
+    }
+
+    // Retrieve current workflow status
+    WorkflowStatus lastWorkflowStatusWithGit = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
+
+
+
+    // Create and stave the next status
+    WorkflowInstance workflowInstance = new WorkflowInstance();
+    workflowInstance.setComponent(component);
+
+    WorkflowStatus workflowStatus = new WorkflowStatus();
+    workflowStatus.setStatus(Status.OPEN);
+    workflowStatus.setWorkflowInstance(workflowInstance);
+    // Use the last know git reference
+    // Maybe a new git commit will be more suitable
+    //workflowStatus.setFirstGitReference(lastWorkflowStatusWithGit.getLastGitReference());
+    //workflowStatus.setLastGitReference(lastWorkflowStatusWithGit.getLastGitReference());
+
+    component.setCurrentWorkflowInstance(workflowInstance);
+
+    workflowInstanceRepository.save(workflowInstance);
     component = componentRepository.save(component);
     workflowStatus = workflowStatusRepository.save(workflowStatus);
 
@@ -207,7 +254,18 @@ public class ComponentService {
   }
 
   public Component updateContent(Component component, byte[] content) {
-    contentConfiguration.htmlContentSaver().save(component, content);
+    // Lock
+    component = requireNonNull(componentRepository.findOneAndLock(component.getId()));
+
+    // Retrieve current workflow status
+    WorkflowStatus currentWorkflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
+
+    // Check if the transition is legit
+    if (currentWorkflowStatus.getStatus().isEditable()) {
+      contentConfiguration.htmlContentSaver().save(component, content);
+    } else {
+      throw new IllegalStateException("Content update is not allowed for this statue");
+    }
     return component;
   }
 
@@ -216,18 +274,17 @@ public class ComponentService {
     return contentConfiguration.htmlContentGenerator().generate(c);
   }
 
-  public WorkflowStatus getCurrentStatus(Long id){
+  public WorkflowStatus getCurrentStatus(Long id) {
     return workflowStatusRepository.findLatestWorkflowStatusByComponentId(id);
   }
 
 
-  public String getRawContent(Component c) {
+  public Resource getHeadRawContent(Component c) {
     try {
       if (c.getFilePath() != null) {
-
-        return FileUtils.readFileToString(new File(c.getFilePath()), "UTF-8");
+        return gitService.getFile(c.getFilePath());
       } else {
-        return "";
+        throw new IllegalStateException("component file does not exist");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -253,17 +310,6 @@ public class ComponentService {
     componentRepository.delete(id);
   }
 
-  public List<Comment> getComments(Long componentId) {
-    return commentRepository.findAllByComponentId(componentId, new Sort(Sort.Direction.DESC, "id"));
-  }
-
-  public Comment addComment(Long id, String value) {
-    Comment comment = new Comment();
-    comment.setValue(value);
-    Component target = requireNonNull(componentRepository.findOne(id));
-    comment.setComponent(target);
-    return commentRepository.save(comment);
-  }
 
   public List<Revision> getRevisionsForComponent(Long id) {
     return null;
@@ -286,7 +332,9 @@ public class ComponentService {
       for (WorkflowStatus workflowStatus : workflowStatusRepository.findAllByWorkflowInstanceId(workflowInstance.getId(), new Sort("id"))) {
         List<ChangeDto> changeDtos = new ArrayList<>();
 
-        if (workflowStatus.getFirstGitReference() != null) {
+        // Workflow status has an index and we have not finished parsing commit
+        // commitIndex may be = commits.size then the current workflow instance has not commit, eg. a new workflow instance is created
+        if (workflowStatus.getFirstGitReference() != null && commitIndex < commits.size()) {
           Validate.isTrue(commits.get(commitIndex).name().equals(workflowStatus.getFirstGitReference()));
 
           while (commitIndex < commits.size()) {
@@ -313,7 +361,7 @@ public class ComponentService {
       }
       workflowInstanceDtos.add(workflowInstanceDto
           .workflowStatuses(workflowStatusDtos)
-          .currentWorkflowStatus(workflowStatusDtos.get(workflowStatusDtos.size()-1))
+          .currentWorkflowStatus(workflowStatusDtos.get(workflowStatusDtos.size() - 1))
           .build());
     }
 
@@ -330,21 +378,6 @@ public class ComponentService {
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
     return gitService.diff(component.getFilePath(), fromRevision, toRevision);
-  }
-
-
-  public List<ComponentReferenceDto> getComponentReferences(Long componentId) {
-    Component component = findOne(componentId);
-
-    return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId(), component.getCurrentWorkflowInstance().getId())
-        .stream()
-        .map(r -> newComponentReferenceDto()
-            .source(newBuilderFromComponent(component).build())
-            .sourceWorkflowInstance(newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance()).build())
-            .target(newBuilderFromComponent(r.getTarget()).build())
-            .targetWorkflowInstance(newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance()).build())
-            .build()
-        ).collect(Collectors.toList());
   }
 
   public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {
@@ -366,7 +399,7 @@ public class ComponentService {
 
     // TODO: does make it sense?
     // NLA: I don't think so
-    updateStatus(componentId , editable ? Status.OPEN : Status.IN_VALIDATION);
+    updateStatus(componentId, editable ? Status.OPEN : Status.IN_VALIDATION);
     component.setCurrentWorkflowInstance(currentWorkflowInstance);
     component.setEditable(editable);
     component.setAssignedTo(assignedUser);
@@ -428,4 +461,8 @@ public class ComponentService {
 
     return "";
   }
+
+
+
+
 }

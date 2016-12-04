@@ -1,11 +1,17 @@
 package com.ownspec.center.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.core.io.Resource;
 
 import java.beans.FeatureDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
@@ -42,5 +48,15 @@ public final class OsUtils {
         .toArray(String[]::new);
   }
 
+
+  public static String toString(Resource resource){
+
+    try (InputStream inputStream = resource.getInputStream()) {
+      return IOUtils.toString(inputStream , UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+  }
 
 }

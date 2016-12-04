@@ -7,6 +7,7 @@ import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
+import com.ownspec.center.util.OsUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
@@ -57,18 +58,18 @@ public class ReferenceTest extends AbstractTest {
     Assert.assertEquals("<p>test1</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\"" + component1.getId() + "\" data-workflow-instance-id=\"" + component1.getCurrentWorkflowInstance().getId() + "\"></div> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component0));
+        "<p>ddddddddddddddddddd</p>", OsUtils.toString(componentService.getHeadRawContent(component0)));
     Assert.assertEquals("<p>ddddddddddddddddddd</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\"" + component2.getId() + "\" data-workflow-instance-id=\"" + component2.getCurrentWorkflowInstance().getId() + "\"></div> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component1));
+        "<p>ddddddddddddddddddd</p>", OsUtils.toString(componentService.getHeadRawContent(component1)));
     Assert.assertEquals("<p>ddddddddddddddddddd</p> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\""+component3.getId()+"\" data-workflow-instance-id=\""+component3.getCurrentWorkflowInstance().getId()+"\"></div> \n" +
         "<p>ddddddddddddddddddd</p> \n" +
-        "<p>ddddddddddddddddddd</p>", componentService.getRawContent(component2));
-    Assert.assertEquals("<p>test1</p>", componentService.getRawContent(component3));
+        "<p>ddddddddddddddddddd</p>", OsUtils.toString(componentService.getHeadRawContent(component2)));
+    Assert.assertEquals("<p>test1</p>", OsUtils.toString(componentService.getHeadRawContent(component3)));
 
 
     // Update component 3 status
@@ -88,10 +89,10 @@ public class ReferenceTest extends AbstractTest {
     // Check component 2 content is updated
     Assert.assertEquals("<p>modified</p> \n" +
         "<div class=\"requirements\" data-requirement-id=\""+component3.getId()+"\" data-workflow-instance-id=\""+component3.getCurrentWorkflowInstance().getId()+"\"></div> \n" +
-        "<p>modified</p>", componentService.getRawContent(component2));
+        "<p>modified</p>", OsUtils.toString(componentService.getHeadRawContent(component2)));
 
     // But not component 3 as it is IN_VALIDATION
-    Assert.assertEquals("<p>test1</p>", componentService.getRawContent(component3));
+    Assert.assertEquals("<p>test1</p>", OsUtils.toString(componentService.getHeadRawContent(component3)));
 
 
     String expected = IOUtils.toString(new ClassPathResource("/reference/expected_content.html").getInputStream(), UTF_8);

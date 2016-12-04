@@ -166,6 +166,10 @@ public class GitService {
   }
 
 
+  public Resource getFile(String filePath) throws IOException {
+    return getFile(filePath , "HEAD");
+  }
+
   public Resource getFile(String filePath, String revision) throws IOException {
     Repository repository = git.getRepository();
 
