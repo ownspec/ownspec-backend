@@ -41,6 +41,7 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
+import com.ownspec.center.service.CompositionService;
 import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.content.ContentConfiguration;
@@ -109,6 +110,10 @@ public class ComponentService {
 
   @Autowired
   private ContentConfiguration contentConfiguration;
+
+  @Autowired
+  private CompositionService compositionService;
+
 
   public List<Component> findAll(Long projectId, ComponentType[] types) {
 
@@ -463,6 +468,9 @@ public class ComponentService {
   }
 
 
+  public Resource print(Long id) throws IOException {
 
-
+    Component component = findOne(id);
+    return compositionService.htmlToPdf(component, getHeadRawContent(component));
+  }
 }

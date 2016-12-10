@@ -11,6 +11,7 @@ import com.ownspec.center.service.component.ComponentConverter;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -179,6 +180,15 @@ public class ComponentController {
   }
 
 
+
+  @RequestMapping(value = "/{id}/print", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<Resource> print(@PathVariable("id") Long id) throws IOException {
+
+    return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_PDF)
+        .header("Content-Disposition" , "attachment; filename=\"filename.pdf\"")
+        .body(componentService.print(id));
+  }
 
 
 }

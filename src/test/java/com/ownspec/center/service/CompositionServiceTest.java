@@ -1,15 +1,24 @@
 package com.ownspec.center.service;
 
+import static com.ownspec.center.model.component.QComponent.component;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.ownspec.center.AbstractTest;
+import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.user.User;
+import freemarker.template.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,11 +27,16 @@ import java.util.stream.Collectors;
  * Created by lyrold on 09/10/2016.
  */
 public class CompositionServiceTest extends AbstractTest {
+
   @Autowired
   private CompositionService compositionService;
 
+
   @Test
   public void compose() throws Exception {
+
+    compositionService.getConfiguration().getTemplate("");
+
     Map<String, Object> model = new HashMap<>();
     model.put("firstname", "Lyrold");
     model.put("lastname", "Careto");
@@ -67,4 +81,25 @@ public class CompositionServiceTest extends AbstractTest {
 
   }
 
+
+
+  @Test
+  public void testPdf() throws Exception {
+
+
+    User user = new User();
+    user.setFirstName("firstname");
+    user.setLastName("lastname");
+
+    Component component = new Component();
+    component.setCreatedUser(user);
+    component.setCreatedDate(Instant.EPOCH);
+
+
+
+    component.setTitle("foo");
+    Resource file = compositionService.htmlToPdf(component , new ByteArrayResource("<html><body>foo</body></html>".getBytes(UTF_8)));
+    System.out.println("ok");
+
+  }
 }

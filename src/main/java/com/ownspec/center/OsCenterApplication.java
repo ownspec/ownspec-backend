@@ -5,6 +5,7 @@ import org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoC
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityFilterAutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -20,7 +21,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication(exclude = {
     ManagementWebSecurityAutoConfiguration.class,
     SecurityAutoConfiguration.class,
-    SecurityFilterAutoConfiguration.class
+    SecurityFilterAutoConfiguration.class,
+    FreeMarkerAutoConfiguration.class
 })
 @EnableWebSecurity
 public class OsCenterApplication {
