@@ -8,11 +8,15 @@ import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowSta
 import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ComponentReferenceDto;
+import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.ImmutableComponentDto;
+import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.CommentService;
+import com.ownspec.center.service.EstimatedTimeService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,6 +42,8 @@ public class ComponentConverter {
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
+  @Autowired
+  private EstimatedTimeService estimatedTimeService;
 
   public ComponentDto toDto(Long id, boolean content, boolean workflow, boolean comments, boolean references) {
     return toDto(componentService.findOne(id), content, workflow, comments, references);
@@ -67,13 +73,41 @@ public class ComponentConverter {
     }
 
     if (references) {
-      builder.componentReferences(getComponentReferences(c));
+      List<ComponentReferenceDto> componentReferences = getComponentReferences(c);
+      builder.componentReferences(componentReferences);
+//      builder.coverageStatus(getGlobalCoverageStatus(componentReferences));
+    } else {
+      builder.coverageStatus(c.getCoverageStatus());
     }
+
+    if (c.isRequirement()) {
+      builder.requirementType(c.getRequirementType());
+    }
+    if (c.getAssignedTo() != null) {
+      builder.assignedTo(UserDto.createFromUser(c.getAssignedTo()));
+    }
+    builder.estimatedTimes(estimatedTimeService.getEstimatedTimes(c.getId()).stream()
+        .map(EstimatedTimeDto::createFromEstimatedTime)
+        .collect(Collectors.toList()));
+
 
     return builder.build();
   }
 
-
+  private CoverageStatus getGlobalCoverageStatus(List<ComponentReferenceDto> componentReferences) {
+    for (ComponentReferenceDto componentReference : componentReferences) {
+      CoverageStatus coverageStatus = componentReference.getSource().getCoverageStatus();
+      if (CoverageStatus.FAILED.equals(coverageStatus)) {
+        return CoverageStatus.FAILED;
+      } else {
+        if (CoverageStatus.UNCOVERED.equals(coverageStatus) || CoverageStatus.IN_PROGRESS.equals(coverageStatus)) {
+          return CoverageStatus.UNCOVERED;
+        }
+        return CoverageStatus.OK;
+      }
+    }
+    return null;
+  }
 
 
   public List<ComponentReferenceDto> getComponentReferences(Component component) {
@@ -81,17 +115,19 @@ public class ComponentConverter {
     return componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId(), component.getCurrentWorkflowInstance().getId())
         .stream()
         .map(r -> newComponentReferenceDto()
-            .source(toDto(r.getSource() , false,false, false, false))
+            .source(toDto(r.getSource(), false, false, false, false))
             .sourceWorkflowInstance(
                 newBuilderFromWorkflowInstance(r.getSourceWorkflowInstance())
-                    .currentWorkflowStatus(newBuilderFromWorkflowStatus(workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(r.getSourceWorkflowInstance().getId())).build())
+                    .currentWorkflowStatus(
+                        newBuilderFromWorkflowStatus(workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(r.getSourceWorkflowInstance().getId())).build())
                     .build()
             )
 
-            .target(toDto(r.getTarget() , false,false, false, false))
+            .target(toDto(r.getTarget(), false, false, false, false))
             .targetWorkflowInstance(
                 newBuilderFromWorkflowInstance(r.getTargetWorkflowInstance())
-                    .currentWorkflowStatus(newBuilderFromWorkflowStatus(workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(r.getTargetWorkflowInstance().getId())).build())
+                    .currentWorkflowStatus(
+                        newBuilderFromWorkflowStatus(workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(r.getTargetWorkflowInstance().getId())).build())
                     .build())
             .build()
         ).collect(Collectors.toList());

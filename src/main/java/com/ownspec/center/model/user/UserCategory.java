@@ -11,6 +11,15 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class UserCategory {
   private String category;
+  private Double manDayValue;
 
-  private Double hourlyPrice;
+  public UserCategory(){
+
+  }
+
+  public UserCategory(String category, Double manDayValue){
+    this.category = category;
+    this.manDayValue = manDayValue;
+  }
+
 }

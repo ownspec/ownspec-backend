@@ -2,19 +2,21 @@ package com.ownspec.center.dto;
 
 import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.model.EstimatedTime;
+import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.component.RequirementType;
+import com.ownspec.center.model.user.UserCategory;
+import org.immutables.value.Value;
 
 import java.time.Instant;
 import java.util.List;
-
-import com.ownspec.center.model.component.Component;
-import org.immutables.value.Value;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.Comment;
-import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.workflow.Status;
+import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * Created by nlabrot on 24/09/16.
@@ -65,18 +67,36 @@ public interface ComponentDto {
   @Nullable
   List<ComponentReferenceDto> getComponentReferences();
 
-  static ImmutableComponentDto.Builder newBuilderFromComponent(Component c){
+  @Nullable
+  Boolean getRequiredTest();
+
+  @Nullable
+  List<EstimatedTimeDto> getEstimatedTimes();
+
+  @Nullable
+  UserDto getAssignedTo();
+
+  @Nullable
+  DistributionLevel getDistributionLevel();
+
+  @Nullable
+  RequirementType getRequirementType();
+
+  @Nullable
+  CoverageStatus getCoverageStatus();
+
+  static ImmutableComponentDto.Builder newBuilderFromComponent(Component c) {
     return newComponentDto()
         .id(c.getId())
         .projectId(c.getProject() != null ? c.getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getType())
         .createdDate(c.getCreatedDate())
-        .createdUser(UserDto.createFromUser(c.getCreatedUser()));
+        .createdUser(UserDto.createFromUser(c.getCreatedUser()))
+        .requiredTest(c.isRequiredTest())
+        .distributionLevel(c.getDistributionLevel())
+        .coverageStatus(c.getCoverageStatus());
   }
-
-
-
 
 
 }

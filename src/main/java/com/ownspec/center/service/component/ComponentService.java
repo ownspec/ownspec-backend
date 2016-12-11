@@ -1,8 +1,6 @@
 package com.ownspec.center.service.component;
 
-import static com.ownspec.center.dto.ComponentDto.newBuilderFromComponent;
 import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
-import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
 import static com.ownspec.center.model.DistributionLevel.PUBLIC;
@@ -15,10 +13,8 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
-import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ComponentReferenceDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
+import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
@@ -43,6 +39,7 @@ import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.CompositionService;
 import com.ownspec.center.service.EmailService;
+import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.AbstractMimeMessage;
@@ -66,7 +63,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -88,6 +84,9 @@ public class ComponentService {
 
   @Autowired
   private WorkflowInstanceRepository workflowInstanceRepository;
+
+  @Autowired
+  private EstimatedTimeService estimatedTimeService;
 
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
@@ -164,6 +163,14 @@ public class ComponentService {
     component.setCurrentWorkflowInstance(workflowInstance);
     component.setFilePath(pair.getLeft().getAbsolutePath());
 
+    component.setCoverageStatus(source.getCoverageStatus());
+    component.setRequirementType(source.getRequirementType());
+
+    if (source.getEstimatedTimes() != null) {
+      for (EstimatedTimeDto estimatedTimeDto : source.getEstimatedTimes()) {
+        estimatedTimeService.addEstimatedTime(component, estimatedTimeDto);
+      }
+    }
     workflowInstanceRepository.save(workflowInstance);
     component = componentRepository.save(component);
     workflowStatus = workflowStatusRepository.save(workflowStatus);
@@ -229,8 +236,8 @@ public class ComponentService {
     }
 
     // Retrieve current workflow status
-    WorkflowStatus lastWorkflowStatusWithGit = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
-
+    WorkflowStatus lastWorkflowStatusWithGit =
+        workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
 
 
     // Create and stave the next status

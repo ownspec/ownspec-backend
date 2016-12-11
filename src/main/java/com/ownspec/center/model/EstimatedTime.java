@@ -1,8 +1,9 @@
-package com.ownspec.center.model.component;
+package com.ownspec.center.model;
 
 import com.ownspec.center.model.audit.Auditable;
+import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.model.workflow.WorkflowInstance;
+import com.ownspec.center.model.user.UserCategory;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,48 +12,51 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 /**
- * A reference is an oriented path between a source
- * <p>
- * Created by nlabrot on 23/09/16.
+ * Created on 11/12/2016
+ *
+ * @author lyrold
  */
 @Data
 @Entity
-public class ComponentReference implements Persistable<Long>, Auditable<User> {
+public class EstimatedTime implements Auditable<User>, Persistable<Long> {
 
   @Id
   @GeneratedValue
   private Long id;
 
-  @ManyToOne
-  private Component source;
-  // A reference target a component in a specific workflow cycle
-  @ManyToOne
-  private WorkflowInstance sourceWorkflowInstance;
+  @Embedded
+  UserCategory userCategory;
 
-
-  @ManyToOne
-  private Component target;
-  // A reference target a component in a specific workflow cycle
-  @ManyToOne
-  private WorkflowInstance targetWorkflowInstance;
-
+  Double time;
+  @Enumerated(EnumType.STRING)
+  TimeUnit timeUnit;
 
   @CreatedDate
-  protected Instant createdDate;
+  Instant createdDate;
+
   @ManyToOne
   @CreatedBy
-  protected User createdUser;
+  User createdUser;
+
   @LastModifiedDate
-  protected Instant lastModifiedDate;
+  Instant lastModifiedDate;
+
   @ManyToOne
   @LastModifiedBy
-  protected User lastModifiedUser;
+  User lastModifiedUser;
+
+  @ManyToOne
+  Component component;
 
   @Override
   public boolean isNew() {
