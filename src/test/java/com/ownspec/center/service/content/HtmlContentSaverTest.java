@@ -21,9 +21,8 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
-import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.GitService;
-import com.ownspec.center.service.SecurityService;
+import com.ownspec.center.service.component.ComponentService;
 import org.apache.commons.io.IOUtils;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple3;
@@ -64,9 +63,6 @@ public class HtmlContentSaverTest {
 
   @Mock
   private WorkflowInstanceRepository workflowInstanceRepository;
-
-  @Mock
-  private SecurityService securityService;
 
   @Mock
   private ComponentService componentService;

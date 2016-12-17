@@ -26,14 +26,16 @@ import com.ownspec.center.model.Task;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.user.User;
+import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.TaskRepository;
-import com.ownspec.center.repository.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
+import com.ownspec.center.repository.user.UserComponentRepository;
+import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
@@ -65,6 +67,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -114,6 +117,9 @@ public class ComponentService {
 
   @Autowired
   private CompositionService compositionService;
+
+  @Autowired
+  private UserComponentRepository userComponentRepository;
 
 
   public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
@@ -489,4 +495,41 @@ public class ComponentService {
 
     return compositionService.htmlToPdf(component, new ByteArrayResource(generate.getLeft().getBytes(UTF_8)));
   }
+
+  public ResponseEntity addVisit(Long id) {
+    User authenticatedUser = authenticationService.getAuthenticatedUser();
+    UserComponent foundUserComponent = userComponentRepository.findOneByUserIdAndComponentId(
+        authenticatedUser.getId(), id);
+
+    if (foundUserComponent == null) {
+      Component component = componentRepository.findOne(id);
+      UserComponent userComponent = new UserComponent();
+      userComponent.setUser(authenticatedUser);
+      userComponent.setComponent(component);
+      userComponent.setComponentType(component.getType());
+      userComponent.setVisitedTime(1L);
+      userComponentRepository.save(userComponent);
+    } else {
+      foundUserComponent.addVisit();
+      userComponentRepository.save(foundUserComponent);
+    }
+
+    return ResponseEntity.ok().build();
+  }
+
+  public List<ComponentDto> getLastVisited(ComponentType componentType) {
+    User authenticatedUser = authenticationService.getAuthenticatedUser();
+    return userComponentRepository.findTop3ByUserIdAndComponentTypeOrderByLastModifiedDateDesc(authenticatedUser.getId(), componentType).stream()
+        .map(uc -> ComponentDto.fromComponent(uc.getComponent()))
+        .collect(Collectors.toList());
+  }
+
+  public List<ComponentDto> getFavorites(ComponentType type) {
+    User authenticatedUser = authenticationService.getAuthenticatedUser();
+    return userComponentRepository.findTop3ByUserIdAndComponentTypeAndFavoriteTrueOrderByLastModifiedDateDesc(authenticatedUser.getId(), type)
+        .stream()
+        .map(uc -> ComponentDto.fromComponent(uc.getComponent()))
+        .collect(Collectors.toList());
+  }
+
 }

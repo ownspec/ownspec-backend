@@ -1,7 +1,7 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.user;
 
+import com.ownspec.center.model.Project;
 import com.ownspec.center.model.audit.Auditable;
-import com.ownspec.center.model.user.User;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,38 +14,50 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
 
 /**
- * Created by lyrold on 23/08/2016.
+ * Created on 03/12/2016
+ *
+ * @author lyrold
  */
 @Data
 @Entity
-public class Project implements Persistable<Long>, Auditable<User> {
+public class UserProject implements Persistable<Long>, Auditable<User> {
 
   @Id
   @GeneratedValue
   private Long id;
-  private String title;
-  private String description;
+
+  @ManyToOne
+  private User user;
+
+  @ManyToOne
+  private Project project;
+
+  private boolean favorite;
+
+  private Long visitedTime;
+
+  //todo access mode;
 
   @CreatedDate
-  protected Instant createdDate;
+  private Instant createdDate;
   @ManyToOne
   @CreatedBy
-  protected User createdUser;
+  private User createdUser;
   @LastModifiedDate
-  protected Instant lastModifiedDate;
+  private Instant lastModifiedDate;
   @ManyToOne
   @LastModifiedBy
-  protected User lastModifiedUser;
-
-  @ManyToOne
-  protected User manager;
+  private User lastModifiedUser;
 
   @Override
-  @Transient
   public boolean isNew() {
     return null == getId();
   }
+
+  public void addVisit() {
+    visitedTime++;
+  }
+
 }

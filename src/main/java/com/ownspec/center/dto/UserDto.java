@@ -33,7 +33,6 @@ public interface UserDto {
   String getRole();
 
 
-
   static UserDto createFromUser(User user) {
     return ImmutableUserDto.newUserDto()
         .username(user.getUsername())
@@ -43,8 +42,6 @@ public interface UserDto {
         .lastName(user.getLastName())
         .role(user.getRole())
         .build();
-
-
   }
 
 }

@@ -5,17 +5,14 @@ import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.DistributionLevel;
-import com.ownspec.center.model.EstimatedTime;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.component.RequirementType;
-import com.ownspec.center.model.user.UserCategory;
 import org.immutables.value.Value;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -96,6 +93,10 @@ public interface ComponentDto {
         .requiredTest(c.isRequiredTest())
         .distributionLevel(c.getDistributionLevel())
         .coverageStatus(c.getCoverageStatus());
+  }
+
+  public static ComponentDto fromComponent(Component component) {
+    return newBuilderFromComponent(component).build();
   }
 
 

@@ -1,5 +1,8 @@
 package com.ownspec.center.controller;
 
+import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
+import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
+
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
@@ -54,11 +57,21 @@ public class ComponentController {
       @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
       @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
       @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+      @RequestParam(value = "mode", required = false) RequestFilterMode mode,
       @RequestParam(value = "q", required = false) String query
-                                   ) {
-    return componentService.findAll(projectId, types, query).stream()
-                           .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
-                           .collect(Collectors.toList());
+
+  ) {
+
+    //todo re-factor
+    if (LAST_VISITED_ONLY.equals(mode)) {
+      return componentService.getLastVisited(types[0]);
+    } else if (FAVORITES_ONLY.equals(mode)) {
+      return componentService.getFavorites(types[0]);
+    }
+
+    return componentService.findAll(projectId, types).stream()
+        .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
+        .collect(Collectors.toList());
   }
 
   @RequestMapping("/{id}")
@@ -73,7 +86,7 @@ public class ComponentController {
   }
 
 
-  @RequestMapping(value ="/create" ,method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseBody
   public ResponseEntity create(@RequestBody ComponentDto source) throws IOException, GitAPIException {
     componentService.create(source);
@@ -101,7 +114,7 @@ public class ComponentController {
     return componentConverter.toDto(c, true, true, true, true);
   }
 
-  @RequestMapping(value ="/{id}/update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @RequestMapping(value = "/{id}/update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseBody
   public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) {
     componentService.update(source, id);
@@ -191,5 +204,11 @@ public class ComponentController {
         .body(componentService.composePdf(id));
   }
 
+
+  @PostMapping("/{id}/addVisit")
+  @ResponseBody
+  public ResponseEntity addVisit(@PathVariable("id") Long id) {
+    return componentService.addVisit(id);
+  }
 
 }

@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-  public List<Comment> findAllByComponentId(Long id, Sort sort);
+  List<Comment> findAllByComponentId(Long id, Sort sort);
 
 }

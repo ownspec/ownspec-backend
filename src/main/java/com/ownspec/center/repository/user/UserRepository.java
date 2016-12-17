@@ -1,4 +1,4 @@
-package com.ownspec.center.repository;
+package com.ownspec.center.repository.user;
 
 import com.ownspec.center.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

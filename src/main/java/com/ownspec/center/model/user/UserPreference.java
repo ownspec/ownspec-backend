@@ -21,4 +21,5 @@ public class UserPreference {
 
   @Column(columnDefinition = "boolean default true")
   private boolean notifyMeOnWatchedDocumentChange;
+
 }

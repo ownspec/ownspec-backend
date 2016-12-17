@@ -1,13 +1,13 @@
 package com.ownspec.center.dto;
 
-import javax.annotation.Nullable;
-
-import java.time.Instant;
-
-import org.immutables.value.Value;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.model.Project;
+import org.immutables.value.Value;
+
+import java.time.Instant;
+import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Created by nlabrot on 04/10/16.
@@ -26,10 +26,29 @@ public interface ProjectDto {
   @Nullable
   String getDescription();
 
-
   @Nullable
   Instant getCreatedDate();
 
   @Nullable
   UserDto getCreatedUser();
+
+  @Nullable
+  UserDto getManager();
+
+  @Nullable
+  List<UserProjectDto> getProjectUsers();
+
+
+  public static ImmutableProjectDto.Builder newBuilderFromProject(Project project) {
+    return ImmutableProjectDto.newProjectDto()
+        .id(project.getId())
+        .title(project.getTitle())
+        .description(project.getDescription())
+        .createdDate(project.getCreatedDate())
+        .createdUser(UserDto.createFromUser(project.getCreatedUser()));
+  }
+
+  public static ProjectDto fromProject(Project project) {
+    return newBuilderFromProject(project).build();
+  }
 }

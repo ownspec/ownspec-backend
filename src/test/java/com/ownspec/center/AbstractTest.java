@@ -4,7 +4,7 @@ package com.ownspec.center;
  * Created by nlabrot on 26/09/16.
  */
 
-import com.ownspec.center.repository.UserRepository;
+import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
@@ -57,7 +57,7 @@ public abstract class AbstractTest {
   protected EntityManager entityManager;
 
   @Autowired
-  private UserRepository userRepository;
+  protected UserRepository userRepository;
 
 
   @Before

@@ -6,7 +6,7 @@ import static java.util.Objects.requireNonNull;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.exception.UserAlreadyExistsException;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.repository.UserRepository;
+import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.util.AbstractMimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
