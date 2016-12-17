@@ -10,10 +10,13 @@ import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ComponentReferenceDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.ImmutableComponentDto;
+import com.ownspec.center.dto.UserComponentDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
+import com.ownspec.center.repository.user.UserComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.EstimatedTimeService;
@@ -44,6 +47,9 @@ public class ComponentConverter {
 
   @Autowired
   private EstimatedTimeService estimatedTimeService;
+
+  @Autowired
+  private UserComponentRepository userComponentRepository;
 
   public ComponentDto toDto(Long id, boolean content, boolean workflow, boolean comments, boolean references) {
     return toDto(componentService.findOne(id), content, workflow, comments, references);
@@ -85,6 +91,15 @@ public class ComponentConverter {
     }
     if (c.getAssignedTo() != null) {
       builder.assignedTo(UserDto.createFromUser(c.getAssignedTo()));
+    }
+
+    List<UserComponent> userComponents = userComponentRepository.findAllByComponentId(c.getId());
+    if (userComponents != null) {
+      builder.componentUsers(
+          userComponents.stream()
+              .map(UserComponentDto::fromUserComponent)
+              .collect(Collectors.toList())
+      );
     }
     builder.estimatedTimes(estimatedTimeService.getEstimatedTimes(c.getId()).stream()
         .map(EstimatedTimeDto::createFromEstimatedTime)

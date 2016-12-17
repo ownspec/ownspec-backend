@@ -62,14 +62,15 @@ public class ComponentController {
 
   ) {
 
-    //todo re-factor
+    List<Component> searchedComponents;
     if (LAST_VISITED_ONLY.equals(mode)) {
-      return componentService.getLastVisited(types[0]);
+      searchedComponents = componentService.getLastVisited(types[0]);
     } else if (FAVORITES_ONLY.equals(mode)) {
-      return componentService.getFavorites(types[0]);
+      searchedComponents = componentService.getFavorites(types[0]);
+    } else {
+      searchedComponents = componentService.findAll(projectId, types);
     }
-
-    return componentService.findAll(projectId, types).stream()
+    return searchedComponents.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
         .collect(Collectors.toList());
   }

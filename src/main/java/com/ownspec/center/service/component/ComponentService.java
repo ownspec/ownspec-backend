@@ -16,6 +16,7 @@ import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
+import com.ownspec.center.dto.UserComponentDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
@@ -43,6 +44,7 @@ import com.ownspec.center.service.CompositionService;
 import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
+import com.ownspec.center.service.UserService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.service.content.HtmlContentGenerator;
 import com.ownspec.center.util.AbstractMimeMessage;
@@ -121,6 +123,8 @@ public class ComponentService {
   @Autowired
   private UserComponentRepository userComponentRepository;
 
+  @Autowired
+  private UserService userService;
 
   public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
 
@@ -178,11 +182,25 @@ public class ComponentService {
     component.setCoverageStatus(source.getCoverageStatus());
     component.setRequirementType(source.getRequirementType());
 
-    if (source.getEstimatedTimes() != null) {
-      for (EstimatedTimeDto estimatedTimeDto : source.getEstimatedTimes()) {
-        estimatedTimeService.addEstimatedTime(component, estimatedTimeDto);
+    List<EstimatedTimeDto> estimatedTimes = source.getEstimatedTimes();
+    if (estimatedTimes != null) {
+      for (EstimatedTimeDto estimatedTime : estimatedTimes) {
+        estimatedTimeService.addEstimatedTime(component, estimatedTime);
       }
     }
+
+    List<UserComponentDto> componentUsers = source.getComponentUsers();
+    if (componentUsers != null) {
+      for (UserComponentDto componentUser : componentUsers) {
+        UserComponent userComponent = new UserComponent();
+        Component c = componentRepository.findOne(componentUser.getComponent().getId());
+        userComponent.setComponent(c);
+        userComponent.setComponentType(c.getType());
+        userComponent.setUser(userService.loadUserByUsername(componentUser.getUser().getUsername()));
+        userComponentRepository.save(userComponent);
+      }
+    }
+
     workflowInstanceRepository.save(workflowInstance);
     component = componentRepository.save(component);
     workflowStatus = workflowStatusRepository.save(workflowStatus);
@@ -517,18 +535,18 @@ public class ComponentService {
     return ResponseEntity.ok().build();
   }
 
-  public List<ComponentDto> getLastVisited(ComponentType componentType) {
+  public List<Component> getLastVisited(ComponentType componentType) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();
     return userComponentRepository.findTop3ByUserIdAndComponentTypeOrderByLastModifiedDateDesc(authenticatedUser.getId(), componentType).stream()
-        .map(uc -> ComponentDto.fromComponent(uc.getComponent()))
+        .map(uc -> componentRepository.findOne(uc.getComponent().getId()))
         .collect(Collectors.toList());
   }
 
-  public List<ComponentDto> getFavorites(ComponentType type) {
+  public List<Component> getFavorites(ComponentType type) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();
     return userComponentRepository.findTop3ByUserIdAndComponentTypeAndFavoriteTrueOrderByLastModifiedDateDesc(authenticatedUser.getId(), type)
         .stream()
-        .map(uc -> ComponentDto.fromComponent(uc.getComponent()))
+        .map(uc -> componentRepository.findOne(uc.getComponent().getId()))
         .collect(Collectors.toList());
   }
 

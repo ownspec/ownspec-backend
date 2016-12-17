@@ -19,4 +19,6 @@ public interface UserComponentRepository extends JpaRepository<UserComponent, Lo
 
   //todo define sql query to avoid componentType column in UserComponent
   List<UserComponent> findTop3ByUserIdAndComponentTypeOrderByLastModifiedDateDesc(Long userId, ComponentType componentType);
+
+  List<UserComponent> findAllByComponentId(Long componentId);
 }

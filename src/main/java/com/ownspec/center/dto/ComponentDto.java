@@ -82,6 +82,10 @@ public interface ComponentDto {
   @Nullable
   CoverageStatus getCoverageStatus();
 
+  @Nullable
+  List<UserComponentDto> getComponentUsers();
+
+
   static ImmutableComponentDto.Builder newBuilderFromComponent(Component c) {
     return newComponentDto()
         .id(c.getId())
@@ -94,10 +98,4 @@ public interface ComponentDto {
         .distributionLevel(c.getDistributionLevel())
         .coverageStatus(c.getCoverageStatus());
   }
-
-  public static ComponentDto fromComponent(Component component) {
-    return newBuilderFromComponent(component).build();
-  }
-
-
 }
