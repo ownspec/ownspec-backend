@@ -42,10 +42,12 @@ import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.content.ContentConfiguration;
+import com.ownspec.center.service.content.HtmlContentGenerator;
 import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -114,7 +116,7 @@ public class ComponentService {
   private CompositionService compositionService;
 
 
-  public List<Component> findAll(Long projectId, ComponentType[] types) {
+  public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
 
     List<Predicate> predicates = new ArrayList<>();
 
@@ -122,6 +124,10 @@ public class ComponentService {
       predicates.add(component.project.id.eq(projectId));
     } else {
       predicates.add(component.project.id.isNull());
+    }
+
+    if (StringUtils.isNotBlank(query)) {
+      predicates.add(component.title.containsIgnoreCase(query));
     }
 
     if (types != null) {
@@ -475,9 +481,12 @@ public class ComponentService {
   }
 
 
-  public Resource print(Long id) throws IOException {
+  public Resource composePdf(Long id) throws IOException {
 
     Component component = findOne(id);
-    return compositionService.htmlToPdf(component, getHeadRawContent(component));
+
+    Pair<String, String> generate = contentConfiguration.htmlContentGenerator().generate(component, true);
+
+    return compositionService.htmlToPdf(component, new ByteArrayResource(generate.getLeft().getBytes(UTF_8)));
   }
 }

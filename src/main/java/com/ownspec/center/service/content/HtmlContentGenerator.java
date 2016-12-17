@@ -44,10 +44,18 @@ public class HtmlContentGenerator {
 
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
-
+  private boolean forComposition;
 
   public Pair<String, String> generate(Component c) {
+    return generate(c, false);
+  }
+
+
+  public Pair<String, String> generate(Component c, boolean forComposition) {
+
     try {
+      this.forComposition = forComposition;
+
       // find latest workflow status having a git reference
       WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByComponentId(c.getId());
 
@@ -103,7 +111,9 @@ public class HtmlContentGenerator {
         Element nestedBody = nestedDocument.getElementsByTag("body").first();
 
         // Create title tag
-        element.appendChild(doc.createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+        if (!forComposition) {
+          element.appendChild(doc.createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+        }
 
         // Extract reference from the nested reference content (second children, first children is the title)
         generateContent(nestedComponent, nestedDocument, nestedBody);

@@ -53,9 +53,10 @@ public class ComponentController {
       @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
       @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
       @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
-      @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references
+      @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+      @RequestParam(value = "q", required = false) String query
                                    ) {
-    return componentService.findAll(projectId, types).stream()
+    return componentService.findAll(projectId, types, query).stream()
                            .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
                            .collect(Collectors.toList());
   }
@@ -181,13 +182,13 @@ public class ComponentController {
 
 
 
-  @RequestMapping(value = "/{id}/print", method = RequestMethod.GET)
+  @RequestMapping(value = "/{id}/compose", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Resource> print(@PathVariable("id") Long id) throws IOException {
 
     return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_PDF)
         .header("Content-Disposition" , "attachment; filename=\"filename.pdf\"")
-        .body(componentService.print(id));
+        .body(componentService.composePdf(id));
   }
 
 

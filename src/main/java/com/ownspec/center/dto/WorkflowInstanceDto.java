@@ -1,6 +1,5 @@
 package com.ownspec.center.dto;
 
-import static com.ownspec.center.model.user.QUser.user;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
