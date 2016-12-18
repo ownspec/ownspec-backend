@@ -49,6 +49,11 @@ public interface ProjectDto {
   }
 
   public static ProjectDto fromProject(Project project) {
-    return newBuilderFromProject(project).build();
+    ImmutableProjectDto.Builder builder = newBuilderFromProject(project);
+    if (project.getManager() != null) {
+      builder.manager(UserDto.fromUser(project.getManager()));
+    }
+    
+    return builder.build();
   }
 }

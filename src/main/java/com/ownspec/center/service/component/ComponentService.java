@@ -46,7 +46,6 @@ import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.UserService;
 import com.ownspec.center.service.content.ContentConfiguration;
-import com.ownspec.center.service.content.HtmlContentGenerator;
 import com.ownspec.center.util.AbstractMimeMessage;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
@@ -132,8 +131,6 @@ public class ComponentService {
 
     if (projectId != null) {
       predicates.add(component.project.id.eq(projectId));
-    } else {
-      predicates.add(component.project.id.isNull());
     }
 
     if (StringUtils.isNotBlank(query)) {
