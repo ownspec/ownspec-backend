@@ -11,6 +11,7 @@ import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.repository.ProjectRepository;
+import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.service.component.ComponentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,10 @@ public class BootstrapController {
   @Autowired
   protected ProjectRepository projectRepository;
 
+  @Autowired
+  private UserRepository userRepository;
+
+
   @RequestMapping
   @Transactional
   public void init(@RequestParam(value = "projectName", required = false) String projectName,
@@ -71,6 +76,7 @@ public class BootstrapController {
     if (projectName != null) {
       project = new Project();
       project.setTitle(projectName);
+      project.setManager(userRepository.findAll().get(0));
       project = projectRepository.save(project);
       projectId = project.getId();
     }
