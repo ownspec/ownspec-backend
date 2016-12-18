@@ -24,14 +24,26 @@ VALUES(5, 'l.careto@ownspec.com','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9
 
 
 -- Projects
-Insert into "project"(id,title, description, created_user_id, manager_id)
-values(1, 'JPMichel', 'Green standardization project', 5, 5);
+-- Insert into "project"(id,created_date, title, description, created_user_id, manager_id)
+-- values(10,'2016-10-17 17:34:17.782000', 'JPMichel', 'Standardization project', 5, 5);
+--
+-- Insert into "project"(id,created_date,title, description, created_user_id, manager_id)
+-- values(20,'2016-11-18 17:34:17.782000', 'OS-center', 'Req and spec centralization module', 4, 3);
+--
+-- Insert into "project"(id,created_date,title, description, created_user_id, manager_id)
+-- values(30,'2016-12-19 09:35:17.782000', 'OS-validation', 'Req test and validation module', 2, 4);
+--
+-- Insert into "project"(id,created_date,title, description, created_user_id, manager_id)
+-- values(40,'2016-12-19 10:37:17.782000', 'TravailZen', 'Reprise impression', 5, 5);
+--
+--
+-- -- User's projects
+-- INSERT INTO user_project (id, created_date, favorite, last_modified_date, visited_time, project_id, user_id)
+-- VALUES (10, '2016-12-17 17:34:17.782000', false, '2016-12-17 17:40:52.062000', 2, 10, 5);
+-- INSERT INTO user_project (id, created_date, favorite, last_modified_date, visited_time, project_id, user_id)
+-- VALUES (20, '2016-12-17 17:34:21.551000', false, '2016-12-17 17:34:21.551000', 1, 20, 5);
+-- INSERT INTO user_project (id, created_date, favorite, last_modified_date, visited_time, project_id, user_id)
+-- VALUES (30, '2016-12-17 17:34:23.520000', true, '2016-12-17 17:34:23.520000', 1, 30, 5);
+-- INSERT INTO user_project (id, created_date, favorite, last_modified_date, visited_time, project_id, user_id)
+-- VALUES (40, '2016-12-17 17:34:26.155000', false, '2016-12-17 17:34:26.155000', 1, 40, 5);
 
-Insert into "project"(id,title, description, created_user_id, manager_id)
-values(2, 'OS-center', 'Req and spec centralization module', 4, 3);
-
-Insert into "project"(id,title, description, created_user_id, manager_id)
-values(3, 'OS-validation', 'Req test and validation module', 2, 4);
-
-Insert into "project"(id,title, description, created_user_id, manager_id)
-values(4, 'TravailZen', 'Reprise impression', 5, 5);

@@ -18,6 +18,7 @@ public interface UserDto {
 
   String getUsername();
 
+  @Nullable
   String getPassword();
 
   @Nullable
@@ -36,7 +37,6 @@ public interface UserDto {
   static UserDto fromUser(User user) {
     return ImmutableUserDto.newUserDto()
         .username(user.getUsername())
-        .password(user.getPassword()) //todo: TBC
         .email(user.getEmail())
         .firstName(user.getFirstName())
         .lastName(user.getLastName())

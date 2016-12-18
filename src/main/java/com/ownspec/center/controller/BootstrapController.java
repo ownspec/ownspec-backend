@@ -42,7 +42,7 @@ public class BootstrapController {
           .build(),
 
       ImmutableEstimatedTimeDto.newEstimatedTimeDto()
-          .userCategory(new UserCategory("Analyst",480.65))
+          .userCategory(new UserCategory("Tester",480.65))
           .time(3d)
           .timeUnit(TimeUnit.DAYS)
           .build()
