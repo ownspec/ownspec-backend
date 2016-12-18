@@ -1,6 +1,7 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.dto.ProjectDto;
+import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.UserProjectDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.user.User;
@@ -58,10 +59,10 @@ public class ProjectService {
     return ResponseEntity.ok().build();
   }
 
-  public List<ProjectDto> getFavorites() {
+  public List<Project> getFavorites() {
     User authenticatedUser = authenticationService.getAuthenticatedUser();
     return userProjectRepository.findTop3ByUserIdAndFavoriteTrueOrderByLastModifiedDateDesc(authenticatedUser.getId()).stream()
-        .map(up -> ProjectDto.fromProject(up.getProject()))
+        .map(UserProject::getProject)
         .collect(Collectors.toList());
   }
 
@@ -85,10 +86,10 @@ public class ProjectService {
     return ResponseEntity.ok().build();
   }
 
-  public List<ProjectDto> getLastVisited() {
+  public List<Project> getLastVisited() {
     User authenticatedUser = authenticationService.getAuthenticatedUser();
     return userProjectRepository.findTop3ByUserIdOrderByLastModifiedDateDesc(authenticatedUser.getId()).stream()
-        .map(up -> ProjectDto.fromProject(up.getProject()))
+        .map(UserProject::getProject)
         .collect(Collectors.toList());
   }
 
@@ -96,6 +97,7 @@ public class ProjectService {
     Project project = projectRepository.findOne(id);
     if (project != null) {
       return ProjectDto.newBuilderFromProject(project)
+          .manager(UserDto.fromUser(project.getManager()))
           .projectUsers(
               userProjectRepository.findAllByProjectId(project.getId()).stream()
                   .map(UserProjectDto::fromUserProject)

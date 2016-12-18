@@ -93,9 +93,10 @@ public interface ComponentDto {
         .title(c.getTitle())
         .type(c.getType())
         .createdDate(c.getCreatedDate())
-        .createdUser(UserDto.createFromUser(c.getCreatedUser()))
+        .createdUser(UserDto.fromUser(c.getCreatedUser()))
         .requiredTest(c.isRequiredTest())
         .distributionLevel(c.getDistributionLevel())
-        .coverageStatus(c.getCoverageStatus());
+        .coverageStatus(c.getCoverageStatus())
+        .requirementType(c.getRequirementType());
   }
 }

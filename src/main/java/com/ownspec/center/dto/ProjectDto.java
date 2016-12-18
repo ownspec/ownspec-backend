@@ -45,7 +45,7 @@ public interface ProjectDto {
         .title(project.getTitle())
         .description(project.getDescription())
         .createdDate(project.getCreatedDate())
-        .createdUser(UserDto.createFromUser(project.getCreatedUser()));
+        .createdUser(UserDto.fromUser(project.getCreatedUser()));
   }
 
   public static ProjectDto fromProject(Project project) {

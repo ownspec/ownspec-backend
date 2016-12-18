@@ -8,7 +8,6 @@ import com.ownspec.center.model.Project;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.service.ProjectService;
 import com.ownspec.center.service.UserService;
-import com.ownspec.center.util.OsUtils;
 import com.ownspec.center.util.RequestFilterMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,11 +50,12 @@ public class ProjectController {
   @ResponseBody
   public ResponseEntity create(@RequestBody ProjectDto projectDto) {
     Project project = new Project();
+    project.setTitle(projectDto.getTitle());
+    project.setDescription(projectDto.getDescription());
 
     if (projectDto.getManager() != null) {
       project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
     }
-    OsUtils.mergeWithNotNullProperties(projectDto, project);
     projectRepository.save(project);
     return ResponseEntity.ok("Project successfully created");
   }
@@ -81,12 +81,10 @@ public class ProjectController {
   @GetMapping
   public List<ProjectDto> findAll(@RequestParam(value = "mode", required = false) RequestFilterMode mode) {
 
-    if (LAST_VISITED_ONLY.equals(mode)) {
-      return projectService.getLastVisited();
-    } else if (FAVORITES_ONLY.equals(mode)) {
-      return projectService.getFavorites();
-    }//todo: to be improved
-    return projectRepository.findAll().stream()
+    List<Project> projects = LAST_VISITED_ONLY.equals(mode) ? projectService.getLastVisited() :
+                             FAVORITES_ONLY.equals(mode) ? projectService.getFavorites() :
+                             projectRepository.findAll();
+    return projects.stream()
         .map(ProjectDto::fromProject)
         .collect(Collectors.toList());
   }

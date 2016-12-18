@@ -1,11 +1,8 @@
 package com.ownspec.center.model.user;
 
 import com.ownspec.center.model.Project;
-import com.ownspec.center.model.audit.Auditable;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
@@ -22,7 +19,7 @@ import javax.persistence.ManyToOne;
  */
 @Data
 @Entity
-public class UserProject implements Persistable<Long>, Auditable<User> {
+public class UserProject implements Persistable<Long>{
 
   @Id
   @GeneratedValue
@@ -38,18 +35,12 @@ public class UserProject implements Persistable<Long>, Auditable<User> {
 
   private Long visitedTime;
 
-  //todo access mode;
+  //todo access mode (RO,RW...etc);
 
   @CreatedDate
   private Instant createdDate;
-  @ManyToOne
-  @CreatedBy
-  private User createdUser;
   @LastModifiedDate
   private Instant lastModifiedDate;
-  @ManyToOne
-  @LastModifiedBy
-  private User lastModifiedUser;
 
   @Override
   public boolean isNew() {

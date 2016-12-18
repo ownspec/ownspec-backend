@@ -2,7 +2,6 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.user.UserProject;
 import org.immutables.value.Value;
 
@@ -29,8 +28,8 @@ public interface UserProjectDto {
 
   static UserProjectDto fromUserProject(UserProject up) {
     return ImmutableUserProjectDto.newUserProjectDto()
-        .user(UserDto.createFromUser(up.getUser()))
-        .project(ProjectDto.newBuilderFromProject(up.getProject()).build())
+        .user(UserDto.fromUser(up.getUser()))
+        .project(ProjectDto.fromProject(up.getProject()))
         .lastModifiedDate(up.getLastModifiedDate())
         .build();
   }

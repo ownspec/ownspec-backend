@@ -26,7 +26,7 @@ public interface UserComponentDto {
 
   static UserComponentDto fromUserComponent(UserComponent uc) {
     return ImmutableUserComponentDto.newUserComponentDto()
-        .user(UserDto.createFromUser(uc.getUser()))
+        .user(UserDto.fromUser(uc.getUser()))
         .component(ComponentDto.newBuilderFromComponent(uc.getComponent()).build())
         .lastModifiedDate(uc.getLastModifiedDate())
         .build();

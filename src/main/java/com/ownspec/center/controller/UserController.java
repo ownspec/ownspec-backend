@@ -43,13 +43,13 @@ public class UserController {
   @GetMapping(value = "/me")
   @ResponseBody
   public UserDto me(@AuthenticationPrincipal User user) {
-    return UserDto.createFromUser(user);
+    return UserDto.fromUser(user);
   }
 
   @GetMapping(value = "/me/profile")
   @ResponseBody
   public ResponseEntity profile(@AuthenticationPrincipal User user) {
-    UserDto userDto = UserDto.createFromUser(user);
+    UserDto userDto = UserDto.fromUser(user);
 
     ImmutableMap.Builder<Object, Object> propertiesBuilder = ImmutableMap.builder();
     propertiesBuilder.put("statuses", createFromStatuses());

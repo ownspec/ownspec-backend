@@ -3,9 +3,7 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
-import com.ownspec.center.model.workflow.WorkflowStatus;
 import org.immutables.value.Value;
 
 import java.time.Instant;
@@ -42,7 +40,7 @@ public interface WorkflowInstanceDto {
         .id(workflowInstance.getId())
         //.currentStatus(StatusDto.createFromStatus(workflowInstance.getCurrentStatus()))
         .createdDate(workflowInstance.getCreatedDate())
-        .createdUser(UserDto.createFromUser(workflowInstance.getCreatedUser()));
+        .createdUser(UserDto.fromUser(workflowInstance.getCreatedUser()));
 
     return builder;
   }

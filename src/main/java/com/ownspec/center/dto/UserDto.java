@@ -33,7 +33,7 @@ public interface UserDto {
   String getRole();
 
 
-  static UserDto createFromUser(User user) {
+  static UserDto fromUser(User user) {
     return ImmutableUserDto.newUserDto()
         .username(user.getUsername())
         .password(user.getPassword()) //todo: TBC

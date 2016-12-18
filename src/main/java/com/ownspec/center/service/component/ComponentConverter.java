@@ -90,7 +90,7 @@ public class ComponentConverter {
       builder.requirementType(c.getRequirementType());
     }
     if (c.getAssignedTo() != null) {
-      builder.assignedTo(UserDto.createFromUser(c.getAssignedTo()));
+      builder.assignedTo(UserDto.fromUser(c.getAssignedTo()));
     }
 
     List<UserComponent> userComponents = userComponentRepository.findAllByComponentId(c.getId());

@@ -12,6 +12,7 @@ import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.component.ComponentConverter;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.util.RequestFilterMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -62,15 +63,11 @@ public class ComponentController {
 
   ) {
 
-    List<Component> searchedComponents;
-    if (LAST_VISITED_ONLY.equals(mode)) {
-      searchedComponents = componentService.getLastVisited(types[0]);
-    } else if (FAVORITES_ONLY.equals(mode)) {
-      searchedComponents = componentService.getFavorites(types[0]);
-    } else {
-      searchedComponents = componentService.findAll(projectId, types);
-    }
-    return searchedComponents.stream()
+    List<Component> components = LAST_VISITED_ONLY.equals(mode) ? componentService.getLastVisited(types[0]) :
+                                 FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
+                                 componentService.findAll(projectId, types,query);
+
+    return components.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
         .collect(Collectors.toList());
   }

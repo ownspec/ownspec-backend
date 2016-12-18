@@ -8,7 +8,6 @@ import org.immutables.value.Value;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.Comment;
-import com.ownspec.center.model.user.User;
 
 /**
  * Created by nlabrot on 16/10/16.
@@ -34,7 +33,7 @@ public interface CommentDto {
   static CommentDto createFromComment(Comment user) {
     return ImmutableCommentDto.newCommentDto()
         .id(user.getId())
-        .createdUser(UserDto.createFromUser(user.getCreatedUser()))
+        .createdUser(UserDto.fromUser(user.getCreatedUser()))
         .createdDate(user.getCreatedDate())
         .value(user.getValue())
         .build();

@@ -387,7 +387,7 @@ public class ComponentService {
             changeDtos.add(newChangeDto()
                 .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
                 .revision(revCommit.name())
-                .user(UserDto.createFromUser(commiter))
+                .user(UserDto.fromUser(commiter))
                 .build());
 
             if (revCommit.name().equals(workflowStatus.getLastGitReference())) {
