@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -52,7 +53,7 @@ public class ReferenceTest extends AbstractTest {
         .replace("$COMPWFID3$", component3.getCurrentWorkflowInstance().getId().toString());
 
 
-    componentService.updateContent(component0, content.getBytes(UTF_8));
+    componentService.updateContent(component0, new ByteArrayResource(content.getBytes(UTF_8)));
 
 
     Assert.assertEquals("<p>test1</p> \n" +

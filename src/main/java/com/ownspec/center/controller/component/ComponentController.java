@@ -1,7 +1,9 @@
-package com.ownspec.center.controller;
+package com.ownspec.center.controller.component;
 
 import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+import static org.springframework.http.ResponseEntity.ok;
 
 import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.model.Comment;
@@ -10,11 +12,13 @@ import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.CommentService;
+import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.util.RequestFilterMode;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,8 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +54,10 @@ public class ComponentController {
   @Autowired
   private ComponentConverter componentConverter;
 
+  @Autowired
+  private UploadService uploadService;
+
+
   @RequestMapping
   public List<ComponentDto> findAll(
       @RequestParam(value = "types", required = false) ComponentType[] types,
@@ -64,8 +72,8 @@ public class ComponentController {
   ) {
 
     List<Component> components = LAST_VISITED_ONLY.equals(mode) ? componentService.getLastVisited(types[0]) :
-                                 FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
-                                 componentService.findAll(projectId, types,query);
+        FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
+            componentService.findAll(projectId, types, query);
 
     return components.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
@@ -87,15 +95,15 @@ public class ComponentController {
   @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseBody
   public ResponseEntity create(@RequestBody ComponentDto source) throws IOException, GitAPIException {
-    componentService.create(source);
-    return ResponseEntity.ok().build();
+    Component component = componentService.create(source);
+    return ok(componentConverter.toDto(component, false, false, false, false));
   }
 
   @GetMapping("/{id}/workflow-statuses")
   @ResponseBody
   public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) {
 
-    return ResponseEntity.ok(componentService.getWorkflowStatuses(id));
+    return ok(componentService.getWorkflowStatuses(id));
   }
 
   @PostMapping("/{id}/workflow-statuses/update/{nextStatus}")
@@ -116,27 +124,15 @@ public class ComponentController {
   @ResponseBody
   public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ComponentDto source) {
     componentService.update(source, id);
-    return ResponseEntity.ok().build();
+    return ok().build();
   }
 
-  @RequestMapping(value = "/{id}/update-content", method = RequestMethod.POST)
-  @ResponseBody
-  public ComponentDto updateContent(@PathVariable("id") Long id, @RequestBody byte[] content) throws GitAPIException, UnsupportedEncodingException {
-    Map<Component, byte[]> innerDraftComponents = componentService.searchForInnerDraftComponents(content);
-    Component component = componentService.updateContent(id, content);
-    /*if (!innerDraftComponents.isEmpty()) {
-      for (Component component : innerDraftComponents.keySet()) {
-        componentService.updateContent(component, innerDraftComponents.get(component));
-      }
-    }*/
-    return componentConverter.toDto(component, true, true, true, true);
-  }
 
   @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
   @ResponseBody
   public ResponseEntity delete(@PathVariable("id") Long id) {
     componentService.remove(id);
-    return ResponseEntity.ok().build();
+    return ok().build();
   }
 
   @RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
@@ -192,16 +188,14 @@ public class ComponentController {
   }
 
 
-
   @RequestMapping(value = "/{id}/compose", method = RequestMethod.GET)
   @ResponseBody
   public ResponseEntity<Resource> print(@PathVariable("id") Long id) throws IOException {
 
     return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_PDF)
-        .header("Content-Disposition" , "attachment; filename=\"filename.pdf\"")
+        .header("Content-Disposition", "attachment; filename=\"filename.pdf\"")
         .body(componentService.composePdf(id));
   }
-
 
   @PostMapping("/{id}/addVisit")
   @ResponseBody

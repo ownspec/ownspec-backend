@@ -13,6 +13,7 @@ import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.UserComponentDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
@@ -58,13 +59,16 @@ public class ComponentConverter {
   public ComponentDto toDto(Component c, boolean content, boolean workflow, boolean comments, boolean references) {
     ImmutableComponentDto.Builder builder = newBuilderFromComponent(c);
 
-    Pair<String, String> contentPair = componentService.generateContent(c);
 
-    if (content) {
-      builder.content(contentPair.getLeft());
+    if (c.getType() != ComponentType.RESOURCE) {
+      Pair<String, String> contentPair = componentService.generateContent(c);
+
+      if (content) {
+        builder.content(contentPair.getLeft());
+      }
+
+      builder.summary(contentPair.getRight());
     }
-
-    builder.summary(contentPair.getRight());
 
     builder.currentWorkflowStatus(newBuilderFromWorkflowStatus(componentService.getCurrentStatus(c.getId())).build());
 

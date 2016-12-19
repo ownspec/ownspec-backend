@@ -14,6 +14,7 @@ import org.immutables.value.Value;
 import java.time.Instant;
 import java.util.List;
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 /**
  * Created by nlabrot on 24/09/16.
@@ -84,6 +85,12 @@ public interface ComponentDto {
 
   @Nullable
   List<UserComponentDto> getComponentUsers();
+
+  @Nullable
+  String getUploadedFileId();
+
+  @Nullable
+  String getFilename();
 
 
   static ImmutableComponentDto.Builder newBuilderFromComponent(Component c) {

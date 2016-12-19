@@ -40,6 +40,9 @@ public class Component implements Auditable<User>, Persistable<Long> {
   protected String title;
   protected String filePath;
 
+  protected String filename;
+  protected String mediaType;
+
   // WorkflowInstance which owns this WorkflowStatus
   @ManyToOne
   private WorkflowInstance currentWorkflowInstance;

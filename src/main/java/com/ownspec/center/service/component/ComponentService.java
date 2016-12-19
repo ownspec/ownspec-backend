@@ -4,6 +4,7 @@ import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
 import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
 import static com.ownspec.center.model.DistributionLevel.PUBLIC;
+import static com.ownspec.center.model.component.ComponentType.RESOURCE;
 import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
@@ -44,9 +45,11 @@ import com.ownspec.center.service.CompositionService;
 import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
+import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.UserService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.AbstractMimeMessage;
+import com.ownspec.center.util.OsUtils;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
@@ -125,6 +128,10 @@ public class ComponentService {
   @Autowired
   private UserService userService;
 
+  @Autowired
+  private UploadService uploadService;
+
+
   public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
 
     List<Predicate> predicates = new ArrayList<>();
@@ -150,8 +157,14 @@ public class ComponentService {
 
   public Component create(ComponentDto source) {
     // TODO: 27/09/16 handle case if transaction fails
-    Pair<File, String> pair = gitService.createAndCommit(
-        new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8)), authenticationService.getAuthenticatedUser(), "");
+
+    Resource resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
+
+    if (source.getUploadedFileId() != null) {
+      resource = uploadService.findResource(source.getUploadedFileId()).get();
+    }
+
+    Pair<File, String> pair = gitService.createAndCommit(resource, authenticationService.getAuthenticatedUser(), "");
 
     Project project = null;
 
@@ -163,6 +176,7 @@ public class ComponentService {
     component.setProject(project);
     component.setTitle(source.getTitle());
     component.setType(source.getType());
+    component.setFilename(source.getFilename());
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
@@ -223,7 +237,7 @@ public class ComponentService {
     mergeWithNotNullProperties(source, target);
 
     if (source.getContent() != null) {
-      updateContent(target, source.getContent().getBytes(UTF_8));
+      updateContent(target, new ByteArrayResource(source.getContent().getBytes(UTF_8)));
     }
 
     return componentRepository.save(target);
@@ -288,11 +302,19 @@ public class ComponentService {
     return component;
   }
 
-  public Component updateContent(Long id, byte[] content) {
-    return updateContent(requireNonNull(componentRepository.findOneAndLock(id)), content);
+  public Component updateContent(Long id, byte[] b) {
+    return updateContent(id, new ByteArrayResource(b));
   }
 
-  public Component updateContent(Component component, byte[] content) {
+  public Component updateContent(Long id, Resource resource) {
+    return updateContent(requireNonNull(componentRepository.findOneAndLock(id)), resource);
+  }
+
+  public Component updateContent(Component component, byte[] b) {
+    return updateContent(component, new ByteArrayResource(b));
+  }
+
+  public Component updateContent(Component component, Resource resource) {
     // Lock
     component = requireNonNull(componentRepository.findOneAndLock(component.getId()));
 
@@ -301,7 +323,13 @@ public class ComponentService {
 
     // Check if the transition is legit
     if (currentWorkflowStatus.getStatus().isEditable()) {
-      contentConfiguration.htmlContentSaver().save(component, content);
+
+      if (RESOURCE != component.getType()) {
+        contentConfiguration.htmlContentSaver().save(component, OsUtils.toString(resource));
+      } else {
+        gitService.updateAndCommit(resource, component.getFilePath(), authenticationService.getAuthenticatedUser(), "");
+      }
+
     } else {
       throw new IllegalStateException("Content update is not allowed for this statue");
     }
