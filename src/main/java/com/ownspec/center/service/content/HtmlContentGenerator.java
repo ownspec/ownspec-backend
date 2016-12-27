@@ -1,13 +1,16 @@
 package com.ownspec.center.service.content;
 
+import static com.ownspec.center.model.component.ComponentType.RESOURCE;
 import static com.ownspec.center.service.content.HtmlContentSaver.DATA_REQUIREMENT_ID;
 import static com.ownspec.center.service.content.HtmlContentSaver.DATA_WORKFLOW_INSTANCE_ID;
 
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
+import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.component.ComponentService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
@@ -43,6 +46,10 @@ public class HtmlContentGenerator {
   private WorkflowInstanceRepository workflowInstanceRepository;
 
   @Autowired
+  private GitService gitService;
+
+
+  @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
   private boolean forComposition;
 
@@ -61,7 +68,7 @@ public class HtmlContentGenerator {
 
       Document document;
       try (InputStream is = componentService.getRawContent(c, workflowStatus.getLastGitReference()).getInputStream()) {
-        document = Jsoup.parse(is, "UTF-8", c.getFilePath());
+        document = Jsoup.parse(is, "UTF-8", c.getFilename());
       }
 
       Element body = document.getElementsByTag("body").first();
@@ -102,34 +109,67 @@ public class HtmlContentGenerator {
         // Add git ref attribute
         //element.attr(DATA_REQUIREMENT_SCM_REF, nestedWorkflowInstance.getCurrentGitReference());
 
-
-        // Retrieve file content associated to the git reference
-        Document nestedDocument;
-        try (InputStream is = componentService.getRawContent(nestedComponent, lastGitReference).getInputStream()) {
-          nestedDocument = Jsoup.parse(is, "UTF-8", nestedComponent.getFilePath());
-        }
-        Element nestedBody = nestedDocument.getElementsByTag("body").first();
-
-        // Create title tag
-        if (!forComposition) {
-          element.appendChild(doc.createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+        if (nestedComponent.getType() != RESOURCE){
+          generateContent(element , nestedComponent , lastGitReference , lastWorkflowStatus);
+        }else{
+          generateContentForResource(element , nestedComponent , lastGitReference , lastWorkflowStatus);
         }
 
-        // Extract reference from the nested reference content (second children, first children is the title)
-        generateContent(nestedComponent, nestedDocument, nestedBody);
-
-        //Create content tag
-        Element nestedContent = doc.createElement("div").addClass("requirements-content");
-
-        nestedContent.attr("contenteditable", Boolean.toString(lastWorkflowStatus.getStatus().isEditable()));
-
-        new ArrayList<>(nestedBody.childNodes()).forEach(nestedContent::appendChild);
-        element.appendChild(nestedContent);
 
       } else {
         stack.addAll(element.children());
       }
     }
   }
+
+
+
+  private void generateContent(Element element, Component nestedComponent, String lastGitReference , WorkflowStatus lastWorkflowStatus) throws IOException {
+    // Retrieve file content associated to the git reference
+    Document nestedDocument;
+    try (InputStream is = componentService.getRawContent(nestedComponent, lastGitReference).getInputStream()) {
+      nestedDocument = Jsoup.parse(is, "UTF-8", nestedComponent.getFilename());
+    }
+    Element nestedBody = nestedDocument.getElementsByTag("body").first();
+
+    // Create title tag
+    if (!forComposition) {
+      element.appendChild(element.ownerDocument().createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+    }
+
+    // Extract reference from the nested reference content (second children, first children is the title)
+    generateContent(nestedComponent, nestedDocument, nestedBody);
+
+    //Create content tag
+    Element nestedContent = element.ownerDocument().createElement("div").addClass("requirements-content");
+
+    nestedContent.attr("contenteditable", Boolean.toString(lastWorkflowStatus.getStatus().isEditable()));
+
+    nestedBody.childNodes().forEach(nestedContent::appendChild);
+    element.appendChild(nestedContent);
+  }
+
+
+
+
+  private void generateContentForResource(Element element, Component nestedComponent, String lastGitReference , WorkflowStatus lastWorkflowStatus){
+
+    //Create content tag
+    //Element nestedContent = element.ownerDocument().createElement("div").addClass("requirements-content");
+    //nestedContent.attr("contenteditable", Boolean.toString(lastWorkflowStatus.getStatus().isEditable()));
+
+    // Create title tag
+    /*if (!forComposition) {
+      element.appendChild(element.ownerDocument().createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+    }*/
+
+    Element img = element.ownerDocument().createElement("img")
+
+        .attr("src", "/api/components/" + nestedComponent.getId() + "/content");
+    //nestedContent.appendChild(img);
+
+    element.appendChild(img);
+  }
+
 
 }

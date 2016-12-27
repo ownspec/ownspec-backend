@@ -65,12 +65,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -158,13 +158,21 @@ public class ComponentService {
   public Component create(ComponentDto source) {
     // TODO: 27/09/16 handle case if transaction fails
 
-    Resource resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
+    Resource resource = null;
 
-    if (source.getUploadedFileId() != null) {
+    if (source.getUploadedFileId() == null) {
+      resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
+    } else {
       resource = uploadService.findResource(source.getUploadedFileId()).get();
     }
 
-    Pair<File, String> pair = gitService.createAndCommit(resource, authenticationService.getAuthenticatedUser(), "");
+    String filename;
+
+    if (source.getType() != RESOURCE) {
+      filename = UUID.randomUUID().toString() + ".html";
+    } else {
+      filename = source.getFilename();
+    }
 
     Project project = null;
 
@@ -176,20 +184,25 @@ public class ComponentService {
     component.setProject(project);
     component.setTitle(source.getTitle());
     component.setType(source.getType());
-    component.setFilename(source.getFilename());
+    component.setFilename(filename);
+
+    // Save to get the id
+    component = componentRepository.save(component);
+
+    // Update
+    String hash = gitService.updateAndCommit(component.getId().toString(), component.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
+
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(Status.OPEN);
-    workflowStatus.setFirstGitReference(pair.getRight());
-    workflowStatus.setLastGitReference(pair.getRight());
+    workflowStatus.setFirstGitReference(hash);
+    workflowStatus.setLastGitReference(hash);
     workflowStatus.setWorkflowInstance(workflowInstance);
 
     component.setCurrentWorkflowInstance(workflowInstance);
-    component.setFilePath(pair.getLeft().getAbsolutePath());
-
     component.setCoverageStatus(source.getCoverageStatus());
     component.setRequirementType(source.getRequirementType());
 
@@ -288,10 +301,6 @@ public class ComponentService {
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(Status.OPEN);
     workflowStatus.setWorkflowInstance(workflowInstance);
-    // Use the last know git reference
-    // Maybe a new git commit will be more suitable
-    //workflowStatus.setFirstGitReference(lastWorkflowStatusWithGit.getLastGitReference());
-    //workflowStatus.setLastGitReference(lastWorkflowStatusWithGit.getLastGitReference());
 
     component.setCurrentWorkflowInstance(workflowInstance);
 
@@ -327,7 +336,7 @@ public class ComponentService {
       if (RESOURCE != component.getType()) {
         contentConfiguration.htmlContentSaver().save(component, OsUtils.toString(resource));
       } else {
-        gitService.updateAndCommit(resource, component.getFilePath(), authenticationService.getAuthenticatedUser(), "");
+        gitService.updateAndCommit(component.getId().toString(), component.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
       }
 
     } else {
@@ -348,11 +357,7 @@ public class ComponentService {
 
   public Resource getHeadRawContent(Component c) {
     try {
-      if (c.getFilePath() != null) {
-        return gitService.getFile(c.getFilePath());
-      } else {
-        throw new IllegalStateException("component file does not exist");
-      }
+      return gitService.getFile(c.getId().toString(), c.getFilename());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -360,11 +365,7 @@ public class ComponentService {
 
   public Resource getRawContent(Component c, String ref) {
     try {
-      if (c.getFilePath() != null) {
-        return gitService.getFile(c.getFilePath(), ref);
-      } else {
-        throw new IllegalStateException("component file does not exist");
-      }
+      return gitService.getFile(c.getId().toString(), c.getFilename(), ref);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -372,8 +373,8 @@ public class ComponentService {
 
 
   public void remove(Long id) {
-    Component target = requireNonNull(componentRepository.findOne(id));
-    gitService.deleteAndCommit(target.getFilePath(), authenticationService.getAuthenticatedUser(), "");
+    Component component = requireNonNull(componentRepository.findOne(id));
+    gitService.deleteAndCommit(component.getId().toString(), component.getFilename(), authenticationService.getAuthenticatedUser(), "");
     componentRepository.delete(id);
   }
 
@@ -384,7 +385,7 @@ public class ComponentService {
 
   public List<WorkflowInstanceDto> getWorkflowStatuses(Long id) {
     Component component = findOne(id);
-    List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getFilePath())));
+    List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getId().toString() , component.getFilename())));
 
     int commitIndex = 0;
 
@@ -444,7 +445,7 @@ public class ComponentService {
 
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
-    return gitService.diff(component.getFilePath(), fromRevision, toRevision);
+    return gitService.diff(component.getId().toString() , component.getFilename(), fromRevision, toRevision);
   }
 
   public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {

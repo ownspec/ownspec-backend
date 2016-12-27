@@ -156,7 +156,7 @@ public class ComponentServiceTest extends AbstractTest {
 
     List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowStatuses(component.getId()).get(0).getWorkflowStatuses();
 
-    Resource file = gitService.getFile(component.getFilePath(), endGitReference1);
+    Resource file = gitService.getFile(component.getId().toString(), component.getFilename(), endGitReference1);
 
 
     Assert.assertEquals(1, workflowStatuses.get(0).getChanges().size());

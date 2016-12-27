@@ -1,37 +1,19 @@
 package com.ownspec.center.service;
 
-import static com.ownspec.center.model.component.QComponent.component;
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Spliterators;
-import java.util.UUID;
-import java.util.stream.StreamSupport;
-
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.user.User;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -44,7 +26,7 @@ import org.outerj.daisy.diff.html.HTMLDiffer;
 import org.outerj.daisy.diff.html.HtmlSaxDiffOutput;
 import org.outerj.daisy.diff.html.TextNodeComparator;
 import org.outerj.daisy.diff.html.dom.DomTreeBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -52,6 +34,16 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Locale;
+import javax.annotation.PreDestroy;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -65,55 +57,69 @@ import javax.xml.transform.stream.StreamResult;
 @Slf4j
 public class GitService {
 
-  @Autowired
-  private Git git;
+  @Value("${git.repository.path.components}")
+  private String componentsGitRepositoryPath;
 
-  public String updateAndCommit(Resource resource, String filePath, User user, String message) {
-    File contentFile = new File(filePath);
-    LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
 
-    try (FileOutputStream os = new FileOutputStream(contentFile); InputStream is = resource.getInputStream()) {
-      IOUtils.copy(is, os);
+  private LoadingCache<String, Git> gitCache;
+
+  public GitService() {
+    this.gitCache = CacheBuilder.newBuilder()
+        .maximumSize(100)
+        .removalListener(notification -> ((Git) notification.getValue()).close())
+        .build(new CacheLoader<String, Git>() {
+          @Override
+          public Git load(String key) throws Exception {
+            return Git.init().setDirectory(new File(componentsGitRepositoryPath, key)).call();
+          }
+        });
+  }
+
+  @PreDestroy
+  public void release(){
+    gitCache.invalidateAll();
+  }
+
+
+  public Git getGit(String id) {
+    return gitCache.getUnchecked(id);
+  }
+
+
+  public Path getFilePath(String uid, String filename) {
+    return Paths.get(componentsGitRepositoryPath, uid, filename);
+  }
+
+
+  public String updateAndCommit(String uid, String filename, Resource resource, User user, String message) {
+    LOG.info("creating Document file [{}]", filename);
+
+    Path filePath = getFilePath(uid, filename);
+
+    try {
+      if (!Files.exists(filePath)){
+        Files.createDirectories(filePath.getParent());
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+
+    try (OutputStream os = Files.newOutputStream(filePath); InputStream is = resource.getInputStream()) {
+      IOUtils.copyLarge(is, os);
     } catch (Exception e) {
       LOG.error("An error has occurred when writing file", e);
       // TODO: 24/09/16 Create custom exception
       throw new RuntimeException(e);
     }
-    return commit(contentFile.getAbsolutePath(), user, message);
+    return commit(uid, filename, user, message);
   }
 
-  public String updateAndCommit(Resource resource, String filePath, String fromRevision, User user, String message) throws GitAPIException {
 
-    RevCommit latestRevision = getLatestRevision(filePath);
-
-    if (latestRevision.getId().toString().equals(fromRevision)){
-      System.out.println("equals");
-    }
-
-    File contentFile = new File(filePath);
-    LOG.info("creating Document file [{}]", contentFile.getAbsoluteFile());
-
-    try (FileOutputStream os = new FileOutputStream(contentFile); InputStream is = resource.getInputStream()) {
-      IOUtils.copy(is, os);
-    } catch (Exception e) {
-      LOG.error("An error has occurred when writing file", e);
-      // TODO: 24/09/16 Create custom exception
-      throw new RuntimeException(e);
-    }
-    return commit(contentFile.getAbsolutePath(), user, message);
-  }
-
-  public Pair<File, String> createAndCommit(Resource resource, User user, String message) {
-    File contentFile = new File(git.getRepository().getWorkTree(), UUID.randomUUID() + ".html");
-
-    String hash = updateAndCommit(resource, contentFile.getAbsolutePath(), user, message);
-    return Pair.of(contentFile, hash);
-  }
-
-  public void deleteAndCommit(String filePath, User user, String message) {
+  public void deleteAndCommit(String uid, String filename, User user, String message) {
     try {
-      FileUtils.forceDelete(new File(filePath));
-      commit(filePath, user, message);
+      Files.deleteIfExists(getFilePath(uid, filename));
+      commit(uid, filename, user, message);
     } catch (Exception e) {
       // TODO: 24/09/16 Create custom exception
       throw new RuntimeException(e);
@@ -121,14 +127,15 @@ public class GitService {
   }
 
 
-  public String commit(String filePath, User user, String message) {
+  public String commit(String uid, String filename, User user, String message) {
     try {
+      Git git = getGit(uid);
 
-      git.add().addFilepattern(relativize(filePath)).call();
+      git.add().addFilepattern(filename).call();
       RevCommit revCommit = git
           .commit().setAllowEmpty(false)
           .setAuthor(user.getUsername(), user.getEmail())
-          .setOnly(relativize(filePath))
+          .setOnly(filename)
           .setMessage(message).call();
 
 
@@ -143,34 +150,35 @@ public class GitService {
   }
 
 
-  public Iterable<RevCommit> getHistoryFor(String filePath) {
+  public Iterable<RevCommit> getHistoryFor(String uid, String filename) {
     try {
-      return git.log().addPath(relativize(filePath)).call();
+      Git git = getGit(uid);
+
+      return git.log().addPath(filename).call();
     } catch (GitAPIException e) {
       // TODO: 24/09/16 Create custom exception
       throw new RuntimeException(e);
     }
   }
 
-  public RevCommit getLatestRevision(String filePath) {
+  public RevCommit getLatestRevision(String uid, String filePath) {
     try {
-      return Iterables.getFirst(git.log().addPath(relativize(filePath)).call(), null);
+      Git git = getGit(uid);
+
+      return Iterables.getFirst(git.log().addPath(filePath).call(), null);
     } catch (GitAPIException e) {
       // TODO: 24/09/16 Create custom exception
       throw new RuntimeException(e);
     }
   }
 
-  public Git getGit() {
-    return git;
+  public Resource getFile(String uid, String filePath) throws IOException {
+    return getFile(uid, filePath, "HEAD");
   }
 
+  public Resource getFile(String uid, String filename, String revision) throws IOException {
+    Git git = getGit(uid);
 
-  public Resource getFile(String filePath) throws IOException {
-    return getFile(filePath , "HEAD");
-  }
-
-  public Resource getFile(String filePath, String revision) throws IOException {
     Repository repository = git.getRepository();
 
     ObjectId lastCommitId = repository.resolve(revision);
@@ -188,7 +196,7 @@ public class GitService {
       try (TreeWalk treeWalk = new TreeWalk(repository)) {
         treeWalk.addTree(tree);
         treeWalk.setRecursive(true);
-        treeWalk.setFilter(PathFilter.create(relativize(filePath)));
+        treeWalk.setFilter(PathFilter.create(filename));
         if (!treeWalk.next()) {
           throw new IllegalStateException("Did not find expected file 'README.md'");
         }
@@ -207,10 +215,10 @@ public class GitService {
   }
 
 
-  public Resource diff(String filePath, String fromRevision, String toRevision) {
+  public Resource diff(String uid, String filename, String fromRevision, String toRevision) {
 
     if (fromRevision == null) {
-      List<RevCommit> commits = Lists.reverse(Lists.newArrayList(getHistoryFor(filePath)));
+      List<RevCommit> commits = Lists.reverse(Lists.newArrayList(getHistoryFor(uid, filename)));
 
       for (int i = 0; i < commits.size(); i++) {
         if (commits.get(i).getId().name().equals(toRevision)) {
@@ -223,14 +231,14 @@ public class GitService {
         }
       }
     }
-    return doDiff(filePath, fromRevision, toRevision);
+    return doDiff(uid, filename, fromRevision, toRevision);
   }
 
 
-  public Resource doDiff(String filePath, String oldRevision, String newRevision) {
+  public Resource doDiff(String uid, String filename, String oldRevision, String newRevision) {
     try {
-      Resource oldResource = getFile(filePath, oldRevision);
-      Resource newResource = getFile(filePath, newRevision);
+      Resource oldResource = getFile(uid, filename, oldRevision);
+      Resource newResource = getFile(uid, filename, newRevision);
       return doDiff(oldResource, newResource);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -314,10 +322,12 @@ public class GitService {
 
   }
 
+/*
 
   private String relativize(String filePath) {
     return git.getRepository().getWorkTree().toPath().normalize().toAbsolutePath().relativize(Paths.get(filePath).toAbsolutePath()).toString();
   }
+*/
 
 
 }

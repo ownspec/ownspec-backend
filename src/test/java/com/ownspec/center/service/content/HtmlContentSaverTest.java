@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ownspec.center.model.component.Component;
@@ -91,7 +92,7 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component.v1, readFileToString(new File("src/test/resources/reference/no/no_reference.html"), UTF_8));
 
     // update and commit must be called
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/no/no_reference_expected.html"), r)), eq("filePath"), any(), any());
+    verify(gitService).updateAndCommit(eq(component.v1.getId().toString()), eq("filePath"), argThat(r -> htmlEquals(new ClassPathResource("reference/no/no_reference_expected.html"), r)), any(), any());
 
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> "foo".equals(w.getLastGitReference())));
 
@@ -112,7 +113,7 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/one/one_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_1.html"), r)), eq("filePath1"), any(), any());
+    verify(gitService).updateAndCommit(eq(component1.v1.getId().toString()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_1.html"), r)), any(), any());
     // Component 1: update reference
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(1L) && "hash1".equals(w.getLastGitReference())));
 
@@ -125,10 +126,42 @@ public class HtmlContentSaverTest {
     ));
 
     // Component 2: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_2.html"), r)), eq("filePath2"), any(), any());
+    verify(gitService).updateAndCommit(eq(component2.v1.getId().toString()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_2.html"), r)), any(), any());
     // Component 2: update reference
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(2L) && "hash2".equals(w.getLastGitReference())));
   }
+
+
+  @Test
+  public void testWithResource() throws Exception {
+
+    Tuple3<Component, WorkflowInstance, WorkflowStatus> component1 = createComponent(1L, 1L, 1L, "filePath1");
+    Tuple3<Component, WorkflowInstance, WorkflowStatus> component2 = createComponent(2L, ComponentType.RESOURCE, 2L, 2L, "filePath2");
+
+    initMock(component1.v1, component1.v2, component1.v3, "hash1", true);
+    initMock(component2.v1, component2.v2, component2.v3, "hash2", true);
+
+    htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/resource/one_reference.html"), UTF_8));
+
+    // Component 1: commit
+    verify(gitService).updateAndCommit(eq(component1.v1.getId().toString()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/resource/one_reference_expected_1.html"), r)), any(), any());
+    // Component 1: update reference
+    verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(1L) && "hash1".equals(w.getLastGitReference())));
+
+    // One saved references
+    verify(componentReferenceRepository).save(argThat((ComponentReference r) ->
+        r.getSource().getId().equals(component1.v1.getId()) &&
+            r.getSourceWorkflowInstance().getId().equals(component1.v2.getId()) &&
+            r.getTarget().getId().equals(component2.v1.getId()) &&
+            r.getTargetWorkflowInstance().getId().equals(component2.v2.getId())
+    ));
+
+    verify(workflowStatusRepository).findLatestWorkflowStatusByComponentId(component1.v1.getId());
+
+    // No more interaction, the resource is not updated
+    verifyNoMoreInteractions(gitService, workflowStatusRepository);
+  }
+
 
   @Test
   public void testCreateReference() throws Exception {
@@ -142,7 +175,7 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create/create_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_1.html"), r)), eq("filePath1"), any(), any());
+    verify(gitService).updateAndCommit(eq(component1.v1.getId().toString()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_1.html"), r)), any(), any());
     // Component 1: update workflow
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(1L) && "hash1".equals(w.getLastGitReference())));
 
@@ -157,7 +190,7 @@ public class HtmlContentSaverTest {
     // Component 2: create
     verify(componentService).create(any());
     // Component 2: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_2.html"), r)), eq("filePath2"), any(), any());
+    verify(gitService).updateAndCommit(eq(component2.v1.getId().toString()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_2.html"), r)), any(), any());
     // Component 2: update workflow
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(2L) && "hash2".equals(w.getLastGitReference())));
   }
@@ -177,7 +210,7 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create-nested/create_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_1.html"), r)), eq("filePath1"), any(), any());
+    verify(gitService).updateAndCommit(eq(component1.v1.getId().toString()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_1.html"), r)), any(), any());
     // Component 1: update workflow
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(1L) && "hash1".equals(w.getLastGitReference())));
     // Component 1: delete reference
@@ -194,7 +227,7 @@ public class HtmlContentSaverTest {
     // Component 2: create
     verify(componentService).create(any());
     // Component 2: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_2.html"), r)), eq("filePath2"), any(), any());
+    verify(gitService).updateAndCommit(eq(component2.v1.getId().toString()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_2.html"), r)), any(), any());
     // Component 2: update workflow
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(2L) && "hash2".equals(w.getLastGitReference())));
 
@@ -207,7 +240,7 @@ public class HtmlContentSaverTest {
     ));
 
     // Component 3: commit
-    verify(gitService).updateAndCommit(argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_3.html"), r)), eq("filePath3"), any(), any());
+    verify(gitService).updateAndCommit(eq(component3.v1.getId().toString()), eq("filePath3"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_3.html"), r)), any(), any());
     // Component 3: update workflow
     verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId().equals(3L) && "hash3".equals(w.getLastGitReference())));
     // Component 3: delete reference
@@ -243,11 +276,15 @@ public class HtmlContentSaverTest {
 
 
   protected Tuple3<Component, WorkflowInstance, WorkflowStatus> createComponent(Long id, Long workflowInstanceId, Long wsTatusId, String filePath) {
+    return createComponent(id, ComponentType.COMPONENT, workflowInstanceId, wsTatusId,filePath);
+  }
+
+  protected Tuple3<Component, WorkflowInstance, WorkflowStatus> createComponent(Long id, ComponentType componentType,Long workflowInstanceId, Long wsTatusId, String filePath) {
 
     Component component = new Component();
     component.setId(id);
     component.setTitle("TBD");
-    component.setType(ComponentType.COMPONENT);
+    component.setType(componentType);
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setId(workflowInstanceId);
@@ -261,10 +298,11 @@ public class HtmlContentSaverTest {
     workflowStatus.setWorkflowInstance(workflowInstance);
 
     component.setCurrentWorkflowInstance(workflowInstance);
-    component.setFilePath(filePath);
+    component.setFilename(filePath);
 
     return Tuple.tuple(component, workflowInstance, workflowStatus);
   }
+
 
   protected void initMock(Component component, WorkflowInstance workflowInstance, WorkflowStatus workflowStatus, String hash, boolean exist) {
     if (!exist) {
@@ -272,7 +310,7 @@ public class HtmlContentSaverTest {
     }
     when(componentRepository.findOne(component.getId())).thenReturn(component);
     when(workflowStatusRepository.findLatestWorkflowStatusByComponentId(component.getId())).thenReturn(workflowStatus);
-    when(gitService.updateAndCommit(any(), eq(component.getFilePath()), any(), any())).thenReturn(hash);
+    when(gitService.updateAndCommit(eq(component.getId().toString()), eq(component.getFilename()), any(), any(), any())).thenReturn(hash);
     when(componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowInstance.getId())).thenReturn(1L);
     when(workflowInstanceRepository.findOne(workflowInstance.getId())).thenReturn(workflowInstance);
   }

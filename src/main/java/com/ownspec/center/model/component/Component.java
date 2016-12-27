@@ -38,7 +38,6 @@ public class Component implements Auditable<User>, Persistable<Long> {
   @GeneratedValue
   protected Long id;
   protected String title;
-  protected String filePath;
 
   protected String filename;
   protected String mediaType;
@@ -106,7 +105,7 @@ public class Component implements Auditable<User>, Persistable<Long> {
     return "Component{" +
            "id=" + id +
            ", title='" + title + '\'' +
-           ", filePath='" + filePath + '\'' +
+           ", filename='" + filename + '\'' +
            ", type=" + type +
            '}';
   }

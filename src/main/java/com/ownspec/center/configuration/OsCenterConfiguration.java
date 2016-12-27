@@ -41,13 +41,6 @@ public class OsCenterConfiguration {
   @Autowired
   private AuthenticationService authenticationService;
 
-  @Bean
-  public Git git() throws IOException, GitAPIException {
-    Git git = Git.init().setDirectory(new File(componentsGitRepositoryPath)).call();
-    git.add().addFilepattern(".").call();
-    git.commit().setMessage("Adding all files under directory [" + componentsGitRepositoryPath + "]").call();
-    return git;
-  }
 
   @Bean
   public AuditorAware auditorAware() {

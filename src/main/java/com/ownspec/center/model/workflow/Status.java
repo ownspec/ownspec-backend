@@ -45,7 +45,7 @@ public enum Status {
       case OPEN:
         return Arrays.asList(DRAFT);
       case DRAFT:
-        return Arrays.asList(IN_VALIDATION);
+        return Arrays.asList(IN_VALIDATION, OPEN);
       case IN_VALIDATION:
         return Arrays.asList(DRAFT, VALIDATED);
       case VALIDATED:
