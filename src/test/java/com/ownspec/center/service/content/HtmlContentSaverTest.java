@@ -29,6 +29,7 @@ import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple3;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -41,6 +42,7 @@ import org.springframework.core.io.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by nlabrot on 12/11/16.
@@ -104,11 +106,22 @@ public class HtmlContentSaverTest {
   @Test
   public void testWithReference() throws Exception {
 
+    AtomicLong counter = new AtomicLong();
+
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component1 = createComponent(1L, 1L, 1L, "filePath1");
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component2 = createComponent(2L, 2L, 2L, "filePath2");
 
     initMock(component1.v1, component1.v2, component1.v3, "hash1", true);
     initMock(component2.v1, component2.v2, component2.v3, "hash2", true);
+
+    when(componentReferenceRepository.save(any(ComponentReference.class))).then(i -> {
+          ComponentReference reference = new ComponentReference();
+          reference.setId(counter.getAndIncrement());
+          return reference;
+        }
+    );
+
+
 
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/one/one_reference.html"), UTF_8));
 
@@ -135,11 +148,21 @@ public class HtmlContentSaverTest {
   @Test
   public void testWithResource() throws Exception {
 
+    AtomicLong counter = new AtomicLong();
+
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component1 = createComponent(1L, 1L, 1L, "filePath1");
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component2 = createComponent(2L, ComponentType.RESOURCE, 2L, 2L, "filePath2");
 
     initMock(component1.v1, component1.v2, component1.v3, "hash1", true);
     initMock(component2.v1, component2.v2, component2.v3, "hash2", true);
+
+    when(componentReferenceRepository.save(any(ComponentReference.class))).then(i -> {
+          ComponentReference reference = new ComponentReference();
+          reference.setId(counter.getAndIncrement());
+          return reference;
+        }
+    );
+
 
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/resource/one_reference.html"), UTF_8));
 
@@ -165,12 +188,23 @@ public class HtmlContentSaverTest {
 
   @Test
   public void testCreateReference() throws Exception {
+    AtomicLong counter = new AtomicLong();
 
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component1 = createComponent(1L, 1L, 1L, "filePath1");
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component2 = createComponent(2L, 2L, 2L, "filePath2");
 
     initMock(component1.v1, component1.v2, component1.v3, "hash1", true);
     initMock(component2.v1, component2.v2, component2.v3, "hash2", false);
+
+
+    when(componentReferenceRepository.save(any(ComponentReference.class))).then(i -> {
+          ComponentReference reference = new ComponentReference();
+          reference.setId(counter.getAndIncrement());
+          return reference;
+        }
+    );
+
+
 
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create/create_reference.html"), UTF_8));
 
@@ -198,6 +232,7 @@ public class HtmlContentSaverTest {
 
   @Test
   public void testNestedCreateReference() throws Exception {
+    AtomicLong counter = new AtomicLong();
 
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component1 = createComponent(1L, 1L, 1L, "filePath1");
     Tuple3<Component, WorkflowInstance, WorkflowStatus> component2 = createComponent(2L, 2L, 2L, "filePath2");
@@ -206,6 +241,14 @@ public class HtmlContentSaverTest {
     initMock(component1.v1, component1.v2, component1.v3, "hash1", true);
     initMock(component2.v1, component2.v2, component2.v3, "hash2", false);
     initMock(component3.v1, component3.v2, component3.v3, "hash3", true);
+
+    when(componentReferenceRepository.save(any(ComponentReference.class))).then(i -> {
+          ComponentReference reference = new ComponentReference();
+          reference.setId(counter.getAndIncrement());
+          return reference;
+        }
+    );
+
 
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create-nested/create_reference.html"), UTF_8));
 
@@ -276,10 +319,10 @@ public class HtmlContentSaverTest {
 
 
   protected Tuple3<Component, WorkflowInstance, WorkflowStatus> createComponent(Long id, Long workflowInstanceId, Long wsTatusId, String filePath) {
-    return createComponent(id, ComponentType.COMPONENT, workflowInstanceId, wsTatusId,filePath);
+    return createComponent(id, ComponentType.COMPONENT, workflowInstanceId, wsTatusId, filePath);
   }
 
-  protected Tuple3<Component, WorkflowInstance, WorkflowStatus> createComponent(Long id, ComponentType componentType,Long workflowInstanceId, Long wsTatusId, String filePath) {
+  protected Tuple3<Component, WorkflowInstance, WorkflowStatus> createComponent(Long id, ComponentType componentType, Long workflowInstanceId, Long wsTatusId, String filePath) {
 
     Component component = new Component();
     component.setId(id);
@@ -319,7 +362,8 @@ public class HtmlContentSaverTest {
     try (InputStream expectedIs = expected.getInputStream(); InputStream actualIs = actual.getInputStream()) {
       Document expectedDom = Jsoup.parse(IOUtils.toString(expectedIs, UTF_8));
       Document actualDom = Jsoup.parse(IOUtils.toString(actualIs, UTF_8));
-      return expectedDom.body().html().equals(actualDom.body().html());
+      Assert.assertEquals(expectedDom.body().html(), actualDom.body().html());
+      return true;
     } catch (Exception e) {
       return false;
     }

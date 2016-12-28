@@ -28,6 +28,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +40,8 @@ import java.util.UUID;
  */
 @Slf4j
 public class HtmlContentSaver {
+
+  public static final String DATA_REFERENCE_ID = "data-reference-id";
 
   public static final String DATA_REQUIREMENT_ID = "data-requirement-id";
   public static final String DATA_REQUIREMENT_SCM_REF = "data-requirement-scm-ref";
@@ -143,6 +146,31 @@ public class HtmlContentSaver {
       }
 
 
+
+
+      Long deletedRef = 0L;
+
+      if (!componentContent.created) {
+        // Delete old refs if not created
+        componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowStatus.getWorkflowInstance().getId());
+      }
+
+      // Save the new references
+      for (String refTempId : componentContent.referencedTarget) {
+        ComponentContent referenceComponentContent = referencesByComponent.get(refTempId);
+
+        ComponentReference componentReference = new ComponentReference();
+        componentReference.setSource(component);
+        componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
+        componentReference.setTarget(componentRepository.findOne(referenceComponentContent.componentId));
+        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(referenceComponentContent.workflowInstanceId));
+        componentReference = componentReferenceRepository.save(componentReference);
+
+        // Store the reference id
+        componentContent.referencedTargetToReferenceId.put(refTempId, componentReference.getId());
+      }
+
+      // Update the reference with the reference id
       Document document = Jsoup.parse(componentContent.content);
       parseComponent(document.body(), new UpdateReferenceCallBack(componentContent));
       componentContent.content = document.body().html();
@@ -166,25 +194,6 @@ public class HtmlContentSaver {
 
       componentRepository.save(component);
 
-
-      Long deletedRef = 0L;
-
-      if (!componentContent.created) {
-        // Delete old refs if not created
-        componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowStatus.getWorkflowInstance().getId());
-      }
-
-      // Save the new references
-      for (String refTempId : componentContent.references) {
-        ComponentContent referenceComponentContent = referencesByComponent.get(refTempId);
-
-        ComponentReference componentReference = new ComponentReference();
-        componentReference.setSource(component);
-        componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
-        componentReference.setTarget(componentRepository.findOne(referenceComponentContent.componentId));
-        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(referenceComponentContent.workflowInstanceId));
-        componentReferenceRepository.save(componentReference);
-      }
     }
   }
 
@@ -199,7 +208,8 @@ public class HtmlContentSaver {
     private Long workflowInstanceId;
     private String content;
     private String scmReference;
-    private List<String> references = new ArrayList<>();
+    private List<String> referencedTarget = new ArrayList<>();
+    private Map<String, Long> referencedTargetToReferenceId = new HashMap<>();
     private boolean created = false;
 
     public ComponentContent(String tempId) {
@@ -233,14 +243,20 @@ public class HtmlContentSaver {
 
     @Override
     public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
-      ComponentContent refComponentContent = referencesByComponent.get(componentContent.references.get(referenceIndex++));
+      ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
+      element.attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
       element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
       element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
     }
 
     @Override
     public void parseResource(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
-
+      ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
+      element.attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
+      element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
+      element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
     }
 
     @Override
@@ -272,7 +288,7 @@ public class HtmlContentSaver {
       graph.addVertex(nestedComponent.tempId);
       graph.addEdge(componentContent.tempId, nestedComponent.tempId);
 
-      componentContent.references.add(nestedComponent.tempId);
+      componentContent.referencedTarget.add(nestedComponent.tempId);
 
       // extract reference from the nested reference content (second children, first children is the title)
       parseComponent(element.children().get(1), new SaveParseCallBack(nestedComponent));
@@ -288,7 +304,7 @@ public class HtmlContentSaver {
       nestedComponent.workflowInstanceId = Long.valueOf(nestedWorkflowInstanceId);
       nestedComponent.scmReference = nestedScmReference;
 
-      componentContent.references.add(nestedComponent.tempId);
+      componentContent.referencedTarget.add(nestedComponent.tempId);
 
       parseComponent(element, new SaveParseCallBack(nestedComponent));
     }
