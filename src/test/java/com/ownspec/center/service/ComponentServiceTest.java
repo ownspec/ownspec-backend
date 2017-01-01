@@ -1,48 +1,21 @@
 package com.ownspec.center.service;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import com.google.common.base.Functions;
 import com.ownspec.center.model.component.ComponentReference;
-import org.apache.commons.lang.Validate;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Assert;
 import org.junit.Test;
-import org.outerj.daisy.diff.DaisyDiff;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Sort;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
-import com.ownspec.center.model.workflow.WorkflowStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.xml.sax.InputSource;
 
-import static com.ownspec.center.model.component.QComponent.component;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.eclipse.jdt.internal.compiler.parser.Parser.name;
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 
 /**
  * Created by nlabrot on 01/10/16.
@@ -154,7 +127,7 @@ public class ComponentServiceTest extends AbstractTest {
 
 
 
-    List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowStatuses(component.getId()).get(0).getWorkflowStatuses();
+    List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowInstances(component.getId()).get(0).getWorkflowStatuses();
 
     Resource file = gitService.getFile(component.getId().toString(), component.getFilename(), endGitReference1);
 

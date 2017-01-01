@@ -16,6 +16,8 @@ public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstan
 
   List<WorkflowInstance> findAllByComponentId(@Param("id") Long id, Sort orders);
 
-
+  @Query("FROM WorkflowInstance wi WHERE wi.component.id=:id AND wi.id IN " +
+      "(SELECT MAX(wi2.id) FROM WorkflowInstance wi2 WHERE wi2.component.id=:id)")
+  WorkflowInstance findLatestByComponentId(@Param("id") Long id);
 
 }

@@ -131,6 +131,9 @@ public class ComponentService {
   @Autowired
   private UploadService uploadService;
 
+  @Autowired
+  private ComponentTagService componentTagService;
+
 
   public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
 
@@ -189,18 +192,23 @@ public class ComponentService {
     // Save to get the id
     component = componentRepository.save(component);
 
+
+    componentTagService.tagComponent(component, source.getTags());
+
     // Update
     String hash = gitService.updateAndCommit(component.getId().toString(), component.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
 
 
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
+    workflowInstance.setVersion(1L);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(Status.OPEN);
     workflowStatus.setFirstGitReference(hash);
     workflowStatus.setLastGitReference(hash);
     workflowStatus.setWorkflowInstance(workflowInstance);
+
 
     component.setCurrentWorkflowInstance(workflowInstance);
     component.setCoverageStatus(source.getCoverageStatus());
@@ -253,6 +261,9 @@ public class ComponentService {
       updateContent(target, new ByteArrayResource(source.getContent().getBytes(UTF_8)));
     }
 
+    componentTagService.tagComponent(target, source.getTags());
+
+
     return componentRepository.save(target);
   }
 
@@ -289,14 +300,14 @@ public class ComponentService {
       throw new IllegalStateException("Illegal transition");
     }
 
-    // Retrieve current workflow status
-    WorkflowStatus lastWorkflowStatusWithGit =
-        workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(component.getCurrentWorkflowInstance().getId());
+    Long lastVersion = currentWorkflowStatus.getWorkflowInstance().getVersion();
 
-
-    // Create and stave the next status
+    // Create and save the next status
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
+
+    // Increment the version
+    workflowInstance.setVersion(lastVersion + 1);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(Status.OPEN);
@@ -383,9 +394,14 @@ public class ComponentService {
     return null;
   }
 
-  public List<WorkflowInstanceDto> getWorkflowStatuses(Long id) {
+
+  public WorkflowInstance getCurrentWorkflowInstance(Long id) {
+    return workflowInstanceRepository.findLatestByComponentId(id);
+  }
+
+  public List<WorkflowInstanceDto> getWorkflowInstances(Long id) {
     Component component = findOne(id);
-    List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getId().toString() , component.getFilename())));
+    List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getId().toString(), component.getFilename())));
 
     int commitIndex = 0;
 
@@ -445,7 +461,7 @@ public class ComponentService {
 
   public Resource diff(Long id, String fromRevision, String toRevision) {
     Component component = findOne(id);
-    return gitService.diff(component.getId().toString() , component.getFilename(), fromRevision, toRevision);
+    return gitService.diff(component.getId().toString(), component.getFilename(), fromRevision, toRevision);
   }
 
   public ResponseEntity assignTo(Long componentId, Long userId, boolean autoGrantUserAccess, boolean editable) {
@@ -575,5 +591,4 @@ public class ComponentService {
         .map(uc -> componentRepository.findOne(uc.getComponent().getId()))
         .collect(Collectors.toList());
   }
-
 }

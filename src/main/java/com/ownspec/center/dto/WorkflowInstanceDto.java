@@ -29,15 +29,16 @@ public interface WorkflowInstanceDto {
   @Nullable
   UserDto getCreatedUser();
 
+  Long getVersion();
 
   @Nullable
   List<WorkflowStatusDto> getWorkflowStatuses();
 
 
-
   static ImmutableWorkflowInstanceDto.Builder newBuilderFromWorkflowInstance(WorkflowInstance workflowInstance) {
     ImmutableWorkflowInstanceDto.Builder builder = ImmutableWorkflowInstanceDto.newWorkflowInstanceDto()
         .id(workflowInstance.getId())
+        .version(workflowInstance.getVersion())
         //.currentStatus(StatusDto.createFromStatus(workflowInstance.getCurrentStatus()))
         .createdDate(workflowInstance.getCreatedDate())
         .createdUser(UserDto.fromUser(workflowInstance.getCreatedUser()));

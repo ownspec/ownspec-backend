@@ -54,7 +54,7 @@ public interface ComponentDto {
   String getSummary();
 
   @Nullable
-  WorkflowStatusDto getCurrentWorkflowStatus();
+  WorkflowInstanceDto getCurrentWorkflowInstance();
 
   @Nullable
   List<WorkflowInstanceDto> getWorkflowInstances();
@@ -92,6 +92,7 @@ public interface ComponentDto {
   @Nullable
   String getFilename();
 
+  List<String> getTags();
 
   static ImmutableComponentDto.Builder newBuilderFromComponent(Component c) {
     return newComponentDto()
