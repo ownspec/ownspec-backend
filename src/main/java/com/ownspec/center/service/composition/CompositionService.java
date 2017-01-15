@@ -1,51 +1,36 @@
-package com.ownspec.center.service;
+package com.ownspec.center.service.composition;
 
 import com.ownspec.center.exception.CompositionException;
-import com.ownspec.center.model.component.Component;
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.TemplateLoader;
-import freemarker.ext.beans.StringModel;
-import freemarker.template.Configuration;
-import freemarker.template.SimpleScalar;
+import com.ownspec.center.service.FreeMarkerService;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
 import org.apache.commons.codec.CharEncoding;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import org.htmlcleaner.CleanerProperties;
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.PrettyXmlSerializer;
+import org.htmlcleaner.TagNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.freemarker.SpringTemplateLoader;
+import org.w3c.dom.Document;
+import org.xhtmlrenderer.pdf.ITextOutputDevice;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+import org.xhtmlrenderer.pdf.ITextUserAgent;
+import org.xhtmlrenderer.resource.XMLResource;
+import org.xml.sax.InputSource;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 
 /**
  * Created by lyrold on 09/10/2016.
@@ -59,34 +44,13 @@ public class CompositionService {
   @Value("${composition.template.extension}")
   private String defaultTemplateExtension;
 
-  @Value("${composition.template.resourceLoaderPath}")
-  private String resourceLoaderPath;
-
-  @Value("${composition.template.componentLoaderPath}")
-  private String componentLoaderPath;
-
   @Value("${wkhtmltopdf.path}")
   private String wkhtmltopdfPath;
 
   @Autowired
-  private ResourceLoader resourceLoader;
+  private FreeMarkerService freeMarkerService;
 
 
-  private Configuration configuration;
-
-  @PostConstruct
-  public void init() throws IOException {
-    Files.createDirectories(Paths.get(componentLoaderPath));
-
-    TemplateLoader[] loaders = new TemplateLoader[]{
-        new SpringTemplateLoader(resourceLoader, resourceLoaderPath),
-        new FileTemplateLoader(new File(componentLoaderPath))
-    };
-    MultiTemplateLoader multiTemplateLoader = new MultiTemplateLoader(loaders);
-
-    configuration = new Configuration(Configuration.VERSION_2_3_25);
-    configuration.setTemplateLoader(multiTemplateLoader);
-  }
 
   public String compose(String templateName, Map model) {
     try {
@@ -104,7 +68,7 @@ public class CompositionService {
   public File compose(String templateName, Map model, String outputFilePath) {
     File outputFile = new File(outputFilePath);
     try (Writer writer = new FileWriter(outputFile)) {
-      Template template = configuration.getTemplate(
+      Template template = freeMarkerService.getConfiguration().getTemplate(
           templateName.split("\\.").length == 2 && templateName.matches(".*\\.*$") ?
               templateName :
               templateName + defaultTemplateExtension
@@ -120,7 +84,7 @@ public class CompositionService {
     return compose(source.getName(), model, outputFilePath);
   }
 
-  public Resource htmlToPdf(Component component, Resource content) {
+ /* public Resource wkHtmlToPdf(Component component, Resource content) {
     try {
       File coverFile = File.createTempFile("html", ".html");
 
@@ -152,33 +116,70 @@ public class CompositionService {
       throw new RuntimeException(e);
     }
   }
+*/
+
+  public Resource flyingHtmlToPdf(Path path) {
+    try {
+
+      CleanerProperties props = new CleanerProperties();
+
+// set some properties to non-default values
+      props.setTranslateSpecialEntities(true);
+      props.setTransResCharsToNCR(true);
+      props.setOmitComments(true);
+
+// do parsing
+
+      TagNode tagNode = new HtmlCleaner(props).clean(path.toFile());
 
 
-  public Configuration getConfiguration() {
-    return configuration;
-  }
+      Path cleanXml = path.getParent().resolve(Paths.get("composition.xml"));
 
 
-  private void process(String templatePath, Map<String, Object> context, Writer writer) throws IOException, TemplateException {
-    Template coverTemplate = configuration.getTemplate(templatePath);
-
-    Map<String,Object> copyContext = new HashMap<>(context);
-
-    copyContext.put("formatDateTime", new FormatDateTimeMethodModel());
-
-    coverTemplate.process(copyContext, writer);
-  }
+// serialize to xml file
+      new PrettyXmlSerializer(props).writeToFile(
+          tagNode, cleanXml.toString(), "utf-8"
+      );
 
 
-  public static class FormatDateTimeMethodModel implements TemplateMethodModelEx {
-    public Object exec(List args) throws TemplateModelException {
-      if (args.size() != 2) {
-        throw new TemplateModelException("Wrong arguments");
+
+
+      ITextRenderer renderer = new ITextRenderer();
+      ResourceLoaderUserAgent callback = new ResourceLoaderUserAgent(renderer.getOutputDevice());
+      callback.setSharedContext(renderer.getSharedContext());
+      renderer.getSharedContext ().setUserAgentCallback(callback);
+
+      String url = cleanXml.toUri().toURL().toString();
+
+      Document doc = XMLResource.load(new InputSource(url)).getDocument();
+
+      Path pdfPath = cleanXml.getParent().resolve(Paths.get("composition.pdf"));
+
+      try (OutputStream os = Files.newOutputStream(pdfPath)) {
+        renderer.setDocument(doc, url);
+        renderer.layout();
+        renderer.createPDF(os);
       }
-      TemporalAccessor time = (TemporalAccessor) ((StringModel) args.get(0)).getWrappedObject();
 
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern(((SimpleScalar) args.get(1)).getAsString());
-      return formatter.format(time);
+
+
+      return new FileSystemResource(pdfPath.toFile());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
+
+  private static class ResourceLoaderUserAgent extends ITextUserAgent
+  {
+    public ResourceLoaderUserAgent(ITextOutputDevice outputDevice) {
+      super(outputDevice);
+    }
+
+    protected InputStream resolveAndOpenStream(String uri) {
+      InputStream is = super.resolveAndOpenStream(uri);
+      System.out.println("IN resolveAndOpenStream() " + uri);
+      return is;
+    }
+  }
+
 }

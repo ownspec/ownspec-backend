@@ -41,12 +41,12 @@ import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
-import com.ownspec.center.service.CompositionService;
 import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.UserService;
+import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.AbstractMimeMessage;
 import com.ownspec.center.util.OsUtils;
@@ -66,6 +66,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -202,6 +204,7 @@ public class ComponentService {
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
     workflowInstance.setVersion(1L);
+    workflowInstance.setGitReference(hash);
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setStatus(Status.OPEN);
@@ -305,6 +308,7 @@ public class ComponentService {
     // Create and save the next status
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setComponent(component);
+    workflowInstance.setGitReference(currentWorkflowStatus.getWorkflowInstance().getGitReference());
 
     // Increment the version
     workflowInstance.setVersion(lastVersion + 1);
@@ -358,7 +362,8 @@ public class ComponentService {
 
 
   public Pair<String, String> generateContent(Component c) {
-    return contentConfiguration.htmlContentGenerator().generate(c);
+    WorkflowInstance workflowInstance = workflowInstanceRepository.findLatestByComponentId(c.getId());
+    return contentConfiguration.htmlContentGenerator().generate(c, workflowInstance);
   }
 
   public WorkflowStatus getCurrentStatus(Long id) {
@@ -377,6 +382,16 @@ public class ComponentService {
   public Resource getRawContent(Component c, String ref) {
     try {
       return gitService.getFile(c.getId().toString(), c.getFilename(), ref);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Resource getContent(Component c, Long workflowInstanceId) {
+    try {
+      WorkflowStatus workflowInstance = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(workflowInstanceId);
+
+      return gitService.getFile(c.getId().toString(), c.getFilename(), workflowInstance.getLastGitReference());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -551,10 +566,18 @@ public class ComponentService {
 
     Component component = findOne(id);
 
-    Pair<String, String> generate = contentConfiguration.htmlContentGenerator().generate(component, true);
+    WorkflowInstance workflowInstance = workflowInstanceRepository.findLatestByComponentId(id);
 
-    return compositionService.htmlToPdf(component, new ByteArrayResource(generate.getLeft().getBytes(UTF_8)));
+    Path tempDirectory = Files.createTempDirectory("foo");
+
+    Path compo = contentConfiguration.compositionHtmlContentGenerator().generate(component, workflowInstance, true, tempDirectory);
+
+    return compositionService.flyingHtmlToPdf(compo);
   }
+
+
+
+
 
   public ResponseEntity addVisit(Long id) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();

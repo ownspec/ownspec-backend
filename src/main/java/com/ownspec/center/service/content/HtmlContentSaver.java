@@ -6,6 +6,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
@@ -116,6 +117,10 @@ public class HtmlContentSaver {
         component = componentService.create(newComponentDto()
             .title("TBD")
             .type(ComponentType.COMPONENT).build());
+
+        // Update the component status to draft
+        componentService.updateStatus(component.getId() , Status.DRAFT);
+
         componentContent.componentId = component.getId();
         componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
 
@@ -190,7 +195,11 @@ public class HtmlContentSaver {
         workflowStatus.setLastGitReference(hash);
       }
 
+      workflowStatus.getWorkflowInstance().setGitReference(hash);
+
       workflowStatusRepository.save(workflowStatus);
+
+      workflowInstanceRepository.save(workflowStatus.getWorkflowInstance());
 
       componentRepository.save(component);
 

@@ -332,6 +332,7 @@ public class HtmlContentSaverTest {
     WorkflowInstance workflowInstance = new WorkflowInstance();
     workflowInstance.setId(workflowInstanceId);
     workflowInstance.setComponent(component);
+    workflowInstance.setGitReference("abc");
 
     WorkflowStatus workflowStatus = new WorkflowStatus();
     workflowStatus.setId(wsTatusId);
