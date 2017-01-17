@@ -1,6 +1,6 @@
 package com.ownspec.center.service.content;
 
-import org.jsoup.Jsoup;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 
 /**
  * Not used for instance
- *
+ * <p>
  * toc is generated on client side
- *
- *
+ * <p>
+ * <p>
  * Created by nlabrot on 29/11/16.
  */
 public class TocGenerator {
@@ -23,26 +23,20 @@ public class TocGenerator {
 
   private Pattern titlePattern = Pattern.compile("h(\\d+)");
 
-  private StringBuilder tocBuilder = new StringBuilder();
+  private Document docTocBuilder;
 
   public TocGenerator() {
     counter = new int[MAX_DEPTH];
   }
 
-  public String generate(String content) {
-
-    Document document = Jsoup.parse(content);
-
-    tocBuilder.append("<ul>\n");
-
-    construct(document.body());
-
-    tocBuilder.append("</ul>\n");
-
-    return tocBuilder.toString();
+  public Document generate(Element root) {
+    docTocBuilder = Document.createShell("foo");
+    construct(root, docTocBuilder.body().appendElement("ul"));
+    return docTocBuilder;
   }
 
-  public void construct(Element current) {
+
+  public void construct(Element current, Element ul) {
 
     for (Element element : current.children()) {
       Matcher matcher = titlePattern.matcher(element.tagName());
@@ -51,11 +45,14 @@ public class TocGenerator {
         reset(level + 1);
         counter[level]++;
 
-        tocBuilder.append("<li><a>")
-            .append(generateNumero(level + 1) + " " + element.text())
-            .append("</a></li>\n");
+        Pair<String, String> idAndNumber = generateIdAndNumber(level + 1);
+
+        // Set title id
+        element.attr("id" , idAndNumber.getLeft());
+        // Generate toc entry with anchor
+        ul.appendElement("li").appendElement("a").attr("href", "#" + idAndNumber.getLeft()).text(idAndNumber.getRight() + " " + element.text());
       }
-      construct(element);
+      construct(element, ul);
     }
   }
 
@@ -65,14 +62,15 @@ public class TocGenerator {
     }
   }
 
-  private String generateNumero(int level) {
-
+  private Pair<String, String> generateIdAndNumber(int level) {
     StringBuilder builder = new StringBuilder();
-
     for (int i = 0; i < level; i++) {
       builder.append(counter[i]).append(".");
     }
-    return builder.toString();
+
+    String number = builder.toString();
+
+    return Pair.of(number.replaceAll("\\." , "_") , number);
   }
 
 }

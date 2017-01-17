@@ -7,9 +7,11 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.service.content.TocGenerator;
 import com.ownspec.center.service.content.parser.HtmlComponentContentParser;
 import com.ownspec.center.service.content.parser.ParserCallBack;
 import com.ownspec.center.service.content.parser.ParserContext;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -19,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 /**
  * Created by nlabrot on 15/01/17.
@@ -65,7 +66,7 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
 
     nestedContent.attr("contenteditable", Boolean.toString(workflowStatus.getStatus().isEditable()));
 
-    while (nestedBody.childNodeSize() > 0){
+    while (nestedBody.childNodeSize() > 0) {
       nestedContent.appendChild(nestedBody.childNode(0));
     }
 
@@ -99,8 +100,15 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
     return body;
   }
 
-
-
+  @Override
+  public void parseToc(Element parent, ParserContext parserContext) {
+    if (forComposition) {
+      TocGenerator tocGenerator = new TocGenerator();
+      Document toc = tocGenerator.generate(parent);
+      parserContext.getElement().appendElement("h1").addClass("nocount").text("Table Of Content");
+      parserContext.getElement().appendChild(toc.body().child(0));
+    }
+  }
 
   private Element parseNestedComponent(Component c, WorkflowInstance workflowInstance) {
     HtmlComponentContentParser<Element> contentParser = new HtmlComponentContentParser();

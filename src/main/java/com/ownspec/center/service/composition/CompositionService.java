@@ -11,6 +11,7 @@ import org.htmlcleaner.PrettyXmlSerializer;
 import org.htmlcleaner.TagNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xhtmlrenderer.pdf.ITextUserAgent;
 import org.xhtmlrenderer.resource.XMLResource;
 import org.xml.sax.InputSource;
+import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -120,6 +122,13 @@ public class CompositionService {
 
   public Resource flyingHtmlToPdf(Path path) {
     try {
+
+      Path fonts = Files.createDirectories(path.getParent().resolve("fonts"));
+
+      try (InputStream inputStream = new ClassPathResource("fonts/fonts.zip").getInputStream()) {
+        ZipUtil.unpack(inputStream, fonts.toFile());
+      }
+
 
       CleanerProperties props = new CleanerProperties();
 

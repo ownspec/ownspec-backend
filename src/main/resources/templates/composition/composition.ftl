@@ -8,26 +8,32 @@
 <head>
 
     <style>
+        @font-face {
+            font-family: DejaVu Sans;
+            src: url(fonts/DejaVuSans.ttf);
+            -fs-pdf-font-embed: embed;
+            -fs-pdf-font-encoding: Identity-H;
+        }
 
         body {
-            font-family: Arial;
+            font-family: DejaVu Sans;
         }
 
         h1 {
-            font-size: 1.7rem;
+            font-size: 24px;
             margin-bottom: 1rem;
             margin-top: 1rem;
 
         }
 
         h2 {
-            font-size: 1.5rem;
+            font-size: 20px;
             margin-bottom: 1rem;
             margin-top: 1rem;
         }
 
         h3 {
-            font-size: 1.3rem;
+            font-size: 16px;
             margin-bottom: 1rem;
             margin-top: 1rem;
         }
@@ -86,7 +92,7 @@
             content: counter(h1) "." counter(h2) "." counter(h3) "." counter(h4) "." counter(h5) "." counter(h6) ". "
         }
 
-        h2.nocount:before, h3.nocount:before, h4.nocount:before, h5.nocount:before, h6.nocount:before {
+        h1.nocount:before,h2.nocount:before, h3.nocount:before, h4.nocount:before, h5.nocount:before, h6.nocount:before {
             content: "";
             counter-increment: none
         }
@@ -119,9 +125,14 @@
             }
         }
 
-        ol.toc a::after {
+        .toc a::after {
             content: leader('.') target-counter(attr(href), page);
         }
+
+        .toc ul {
+            list-style: none;
+        }
+
     </style>
 
 

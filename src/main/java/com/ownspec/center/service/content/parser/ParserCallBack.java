@@ -12,4 +12,6 @@ public interface ParserCallBack<T> {
   void parseResource(ParserContext parserContext);
 
   T endComponent(Element body);
+
+  default void parseToc(Element parent, ParserContext parserContext){}
 }

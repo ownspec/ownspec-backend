@@ -58,8 +58,15 @@ public class HtmlComponentContentParser<T> {
             .nestedWorkflowInstanceId(element.attr(DATA_WORKFLOW_INSTANCE_ID))
             .build();
 
-
         cb.parseResource(parserContext);
+      } else if ("div".equals(element.nodeName()) && element.hasClass("toc")) {
+        ImmutableParserContext parserContext = newParserContext()
+            .htmlComponentContentParser(this)
+            .element(element)
+            .build();
+
+        cb.parseToc(parent,parserContext);
+
       } else {
         stack.addAll(element.children());
       }
