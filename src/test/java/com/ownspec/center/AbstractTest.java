@@ -4,6 +4,7 @@ package com.ownspec.center;
  * Created by nlabrot on 26/09/16.
  */
 
+import com.ownspec.center.repository.tag.TagRepository;
 import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
@@ -26,6 +27,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = OsCenterApplication.class)
@@ -59,6 +62,10 @@ public abstract class AbstractTest {
   @Autowired
   protected UserRepository userRepository;
 
+  @Autowired
+  private TagRepository tagRepository;
+
+
 
   @Before
   public void init() throws IOException {
@@ -66,5 +73,17 @@ public abstract class AbstractTest {
     SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(userRepository.findOne(0l) , ""));
   }
 
+
+  private void m(Predicate<String> ps) { /* ... */ }
+  private void m(Function<String, String> fss) { /* ... */ }
+
+  private void callingM() {
+    m((String s) -> s.isEmpty());
+  }
+
+  private void m2(Function<String, Integer> fss) { /* ... */ }
+  private void callingM2() {
+    m2(s -> s.length());
+  }
 
 }

@@ -3,7 +3,7 @@ package com.ownspec.center.service.component;
 import com.ownspec.center.model.Tag;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentTag;
-import com.ownspec.center.repository.ComponentTagRepository;
+import com.ownspec.center.repository.tag.ComponentTagRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.service.tag.TagService;
 import org.springframework.beans.factory.annotation.Autowired;

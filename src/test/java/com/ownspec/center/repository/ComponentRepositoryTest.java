@@ -25,4 +25,11 @@ public class ComponentRepositoryTest extends AbstractTest {
 
 
   }
+
+  @Test
+  public void name1() throws Exception {
+    componentRepository.findAllByComponentTagTagLabel("dd");
+    //componentRepository.findAll2();
+
+  }
 }

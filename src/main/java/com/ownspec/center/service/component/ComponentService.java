@@ -26,6 +26,7 @@ import com.ownspec.center.model.Project;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.Task;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserComponent;
@@ -73,6 +74,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -137,7 +139,7 @@ public class ComponentService {
   private ComponentTagService componentTagService;
 
 
-  public List<Component> findAll(Long projectId, ComponentType[] types, String query) {
+  public List<Component> findAll(Long projectId, ComponentType[] types, String[] tags, String query) {
 
     List<Predicate> predicates = new ArrayList<>();
 
@@ -152,6 +154,8 @@ public class ComponentService {
     if (types != null) {
       predicates.add(component.type.in(types));
     }
+
+
 
     if (!predicates.isEmpty()) {
       return Lists.newArrayList(componentRepository.findAll(predicates.size() == 1 ? predicates.get(0) : booleanOperation(Ops.AND, predicates.toArray(new Predicate[0]))));
@@ -366,6 +370,10 @@ public class ComponentService {
     return contentConfiguration.htmlContentGenerator().generate(c, workflowInstance);
   }
 
+  public Pair<String, String> generateContent(Component c, WorkflowInstance wi) {
+    return contentConfiguration.htmlContentGenerator().generate(c, wi);
+  }
+
   public WorkflowStatus getCurrentStatus(Long id) {
     return workflowStatusRepository.findLatestWorkflowStatusByComponentId(id);
   }
@@ -389,9 +397,9 @@ public class ComponentService {
 
   public Resource getContent(Component c, Long workflowInstanceId) {
     try {
-      WorkflowStatus workflowInstance = workflowStatusRepository.findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(workflowInstanceId);
+      WorkflowInstance workflowInstance = workflowInstanceRepository.findByIdAndComponentId(workflowInstanceId, c.getId());
 
-      return gitService.getFile(c.getId().toString(), c.getFilename(), workflowInstance.getLastGitReference());
+      return gitService.getFile(c.getId().toString(), c.getFilename(), workflowInstance.getGitReference());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -410,8 +418,12 @@ public class ComponentService {
   }
 
 
-  public WorkflowInstance getCurrentWorkflowInstance(Long id) {
-    return workflowInstanceRepository.findLatestByComponentId(id);
+  public WorkflowInstance getCurrentWorkflowInstance(Long componentId) {
+    return workflowInstanceRepository.findLatestByComponentId(componentId);
+  }
+
+  public WorkflowInstance findByComponentIdAndWorkflowId(Long componentId, Long workflowInstanceId) {
+    return workflowInstanceRepository.findByIdAndComponentId(workflowInstanceId, componentId);
   }
 
   public List<WorkflowInstanceDto> getWorkflowInstances(Long id) {
@@ -614,4 +626,28 @@ public class ComponentService {
         .map(uc -> componentRepository.findOne(uc.getComponent().getId()))
         .collect(Collectors.toList());
   }
+
+
+  public List<WorkflowInstance> findAllWorkflow(long componentId){
+    return workflowInstanceRepository.findAllByComponentId(componentId , new Sort("id"));
+  }
+
+
+  public void updateReference(Long sourceComponentId, Long sourceWorkflowInstanceId, Long refId, long targetComponentId, long targetWorkflowInstanceId) {
+    ComponentReference componentReference = componentReferenceRepository.findOne(refId);
+    componentReference.setTarget(componentRepository.findOne(targetComponentId));
+    componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(targetWorkflowInstanceId));
+    componentReferenceRepository.save(componentReference);
+  }
+
+  public void updateToLatestReference(Long sourceComponentId, Long sourceWorkflowInstanceId, Long refId, long targetComponentId) {
+    ComponentReference componentReference = componentReferenceRepository.findOne(refId);
+    componentReference.setTarget(componentRepository.findOne(targetComponentId));
+    componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findLatestByComponentId(targetComponentId));
+    componentReferenceRepository.save(componentReference);
+  }
+
+
+
+
 }

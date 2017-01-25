@@ -1,4 +1,4 @@
-package com.ownspec.center.repository;
+package com.ownspec.center.repository.tag;
 
 import com.ownspec.center.model.Tag;
 import com.ownspec.center.model.component.ComponentTag;

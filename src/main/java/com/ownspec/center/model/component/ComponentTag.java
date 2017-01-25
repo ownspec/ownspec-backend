@@ -42,7 +42,7 @@ public class ComponentTag implements Auditable<User>, Persistable<Long> {
   @ManyToOne(fetch = FetchType.EAGER)
   private Tag tag;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   private Component component;
 
   @CreatedDate

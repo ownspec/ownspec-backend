@@ -3,7 +3,7 @@ package com.ownspec.center.service.tag;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.ownspec.center.model.Tag;
-import com.ownspec.center.repository.TagRepository;
+import com.ownspec.center.repository.tag.TagRepository;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

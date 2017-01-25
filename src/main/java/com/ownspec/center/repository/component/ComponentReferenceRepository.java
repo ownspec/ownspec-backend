@@ -14,7 +14,10 @@ public interface ComponentReferenceRepository extends JpaRepository<ComponentRef
 
   Long deleteBySourceIdAndSourceWorkflowInstanceId(Long sourceId, Long wrkflowInstanceId);
 
-  List<ComponentReference> findAllBySourceIdAndSourceWorkflowInstanceId(Long sourceId, Long wrkflowInstanceId);
+  List<ComponentReference> findAllBySourceIdAndSourceWorkflowInstanceId(Long sourceId, Long sourceWorkflowInstanceId);
   List<ComponentReference> findAllBySourceId(Long sourceId);
+
+  List<ComponentReference> findAllByTargetId(Long targetId);
+  List<ComponentReference> findAllByTargetIdAndTargetWorkflowInstanceId(Long targetId, Long targetWorkflowInstanceId);
 
 }

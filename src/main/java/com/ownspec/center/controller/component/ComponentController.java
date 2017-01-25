@@ -3,13 +3,16 @@ package com.ownspec.center.controller.component;
 import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 import static org.springframework.http.ResponseEntity.ok;
+import static sun.security.krb5.Confounder.longValue;
 
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
+import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
@@ -29,11 +32,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -58,10 +61,10 @@ public class ComponentController {
   private ComponentTagService componentTagService;
 
 
-
   @RequestMapping
   public List<ComponentDto> findAll(
       @RequestParam(value = "types", required = false) ComponentType[] types,
+      @RequestParam(value = "tags", required = false) String[] tags,
       @RequestParam(value = "projectId", required = false) Long projectId,
       @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
       @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
@@ -74,7 +77,7 @@ public class ComponentController {
 
     List<Component> components = LAST_VISITED_ONLY.equals(mode) ? componentService.getLastVisited(types[0]) :
         FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
-            componentService.findAll(projectId, types, query);
+            componentService.findAll(projectId, types, tags, query);
 
     return components.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
@@ -90,6 +93,29 @@ public class ComponentController {
     Component c = componentService.findOne(id);
 
     return componentConverter.toDto(c, content, workflow, comments, references);
+  }
+
+  @RequestMapping("/{componentId}/versions")
+  public List<ComponentVersionDto> findAllVersion(@PathVariable("componentId") Long componentId,
+                                                  @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses) {
+
+    Component component = componentService.findOne(componentId);
+
+    return componentService.findAllWorkflow(componentId).stream()
+        .map(w -> componentConverter.toComponentVersionDto(component, w, false, true, true))
+        .collect(Collectors.toList());
+  }
+
+
+  @RequestMapping("/{componentId}/versions/{version}")
+  public ComponentVersionDto getByVersion(@PathVariable("componentId") Long componentId, @PathVariable("version") Long workflowInstanceId,
+                                          @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
+                                          @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
+                                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
+                                          @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references) {
+    WorkflowInstance workflowInstance = componentService.findByComponentIdAndWorkflowId(componentId, workflowInstanceId);
+    Component c = componentService.findOne(componentId);
+    return componentConverter.toComponentVersionDto(c, workflowInstance, false, true, true);
   }
 
 
@@ -191,11 +217,31 @@ public class ComponentController {
   }
 
 
-
   @PostMapping("/{id}/tags")
   public ResponseEntity tagsComponent(@PathVariable("id") Long id, @RequestBody List<String> tags) {
     componentTagService.tagsComponent(id, tags);
     return ResponseEntity.ok().build();
   }
+
+  @PostMapping("/{componentId}/versions/{workflowInstanceId}/references/{refId}")
+  public void updateReference(@PathVariable("componentId") Long sourceComponentId, @PathVariable("workflowInstanceId") Long sourceWorkflowInstanceId,
+                              @PathVariable("refId") Long refId, @RequestBody Map v) {
+
+    Object targetWorkflowInstanceId = v.get("targetWorkflowInstanceId");
+
+    if (targetWorkflowInstanceId instanceof String){
+
+      componentService.updateToLatestReference(sourceComponentId, sourceWorkflowInstanceId, refId ,
+          ((Number)v.get("targetComponentId")).longValue());
+
+    }else if (targetWorkflowInstanceId instanceof Number){
+      componentService.updateReference(sourceComponentId, sourceWorkflowInstanceId, refId ,
+          ((Number)v.get("targetComponentId")).longValue() , ((Number)targetWorkflowInstanceId).longValue());
+
+    }
+
+
+  }
+
 
 }

@@ -3,6 +3,7 @@ package com.ownspec.center.controller.component;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -63,5 +65,14 @@ public class ComponentContentController {
   public Resource getContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
     Component component = componentService.findOne(id);
     return componentService.getHeadRawContent(component);
+  }
+
+
+
+  @RequestMapping("/{componentId}/versions/{workflowInstanceId}/content")
+  public Resource getContentForVersion(@PathVariable("componentId") Long componentId, @PathVariable("workflowInstanceId") Long workflowInstanceId) throws GitAPIException, UnsupportedEncodingException {
+    WorkflowInstance workflowInstance = componentService.findByComponentIdAndWorkflowId(componentId, workflowInstanceId);
+    Component component = componentService.findOne(componentId);
+    return new ByteArrayResource(componentService.generateContent(component , workflowInstance).getLeft().getBytes(StandardCharsets.UTF_8));
   }
 }
