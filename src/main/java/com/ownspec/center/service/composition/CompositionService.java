@@ -46,12 +46,8 @@ public class CompositionService {
   @Value("${composition.template.extension}")
   private String defaultTemplateExtension;
 
-  @Value("${wkhtmltopdf.path}")
-  private String wkhtmltopdfPath;
-
   @Autowired
   private FreeMarkerService freeMarkerService;
-
 
 
   public String compose(String templateName, Map model) {
@@ -72,8 +68,8 @@ public class CompositionService {
     try (Writer writer = new FileWriter(outputFile)) {
       Template template = freeMarkerService.getConfiguration().getTemplate(
           templateName.split("\\.").length == 2 && templateName.matches(".*\\.*$") ?
-              templateName :
-              templateName + defaultTemplateExtension
+          templateName :
+          templateName + defaultTemplateExtension
       );
       template.process(model, writer);
     } catch (Exception e) {
@@ -86,77 +82,36 @@ public class CompositionService {
     return compose(source.getName(), model, outputFilePath);
   }
 
- /* public Resource wkHtmlToPdf(Component component, Resource content) {
-    try {
-      File coverFile = File.createTempFile("html", ".html");
-
-      try (FileWriter writer = new FileWriter(coverFile)) {
-        Map<String, Object> context = new HashMap<>();
-        context.put("component", component);
-        context.put("createdDate" , LocalDateTime.ofInstant(component.getCreatedDate() , ZoneOffset.UTC));
-        process("cover/cover.ftl", context, writer);
-      }
-
-      File tempFile = File.createTempFile("html", ".html");
-
-      File pdfFile = File.createTempFile("pdf", ".pdf");
-
-      try (InputStream inputStream = content.getInputStream(); FileOutputStream os = new FileOutputStream(tempFile)) {
-        IOUtils.copy(inputStream, os);
-      }
-
-      String line = wkhtmltopdfPath + " cover " + coverFile.getAbsolutePath() + " toc " + tempFile.getAbsolutePath() + " " + pdfFile.getAbsolutePath();
-      CommandLine cmdLine = CommandLine.parse(line);
-      DefaultExecutor executor = new DefaultExecutor();
-      executor.setExitValue(0);
-      ExecuteWatchdog watchdog = new ExecuteWatchdog(60000);
-      executor.setWatchdog(watchdog);
-      int exitValue = executor.execute(cmdLine);
-
-      return new FileSystemResource(pdfFile);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-*/
-
   public Resource flyingHtmlToPdf(Path path) {
     try {
-
       Path fonts = Files.createDirectories(path.getParent().resolve("fonts"));
 
       try (InputStream inputStream = new ClassPathResource("fonts/fonts.zip").getInputStream()) {
         ZipUtil.unpack(inputStream, fonts.toFile());
       }
 
-
       CleanerProperties props = new CleanerProperties();
 
-// set some properties to non-default values
+      // set some properties to non-default values
       props.setTranslateSpecialEntities(true);
       props.setTransResCharsToNCR(true);
       props.setOmitComments(true);
 
-// do parsing
-
+      // do parsing
       TagNode tagNode = new HtmlCleaner(props).clean(path.toFile());
-
 
       Path cleanXml = path.getParent().resolve(Paths.get("composition.xml"));
 
-
-// serialize to xml file
+      // serialize to xml file
       new PrettyXmlSerializer(props).writeToFile(
           tagNode, cleanXml.toString(), "utf-8"
       );
 
 
-
-
       ITextRenderer renderer = new ITextRenderer();
       ResourceLoaderUserAgent callback = new ResourceLoaderUserAgent(renderer.getOutputDevice());
       callback.setSharedContext(renderer.getSharedContext());
-      renderer.getSharedContext ().setUserAgentCallback(callback);
+      renderer.getSharedContext().setUserAgentCallback(callback);
 
       String url = cleanXml.toUri().toURL().toString();
 
@@ -171,15 +126,13 @@ public class CompositionService {
       }
 
 
-
       return new FileSystemResource(pdfPath.toFile());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static class ResourceLoaderUserAgent extends ITextUserAgent
-  {
+  private static class ResourceLoaderUserAgent extends ITextUserAgent {
     public ResourceLoaderUserAgent(ITextOutputDevice outputDevice) {
       super(outputDevice);
     }
