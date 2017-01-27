@@ -11,15 +11,17 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class UserCategory {
   private String category;
-  private Double manDayValue;
+  private Double hourlyValue;
 
+
+  //todo move
   public UserCategory(){
 
   }
 
-  public UserCategory(String category, Double manDayValue){
+  public UserCategory(String category, Double hourlyValue){
     this.category = category;
-    this.manDayValue = manDayValue;
+    this.hourlyValue = hourlyValue;
   }
 
 }
