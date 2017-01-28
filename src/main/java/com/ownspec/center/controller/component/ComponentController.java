@@ -3,13 +3,14 @@ package com.ownspec.center.controller.component;
 import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 import static org.springframework.http.ResponseEntity.ok;
-import static sun.security.krb5.Confounder.longValue;
 
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ComponentReferenceDto;
 import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.Revision;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowInstance;
@@ -97,25 +98,27 @@ public class ComponentController {
 
   @RequestMapping("/{componentId}/versions")
   public List<ComponentVersionDto> findAllVersion(@PathVariable("componentId") Long componentId,
-                                                  @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses) {
+                                                  @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
+                                                  @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+                                                  @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
 
     Component component = componentService.findOne(componentId);
 
     return componentService.findAllWorkflow(componentId).stream()
-        .map(w -> componentConverter.toComponentVersionDto(component, w, false, true, true))
+        .map(w -> componentConverter.toComponentVersionDto(component, w, false, statuses, references, usePoints))
         .collect(Collectors.toList());
   }
 
 
   @RequestMapping("/{componentId}/versions/{version}")
   public ComponentVersionDto getByVersion(@PathVariable("componentId") Long componentId, @PathVariable("version") Long workflowInstanceId,
-                                          @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
-                                          @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
-                                          @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
-                                          @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references) {
+                                          @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
+                                          @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+                                          @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
     WorkflowInstance workflowInstance = componentService.findByComponentIdAndWorkflowId(componentId, workflowInstanceId);
+
     Component c = componentService.findOne(componentId);
-    return componentConverter.toComponentVersionDto(c, workflowInstance, false, true, true);
+    return componentConverter.toComponentVersionDto(c, workflowInstance, false, statuses, references, usePoints);
   }
 
 
@@ -125,11 +128,6 @@ public class ComponentController {
     return ok(componentConverter.toDto(component, false, false, false, false));
   }
 
-  @GetMapping("/{id}/workflow-statuses")
-  public ResponseEntity getWorkflowStatuses(@PathVariable("id") Long id) {
-
-    return ok(componentService.getWorkflowInstances(id));
-  }
 
   @PostMapping("/{id}/workflow-statuses/update/{nextStatus}")
   public ComponentDto updateWorkflowStatuses(@PathVariable("id") Long id, @PathVariable("nextStatus") Status nextStatus) {
@@ -240,7 +238,12 @@ public class ComponentController {
 
     }
 
+  }
 
+  @GetMapping("/{componentId}/versions/{workflowInstanceId}/use-points")
+  public List<ComponentReferenceDto> findUsePoints(@PathVariable("componentId") Long targetComponentId, @PathVariable("workflowInstanceId") Long targetWorkflowInstanceId) {
+    List<ComponentReference> usePoints = componentService.findUsePoints(targetComponentId, targetWorkflowInstanceId);
+    return componentConverter.convertReferences(usePoints);
   }
 
 

@@ -1,4 +1,4 @@
-package com.ownspec.center.service;
+package com.ownspec.center.service.workflow;
 
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.workflow.Status;

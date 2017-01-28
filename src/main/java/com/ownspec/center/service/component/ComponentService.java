@@ -6,6 +6,8 @@ import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowSta
 import static com.ownspec.center.model.DistributionLevel.PUBLIC;
 import static com.ownspec.center.model.component.ComponentType.RESOURCE;
 import static com.ownspec.center.model.component.QComponent.component;
+import static com.ownspec.center.model.workflow.QWorkflowInstance.workflowInstance;
+import static com.ownspec.center.model.workflow.QWorkflowStatus.workflowStatus;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static com.querydsl.core.types.dsl.Expressions.booleanOperation;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -71,8 +73,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -426,59 +430,6 @@ public class ComponentService {
     return workflowInstanceRepository.findByIdAndComponentId(workflowInstanceId, componentId);
   }
 
-  public List<WorkflowInstanceDto> getWorkflowInstances(Long id) {
-    Component component = findOne(id);
-    List<RevCommit> commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getId().toString(), component.getFilename())));
-
-    int commitIndex = 0;
-
-    List<WorkflowInstanceDto> workflowInstanceDtos = new ArrayList<>();
-
-    for (WorkflowInstance workflowInstance : workflowInstanceRepository.findAllByComponentId(component.getId(), new Sort("id"))) {
-
-      ImmutableWorkflowInstanceDto.Builder workflowInstanceDto = newBuilderFromWorkflowInstance(workflowInstance);
-
-      List<WorkflowStatusDto> workflowStatusDtos = new ArrayList<>();
-
-      for (WorkflowStatus workflowStatus : workflowStatusRepository.findAllByWorkflowInstanceId(workflowInstance.getId(), new Sort("id"))) {
-        List<ChangeDto> changeDtos = new ArrayList<>();
-
-        // Workflow status has an index and we have not finished parsing commit
-        // commitIndex may be = commits.size then the current workflow instance has not commit, eg. a new workflow instance is created
-        if (workflowStatus.getFirstGitReference() != null && commitIndex < commits.size()) {
-          Validate.isTrue(commits.get(commitIndex).name().equals(workflowStatus.getFirstGitReference()));
-
-          while (commitIndex < commits.size()) {
-            RevCommit revCommit = commits.get(commitIndex);
-
-            User commiter = userRepository.findByUsername(revCommit.getAuthorIdent().getName());
-
-            changeDtos.add(newChangeDto()
-                .date(Instant.ofEpochSecond((long) revCommit.getCommitTime()))
-                .revision(revCommit.name())
-                .user(UserDto.fromUser(commiter))
-                .build());
-
-            if (revCommit.name().equals(workflowStatus.getLastGitReference())) {
-              commitIndex++;
-              break;
-            }
-            commitIndex++;
-          }
-        }
-        workflowStatusDtos.add(newBuilderFromWorkflowStatus(workflowStatus)
-            .changes(changeDtos)
-            .build());
-      }
-      workflowInstanceDtos.add(workflowInstanceDto
-          .workflowStatuses(workflowStatusDtos)
-          .currentWorkflowStatus(workflowStatusDtos.get(workflowStatusDtos.size() - 1))
-          .build());
-    }
-
-    return workflowInstanceDtos;
-
-  }
 
   public Map<Component, byte[]> searchForInnerDraftComponents(byte[] content) {
     //todo
@@ -648,6 +599,10 @@ public class ComponentService {
   }
 
 
+  public List<ComponentReference> findUsePoints(Long targetComponentId, Long targetWorkflowInstanceId) {
+
+    return componentReferenceRepository.findAllByTargetIdAndTargetWorkflowInstanceId(targetComponentId, targetWorkflowInstanceId);
 
 
+  }
 }

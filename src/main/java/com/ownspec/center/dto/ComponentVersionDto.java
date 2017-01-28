@@ -59,6 +59,9 @@ public interface ComponentVersionDto {
   List<ComponentReferenceDto> getComponentReferences();
 
   @Nullable
+  List<ComponentReferenceDto> getComponentUsePoints();
+
+  @Nullable
   Boolean getRequiredTest();
 
   @Nullable
