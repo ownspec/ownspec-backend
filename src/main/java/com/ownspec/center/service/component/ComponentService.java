@@ -149,7 +149,10 @@ public class ComponentService {
 
     if (projectId != null) {
       predicates.add(component.project.id.eq(projectId));
+    } else {
+      predicates.add(component.project.id.isNull());
     }
+
 
     if (StringUtils.isNotBlank(query)) {
       predicates.add(component.title.containsIgnoreCase(query));
