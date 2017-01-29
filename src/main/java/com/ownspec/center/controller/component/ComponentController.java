@@ -77,8 +77,8 @@ public class ComponentController {
   ) {
 
     List<Component> components = LAST_VISITED_ONLY.equals(mode) ? componentService.getLastVisited(types[0]) :
-        FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
-            componentService.findAll(projectId, types, tags, query);
+                                 FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
+                                 componentService.findAll(projectId, types, tags, query);
 
     return components.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
@@ -182,15 +182,6 @@ public class ComponentController {
     return null;
   }
 
-
-//
-//  @GetMapping(value = "/{id}/export")
-//  @ResponseBody
-//  public ResponseEntity export(@PathVariable Long id) {
-//    return componentService.export(id);
-//  }
-
-
   @PostMapping(value = "/{id}/assign/{userId}")
   public ResponseEntity assignTo(
       @PathVariable("id") Long id,
@@ -227,14 +218,14 @@ public class ComponentController {
 
     Object targetWorkflowInstanceId = v.get("targetWorkflowInstanceId");
 
-    if (targetWorkflowInstanceId instanceof String){
+    if (targetWorkflowInstanceId instanceof String) {
 
-      componentService.updateToLatestReference(sourceComponentId, sourceWorkflowInstanceId, refId ,
-          ((Number)v.get("targetComponentId")).longValue());
+      componentService.updateToLatestReference(sourceComponentId, sourceWorkflowInstanceId, refId,
+          ((Number) v.get("targetComponentId")).longValue());
 
-    }else if (targetWorkflowInstanceId instanceof Number){
-      componentService.updateReference(sourceComponentId, sourceWorkflowInstanceId, refId ,
-          ((Number)v.get("targetComponentId")).longValue() , ((Number)targetWorkflowInstanceId).longValue());
+    } else if (targetWorkflowInstanceId instanceof Number) {
+      componentService.updateReference(sourceComponentId, sourceWorkflowInstanceId, refId,
+          ((Number) v.get("targetComponentId")).longValue(), ((Number) targetWorkflowInstanceId).longValue());
 
     }
 
@@ -245,6 +236,4 @@ public class ComponentController {
     List<ComponentReference> usePoints = componentService.findUsePoints(targetComponentId, targetWorkflowInstanceId);
     return componentConverter.convertReferences(usePoints);
   }
-
-
 }

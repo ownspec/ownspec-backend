@@ -2,7 +2,6 @@ package com.ownspec.center.service;
 
 import com.ownspec.center.dto.ProjectDto;
 import com.ownspec.center.dto.UserDto;
-import com.ownspec.center.dto.UserProjectDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserProject;
@@ -100,7 +99,7 @@ public class ProjectService {
           .manager(UserDto.fromUser(project.getManager()))
           .projectUsers(
               userProjectRepository.findAllByProjectId(project.getId()).stream()
-                  .map(UserProjectDto::fromUserProject)
+                  .map(userProject -> UserDto.fromUser(userProject.getUser()))
                   .collect(Collectors.toList()))
           .build();
     }
@@ -108,16 +107,19 @@ public class ProjectService {
   }
 
   public ResponseEntity update(Long id, ProjectDto source) {
+    LOG.info("Update project with id [{}]", id);
     Project target = projectRepository.findOne(id);
     if (target != null) {
       // Update project
+      LOG.info("Merge and save project with id [{}]", target.getId());
       OsUtils.mergeWithNotNullProperties(source, target);
       projectRepository.save(target);
 
-      List<UserProjectDto> projectUsers = source.getProjectUsers();
+      List<UserDto> projectUsers = source.getProjectUsers();
       if (projectUsers != null && !projectUsers.isEmpty()) {
-        for (UserProjectDto projectUser : projectUsers) {
-          addProjectUser(id, projectUser.getUser().getUsername());
+        LOG.info("Update project users");
+        for (UserDto user : projectUsers) {
+          addUserToProject(id, user.getUsername());
         }
       }
 
@@ -128,22 +130,25 @@ public class ProjectService {
   }
 
 
-  private void addProjectUser(Long projectId, String username) {
-    // Search if exists
+  private void addUserToProject(Long projectId, String username) {
     User user = userService.loadUserByUsername(username);
     UserProject foundUP = userProjectRepository.findOneByUserIdAndProjectId(user.getId(), projectId);
 
     // Create if doesn't
-    if (foundUP != null) {
+    if (foundUP == null) {
+      LOG.info("Add user [{}] to project with id [{}]", username, projectId);
       UserProject newUserProject = new UserProject();
       newUserProject.setUser(user);
       newUserProject.setProject(projectRepository.findOne(projectId));
       userProjectRepository.save(newUserProject);
+    } else {
+      LOG.info("User [{}] already exists in project with id [{}]", username, projectId);
     }
   }
 
 
   public ResponseEntity removeUserFromProject(Long projectId, String username) {
+    LOG.info("Remove user [{}] from project where projectId=[{}] and username=[{}]", username, projectId);
     User user = userService.loadUserByUsername(username);
     userProjectRepository.deleteByUserIdAndProjectId(user.getId(), projectId);
     return ResponseEntity.ok().build();

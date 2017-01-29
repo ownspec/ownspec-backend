@@ -4,8 +4,11 @@ import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 
 import com.ownspec.center.dto.ProjectDto;
+import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.model.Project;
+import com.ownspec.center.model.user.UserProject;
 import com.ownspec.center.repository.ProjectRepository;
+import com.ownspec.center.repository.user.UserProjectRepository;
 import com.ownspec.center.service.ProjectService;
 import com.ownspec.center.service.UserService;
 import com.ownspec.center.util.RequestFilterMode;
@@ -41,6 +44,9 @@ public class ProjectController {
   @Autowired
   private ProjectService projectService;
 
+  @Autowired
+  private UserProjectRepository userProjectRepository;
+
   @RequestMapping("/{id}")
   public ProjectDto get(@PathVariable("id") Long id) {
     return projectService.findOne(id);
@@ -56,6 +62,18 @@ public class ProjectController {
     if (projectDto.getManager() != null) {
       project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
     }
+
+    List<UserDto> projectUsers = projectDto.getProjectUsers();
+    if (projectUsers != null) {
+      for (UserDto user: projectUsers) {
+        UserProject userProject = new UserProject();
+        userProject.setUser(userService.loadUserByUsername(user.getUsername()));
+        userProject.setProject(project);
+
+        userProjectRepository.save(userProject);
+      }
+    }
+
     projectRepository.save(project);
     return ResponseEntity.ok("Project successfully created");
   }
@@ -85,7 +103,15 @@ public class ProjectController {
                              FAVORITES_ONLY.equals(mode) ? projectService.getFavorites() :
                              projectRepository.findAll();
     return projects.stream()
-        .map(ProjectDto::fromProject)
+        .map(p -> {
+          List<UserDto> projectUsers = userProjectRepository.findAllByProjectId(p.getId()).stream()
+              .map(userProject -> UserDto.fromUser(userProject.getUser()))
+              .collect(Collectors.toList());
+
+          return ProjectDto.newBuilderFromProject(p)
+              .addAllProjectUsers(projectUsers)
+              .build();
+        })
         .collect(Collectors.toList());
   }
 

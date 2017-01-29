@@ -30,30 +30,38 @@ public interface ProjectDto {
   Instant getCreatedDate();
 
   @Nullable
+  Instant getLastModifiedDate();
+
+  @Nullable
   UserDto getCreatedUser();
+
+  @Nullable
+  UserDto getLastModifiedUser();
 
   @Nullable
   UserDto getManager();
 
   @Nullable
-  List<UserProjectDto> getProjectUsers();
+  List<UserDto> getProjectUsers();
 
 
   public static ImmutableProjectDto.Builder newBuilderFromProject(Project project) {
-    return ImmutableProjectDto.newProjectDto()
+    ImmutableProjectDto.Builder builder = ImmutableProjectDto.newProjectDto()
         .id(project.getId())
         .title(project.getTitle())
         .description(project.getDescription())
         .createdDate(project.getCreatedDate())
-        .createdUser(UserDto.fromUser(project.getCreatedUser()));
-  }
+        .lastModifiedDate(project.getLastModifiedDate())
+        .createdUser(UserDto.fromUser(project.getCreatedUser()))
+        .lastModifiedUser(UserDto.fromUser(project.getLastModifiedUser()));
 
-  public static ProjectDto fromProject(Project project) {
-    ImmutableProjectDto.Builder builder = newBuilderFromProject(project);
     if (project.getManager() != null) {
       builder.manager(UserDto.fromUser(project.getManager()));
     }
-    
-    return builder.build();
+    return builder;
+  }
+
+  public static ProjectDto fromProject(Project project) {
+    return newBuilderFromProject(project).build();
   }
 }
