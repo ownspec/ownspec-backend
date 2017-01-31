@@ -28,6 +28,9 @@ public interface ComponentVersionDto {
   Long getId();
 
   @Nullable
+  Long getComponentId();
+
+  @Nullable
   Long getProjectId();
 
   String getTitle();
@@ -93,6 +96,7 @@ public interface ComponentVersionDto {
   static ImmutableComponentVersionDto.Builder newBuilderFromComponent(Component c) {
     return newComponentVersionDto()
         .id(c.getId())
+        .componentId(c.getId())
         .projectId(c.getProject() != null ? c.getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getType())

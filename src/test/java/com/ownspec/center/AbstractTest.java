@@ -11,6 +11,7 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.GitService;
+import com.ownspec.center.service.workflow.WorkflowConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -63,7 +64,10 @@ public abstract class AbstractTest {
   protected UserRepository userRepository;
 
   @Autowired
-  private TagRepository tagRepository;
+  protected TagRepository tagRepository;
+
+  @Autowired
+  protected WorkflowConfiguration workflowConfiguration;
 
 
 

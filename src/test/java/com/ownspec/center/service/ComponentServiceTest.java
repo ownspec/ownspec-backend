@@ -127,7 +127,8 @@ public class ComponentServiceTest extends AbstractTest {
 
 
 
-    List<WorkflowStatusDto> workflowStatuses = componentService.getWorkflowInstances(component.getId()).get(0).getWorkflowStatuses();
+
+    List<WorkflowStatusDto> workflowStatuses = workflowConfiguration.changesExtractor(component).getWorkflowInstances().get(0).getWorkflowStatuses();
 
     Resource file = gitService.getFile(component.getId().toString(), component.getFilename(), endGitReference1);
 
