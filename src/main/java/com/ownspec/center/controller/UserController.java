@@ -9,6 +9,7 @@ import com.ownspec.center.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,28 +60,30 @@ public class UserController {
         .put("properties", propertiesBuilder.build()).build());
   }
 
-  //    @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping(value = "/create")
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping(value = "/new")
   @ResponseBody
   public ResponseEntity create(@RequestBody UserDto source) {
     userService.create(source);
     return ResponseEntity.ok().build();
   }
 
-  @PutMapping(value = "/{id}/update")
+  @PostMapping(value = "/{id}")
   @ResponseBody
   public ResponseEntity update(@PathVariable("id") Long id, @RequestBody UserDto source) {
     userService.update(source, id);
     return ResponseEntity.ok().build();
   }
 
-  @DeleteMapping(value = "/{id}/delete")
+  @PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping(value = "/{id}")
   @ResponseBody
   public ResponseEntity delete(@PathVariable("id") Long id) {
     userService.delete(id);
     return ResponseEntity.ok().build();
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping(value = "/{id}/resetPassword")
   @ResponseBody
   public ResponseEntity resetPassword(@PathVariable("id") Long id) {

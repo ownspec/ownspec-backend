@@ -16,6 +16,9 @@ import javax.annotation.Nullable;
 @JsonDeserialize(as = ImmutableUserDto.class)
 public interface UserDto {
 
+  @Nullable
+  Long getId();
+
   String getUsername();
 
   @Nullable
@@ -36,6 +39,7 @@ public interface UserDto {
 
   static UserDto fromUser(User user) {
     return ImmutableUserDto.newUserDto()
+        .id(user.getId())
         .username(user.getUsername())
         .email(user.getEmail())
         .firstName(user.getFirstName())

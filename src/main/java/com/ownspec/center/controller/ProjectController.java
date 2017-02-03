@@ -62,6 +62,7 @@ public class ProjectController {
     if (projectDto.getManager() != null) {
       project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
     }
+    projectRepository.save(project);
 
     List<UserDto> projectUsers = projectDto.getProjectUsers();
     if (projectUsers != null) {
@@ -74,7 +75,6 @@ public class ProjectController {
       }
     }
 
-    projectRepository.save(project);
     return ResponseEntity.ok("Project successfully created");
   }
 
