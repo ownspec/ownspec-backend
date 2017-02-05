@@ -35,7 +35,7 @@ public class User implements UserDetails, Auditable<User> {
   private String lastName;
   private String company;
   private String phone;
-  private String fax;
+  private String mobile;
   private String signature;
 
   private Instant lastConnection;
@@ -53,7 +53,8 @@ public class User implements UserDetails, Auditable<User> {
 
   @Embedded
   private UserPreference preference;
-  @Embedded
+
+  @ManyToOne
   private UserCategory category;
 
   @Column(columnDefinition = "boolean default false")

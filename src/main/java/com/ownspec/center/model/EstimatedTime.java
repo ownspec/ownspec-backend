@@ -13,7 +13,6 @@ import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -34,7 +33,7 @@ public class EstimatedTime implements Auditable<User>, Persistable<Long> {
   @GeneratedValue
   private Long id;
 
-  @Embedded
+  @ManyToOne
   UserCategory userCategory;
 
   Double time;

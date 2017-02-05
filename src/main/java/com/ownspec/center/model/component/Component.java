@@ -1,11 +1,9 @@
 package com.ownspec.center.model.component;
 
 import com.ownspec.center.model.DistributionLevel;
-import com.ownspec.center.model.EstimatedTime;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
@@ -15,10 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -49,10 +44,6 @@ public class Component implements Auditable<User>, Persistable<Long> {
   // Project which owns this WorkflowStatus
   @ManyToOne
   protected Project project;
-
-//  @ElementCollection
-//  @Embedded
-//  protected List<UserCategoryEstimatedTime> userCategoriesEstimatedTime;
 
   @Enumerated(EnumType.STRING)
   protected ComponentType type;

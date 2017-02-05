@@ -1,26 +1,44 @@
+-- user categories --
+insert into user_category (id, name,hourly_price)
+VALUES (6,'Administrator','0');
+
+insert into user_category (id, name,hourly_price)
+VALUES (7,'Analyst','13.5');
+
+insert into user_category (id, name,hourly_price)
+VALUES (8,'Developer','22.345');
+
+insert into user_category (id, name,hourly_price)
+VALUES (9,'Tester','18.90');
+
+insert into user_category (id, name,hourly_price)
+VALUES (11,'Project Manager','18.90');
+
+
 -- users
-INSERT INTO "user" (ID, username, password,role, first_name,last_name, category, email)
-VALUES(0, 'admin','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','ADMIN','admnistrator','admnistrator', 'ADMINISTRATOR', 'admin@ownspec.com');
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email, category_id)
+VALUES(0, 'admin','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','ADMIN',
+'admnistrator','admnistrator', 'admin@ownspec.com',6);
 
-INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category_id)
 VALUES(1, 'lyrold','$2a$08$KemzMdJ3dYol9J/MyZrvUOR0JuJZCXzcXb9ptOWggUv63dW1Mrx/i','USER',
-'Lyrold-Boris','Careto', 'lyrold.c@ownpsec.com','Developer');
+'Lyrold-Boris','Careto', 'lyrold.c@ownpsec.com',7);
 
-INSERT INTO "user" (ID,  username, password,role, first_name,last_name, email,category)
+INSERT INTO "user" (ID,  username, password,role, first_name,last_name, email,category_id)
 VALUES(2, 'b.ramos@ownspec.com','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','USER',
-'Bruno','Ramos', 'b.ramos@ownspec.com', 'Analyst');
+'Bruno','Ramos', 'b.ramos@ownspec.com',8);
 
-INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category_id)
 VALUES(3, 'g.beisel@ownspec.com','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','USER',
-'Guillaume','Beisel', 'g.beisel@ownspec.com', 'Tester');
+'Guillaume','Beisel', 'g.beisel@ownspec.com',9);
 
-INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category_id)
 VALUES(4, 'n.labrot@ownspec.com','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','USER',
-'Nicolas','Labrot', 'n.labrot@ownspec.com','Developer');
+'Nicolas','Labrot', 'n.labrot@ownspec.com',11);
 
-INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category)
+INSERT INTO "user" (ID, username, password,role, first_name,last_name, email,category_id)
 VALUES(5, 'l.careto@ownspec.com','$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda','USER',
-'Lyrold','Careto', 'l.careto@ownspec.com', 'Developer');
+'Lyrold','Careto', 'l.careto@ownspec.com',7);
 
 
 -- Projects
