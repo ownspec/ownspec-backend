@@ -1,38 +1,31 @@
 package com.ownspec.center.model.user;
 
+import com.ownspec.center.model.MainSequenceConstants;
 import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Created by lyrold on 25/09/2016.
  */
 @Data
-@Embeddable
-// TODO: should not be embedded
+@Entity
+@Table(name = "USER_CATEGORY")
 public class UserCategory {
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
+  @Column(name = "ID")
   private Long id;
 
+  @Column(name = "NAME")
   private String name;
+  @Column(name = "HOURLY_PRICE")
   private Double hourlyPrice;
-  @Column(name = "CATEGORY")
-  private String category;
-
-  @Column(name = "HOURLY_VALUE")
-  private Double hourlyValue;
-
-  public UserCategory(){
-  }
-
-  public UserCategory(String category, Double hourlyValue){
-    this.category = category;
-    this.hourlyValue = hourlyValue;
-  }
 
 }

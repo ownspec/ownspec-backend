@@ -68,6 +68,7 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   private UserPreference preference;
 
   @ManyToOne
+  @JoinColumn(name = "CATEGORY_ID")
   private UserCategory category;
 
   @Column(name = "LOGGED_IN")

@@ -15,6 +15,19 @@
 
 
         <!-- ******************************************************************************** -->
+        <!-- USER_CATEGORY -->
+        <createTable tableName="USER_CATEGORY">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="HOURLY_PRICE" type="float8"/>
+        </createTable>
+
+
+        <!-- ******************************************************************************** -->
         <!-- USER -->
         <createTable tableName="OSUSER">
             <column name="ID" type="bigint">
@@ -35,10 +48,15 @@
             <column name="LAST_NAME" type="VARCHAR2(128)"/>
             <column name="COMPANY" type="VARCHAR2(128)"/>
             <column name="PHONE" type="VARCHAR2(64)"/>
+            <column name="MOBILE" type="VARCHAR2(64)"/>
             <column name="FAX" type="VARCHAR2(64)"/>
             <column name="SIGNATURE" type="VARCHAR2(255)"/>
 
             <column name="LAST_CONNECTION" type="TIMESTAMP"/>
+
+            <column name="CATEGORY_ID" type="bigint">
+                <constraints references="USER_CATEGORY(ID)" foreignKeyName="FK_USER_CAT_ID"/>
+            </column>
 
             <column name="LOGGED_IN" type="boolean" defaultValueNumeric="0"/>
 
@@ -52,9 +70,6 @@
             <column name="LANGUAGE" type="VARCHAR2(8)"/>
             <column name="TIMEZONE" type="VARCHAR2(32)"/>
 
-            <column name="CATEGORY" type="VARCHAR2(32)"/>
-            <column name="HOURLY_VALUE" type="float8"/>
-
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_CR_USR_ID"/>
@@ -64,6 +79,7 @@
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_MOD_USR_ID"/>
             </column>
         </createTable>
+
 
         <!-- ******************************************************************************** -->
         <!-- PROJECT -->
@@ -341,14 +357,13 @@
             <column name="COMPONENT_ID" type="bigint">
                 <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_EST_TIME_CMP_ID"/>
             </column>
+            <column name="USER_CATEGORY_ID" type="bigint">
+                <constraints nullable="false" references="USER_CATEGORY(ID)" foreignKeyName="FK_EST_TIME_USER_CAT_ID"/>
+            </column>
             <column name="TIME" type="float8" defaultValueNumeric="0"/>
             <column name="TIME_UNIT" type="VARCHAR2(16)">
                 <constraints nullable="false"/>
             </column>
-
-            <column name="CATEGORY" type="VARCHAR2(32)"/>
-            <column name="HOURLY_VALUE" type="float8"/>
-
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_EST_TIME_CR_USR_ID"/>
