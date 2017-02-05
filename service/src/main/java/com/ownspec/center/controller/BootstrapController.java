@@ -33,27 +33,6 @@ import java.util.concurrent.TimeUnit;
 @RestController("/api/bootstrap")
 public class BootstrapController {
 
-  private static final List<EstimatedTimeDto> ESTIMATED_TIMES = Arrays.asList(
-      ImmutableEstimatedTimeDto.newEstimatedTimeDto()
-          .userCategory(new UserCategory("Analyst", 430.00))
-          .time(1d)
-          .timeUnit(TimeUnit.DAYS)
-          .build(),
-
-      ImmutableEstimatedTimeDto.newEstimatedTimeDto()
-          .userCategory(new UserCategory("Developer", 585.34))
-          .time(6d)
-          .timeUnit(TimeUnit.DAYS)
-          .build(),
-
-      ImmutableEstimatedTimeDto.newEstimatedTimeDto()
-          .userCategory(new UserCategory("Tester", 480.65))
-          .time(3d)
-          .timeUnit(TimeUnit.DAYS)
-          .build()
-  );
-
-
   @Autowired
   protected ComponentService componentService;
 
@@ -115,7 +94,6 @@ public class BootstrapController {
           .coverageStatus(CoverageStatus.values()[new Random().nextInt(CoverageStatus.values().length)])
           .requirementType(RequirementType.values()[new Random().nextInt(RequirementType.values().length)])
           .requiredTest(index % 5 == 0)
-          .estimatedTimes(ESTIMATED_TIMES)
           .build();
 
       Component component = componentService.create(componentDto);

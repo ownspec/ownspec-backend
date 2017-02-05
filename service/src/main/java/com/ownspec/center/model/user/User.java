@@ -54,6 +54,8 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   private String company;
   @Column(name = "PHONE")
   private String phone;
+  @Column(name = "MOBILE")
+  private String mobile;
   @Column(name = "FAX")
   private String fax;
   @Column(name = "SIGNATURE")
@@ -65,7 +67,7 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   @Embedded
   private UserPreference preference;
 
-  @Embedded
+  @ManyToOne
   private UserCategory category;
 
   @Column(name = "LOGGED_IN")

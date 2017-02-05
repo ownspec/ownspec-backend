@@ -4,6 +4,9 @@ import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 /**
  * Created by lyrold on 25/09/2016.
@@ -12,7 +15,12 @@ import javax.persistence.Embeddable;
 @Embeddable
 // TODO: should not be embedded
 public class UserCategory {
+  @Id
+  @GeneratedValue
+  private Long id;
 
+  private String name;
+  private Double hourlyPrice;
   @Column(name = "CATEGORY")
   private String category;
 

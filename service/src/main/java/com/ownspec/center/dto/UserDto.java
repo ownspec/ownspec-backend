@@ -3,6 +3,7 @@ package com.ownspec.center.dto;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.user.User;
+import com.ownspec.center.model.user.UserCategory;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -36,6 +37,8 @@ public interface UserDto {
   @Nullable
   String getRole();
 
+  @Nullable
+  UserCategory getCategory();
 
   static UserDto fromUser(User user) {
     return ImmutableUserDto.newUserDto()
@@ -45,6 +48,7 @@ public interface UserDto {
         .firstName(user.getFirstName())
         .lastName(user.getLastName())
         .role(user.getRole())
+        .category(user.getCategory())
         .build();
   }
 
