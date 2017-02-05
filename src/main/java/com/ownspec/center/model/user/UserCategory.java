@@ -13,8 +13,6 @@ public class UserCategory {
   private String category;
   private Double hourlyValue;
 
-
-  //todo move
   public UserCategory(){
 
   }

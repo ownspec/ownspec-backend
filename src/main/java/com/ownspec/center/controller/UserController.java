@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -43,8 +42,8 @@ public class UserController {
 
   @GetMapping(value = "/me")
   @ResponseBody
-  public UserDto me(@AuthenticationPrincipal User user) {
-    return UserDto.fromUser(user);
+  public User me(@AuthenticationPrincipal User user) {
+    return user;
   }
 
   @GetMapping(value = "/me/profile")
