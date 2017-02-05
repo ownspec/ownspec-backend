@@ -8,7 +8,6 @@ import lombok.Data;
 
 import java.util.concurrent.TimeUnit;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -39,7 +38,8 @@ public class EstimatedTime extends AbstractAuditable implements Persistable {
   @JoinColumn(name = "COMPONENT_ID")
   Component component;
 
-  @Embedded
+  @ManyToOne
+  @JoinColumn(name = "USER_CATEGORY_ID")
   UserCategory userCategory;
 
   // TODO: to refactor and convert in a duration
