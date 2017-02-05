@@ -1,172 +1,0 @@
-[INFO] Scanning for projects...
-Downloading: https://repo.spring.io/libs-snapshot/org/jooq/jooq-codegen-maven/3.8.6/jooq-codegen-maven-3.8.6.pom
-1/3 KB   3/3 KB   3/3 KB            Downloaded: https://repo.spring.io/libs-snapshot/org/jooq/jooq-codegen-maven/3.8.6/jooq-codegen-maven-3.8.6.pom (3 KB at 2.2 KB/sec)
-Downloading: https://repo.spring.io/libs-snapshot/org/jooq/jooq-parent/3.8.6/jooq-parent-3.8.6.pom
-1/10 KB   3/10 KB   4/10 KB   5/10 KB   7/10 KB   8/10 KB   9/10 KB   10/10 KB              Downloaded: https://repo.spring.io/libs-snapshot/org/jooq/jooq-parent/3.8.6/jooq-parent-3.8.6.pom (10 KB at 18.9 KB/sec)
-Downloading: https://repo.spring.io/libs-snapshot/org/jooq/jooq-codegen-maven/3.8.6/jooq-codegen-maven-3.8.6.jar
-1/15 KB    3/15 KB   4/15 KB   5/15 KB   7/15 KB   8/15 KB   9/15 KB   11/15 KB   12/15 KB   14/15 KB   15/15 KB   15/15 KB              Downloaded: https://repo.spring.io/libs-snapshot/org/jooq/jooq-codegen-maven/3.8.6/jooq-codegen-maven-3.8.6.jar (15 KB at 48.0 KB/sec)
-[INFO]                                                                         
-[INFO] ------------------------------------------------------------------------
-[INFO] Building ownspec-center-backend 0.0.1-SNAPSHOT
-[INFO] ------------------------------------------------------------------------
-[INFO] 
-[INFO] --- maven-dependency-plugin:2.10:tree (default-cli) @ ownspec-center-backend ---
-[INFO] com.ownspec:ownspec-center-backend:jar:0.0.1-SNAPSHOT
-[INFO] +- org.springframework.boot:spring-boot-starter-actuator:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework.boot:spring-boot-starter:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  +- org.springframework.boot:spring-boot-starter-logging:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  |  +- ch.qos.logback:logback-classic:jar:1.1.8:compile
-[INFO] |  |  |  |  \- ch.qos.logback:logback-core:jar:1.1.8:compile
-[INFO] |  |  |  +- org.slf4j:jul-to-slf4j:jar:1.7.22:compile
-[INFO] |  |  |  \- org.slf4j:log4j-over-slf4j:jar:1.7.22:compile
-[INFO] |  |  \- org.yaml:snakeyaml:jar:1.17:runtime
-[INFO] |  \- org.springframework.boot:spring-boot-actuator:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] +- org.springframework.boot:spring-boot-actuator-docs:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework.hateoas:spring-hateoas:jar:0.21.0.RELEASE:compile
-[INFO] |  |  \- org.springframework:spring-beans:jar:4.3.4.RELEASE:compile
-[INFO] |  \- org.springframework:spring-core:jar:4.3.4.RELEASE:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-data-jpa:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework.boot:spring-boot-starter-jdbc:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  +- org.apache.tomcat:tomcat-jdbc:jar:8.5.6:compile
-[INFO] |  |  |  \- org.apache.tomcat:tomcat-juli:jar:8.5.6:compile
-[INFO] |  |  \- org.springframework:spring-jdbc:jar:4.3.4.RELEASE:compile
-[INFO] |  +- org.hibernate:hibernate-core:jar:5.0.11.Final:compile
-[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.3.0.Final:compile
-[INFO] |  |  +- org.hibernate.javax.persistence:hibernate-jpa-2.1-api:jar:1.0.0.Final:compile
-[INFO] |  |  +- org.javassist:javassist:jar:3.20.0-GA:compile
-[INFO] |  |  +- antlr:antlr:jar:2.7.7:compile
-[INFO] |  |  +- org.jboss:jandex:jar:2.0.0.Final:compile
-[INFO] |  |  \- org.hibernate.common:hibernate-commons-annotations:jar:5.0.1.Final:compile
-[INFO] |  +- org.hibernate:hibernate-entitymanager:jar:5.0.11.Final:compile
-[INFO] |  +- javax.transaction:javax.transaction-api:jar:1.2:compile
-[INFO] |  +- org.springframework.data:spring-data-jpa:jar:1.11.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  +- org.springframework.data:spring-data-commons:jar:1.13.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  +- org.springframework:spring-orm:jar:4.3.4.RELEASE:compile
-[INFO] |  |  \- org.springframework:spring-tx:jar:4.3.4.RELEASE:compile
-[INFO] |  \- org.springframework:spring-aspects:jar:4.3.4.RELEASE:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-data-rest:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.8.5:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.8.5:compile
-[INFO] |  \- org.springframework.data:spring-data-rest-webmvc:jar:2.6.0.BUILD-SNAPSHOT:compile
-[INFO] |     \- org.springframework.data:spring-data-rest-core:jar:2.6.0.BUILD-SNAPSHOT:compile
-[INFO] |        +- org.springframework.plugin:spring-plugin-core:jar:1.2.0.RELEASE:compile
-[INFO] |        \- org.atteo:evo-inflector:jar:1.2.1:compile
-[INFO] +- org.springframework.data:spring-data-rest-hal-browser:jar:2.6.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.slf4j:slf4j-api:jar:1.7.22:compile
-[INFO] |  \- org.slf4j:jcl-over-slf4j:jar:1.7.22:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-security:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework:spring-aop:jar:4.3.4.RELEASE:compile
-[INFO] |  +- org.springframework.security:spring-security-config:jar:4.2.0.RELEASE:compile
-[INFO] |  |  \- org.springframework.security:spring-security-core:jar:4.2.0.RELEASE:compile
-[INFO] |  \- org.springframework.security:spring-security-web:jar:4.2.0.RELEASE:compile
-[INFO] |     \- org.springframework:spring-expression:jar:4.3.4.RELEASE:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-web:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework.boot:spring-boot-starter-tomcat:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  |  +- org.apache.tomcat.embed:tomcat-embed-core:jar:8.5.6:compile
-[INFO] |  |  +- org.apache.tomcat.embed:tomcat-embed-el:jar:8.5.6:compile
-[INFO] |  |  \- org.apache.tomcat.embed:tomcat-embed-websocket:jar:8.5.6:compile
-[INFO] |  +- org.hibernate:hibernate-validator:jar:5.2.4.Final:compile
-[INFO] |  |  +- javax.validation:validation-api:jar:1.1.0.Final:compile
-[INFO] |  |  \- com.fasterxml:classmate:jar:1.3.3:compile
-[INFO] |  +- org.springframework:spring-web:jar:4.3.4.RELEASE:compile
-[INFO] |  \- org.springframework:spring-webmvc:jar:4.3.4.RELEASE:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-aop:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  \- org.aspectj:aspectjweaver:jar:1.8.10:compile
-[INFO] +- org.springframework.boot:spring-boot-starter-mail:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework:spring-context:jar:4.3.4.RELEASE:compile
-[INFO] |  +- org.springframework:spring-context-support:jar:4.3.4.RELEASE:compile
-[INFO] |  \- com.sun.mail:javax.mail:jar:1.5.6:compile
-[INFO] |     \- javax.activation:activation:jar:1.1:compile
-[INFO] +- com.h2database:h2:jar:1.4.193:runtime
-[INFO] +- org.springframework.boot:spring-boot-starter-test:jar:1.5.0.BUILD-SNAPSHOT:test
-[INFO] |  +- org.springframework.boot:spring-boot-test:jar:1.5.0.BUILD-SNAPSHOT:test
-[INFO] |  +- org.springframework.boot:spring-boot-test-autoconfigure:jar:1.5.0.BUILD-SNAPSHOT:test
-[INFO] |  +- com.jayway.jsonpath:json-path:jar:2.2.0:test
-[INFO] |  |  \- net.minidev:json-smart:jar:2.2.1:test
-[INFO] |  |     \- net.minidev:accessors-smart:jar:1.1:test
-[INFO] |  |        \- org.ow2.asm:asm:jar:5.0.3:test
-[INFO] |  +- junit:junit:jar:4.12:test
-[INFO] |  +- org.assertj:assertj-core:jar:2.5.0:test
-[INFO] |  +- org.hamcrest:hamcrest-core:jar:1.3:test
-[INFO] |  +- org.hamcrest:hamcrest-library:jar:1.3:test
-[INFO] |  +- org.skyscreamer:jsonassert:jar:1.3.0:test
-[INFO] |  |  \- org.json:json:jar:20140107:test
-[INFO] |  \- org.springframework:spring-test:jar:4.3.4.RELEASE:test
-[INFO] +- org.springframework.restdocs:spring-restdocs-mockmvc:jar:1.1.2.RELEASE:test
-[INFO] |  \- org.springframework.restdocs:spring-restdocs-core:jar:1.1.2.RELEASE:test
-[INFO] |     \- javax.servlet:javax.servlet-api:jar:3.1.0:test
-[INFO] +- org.eclipse.jgit:org.eclipse.jgit:jar:4.4.1.201607150455-r:compile
-[INFO] |  +- com.jcraft:jsch:jar:0.1.53:compile
-[INFO] |  +- com.googlecode.javaewah:JavaEWAH:jar:0.7.9:compile
-[INFO] |  \- org.apache.httpcomponents:httpclient:jar:4.5.2:compile
-[INFO] |     +- org.apache.httpcomponents:httpcore:jar:4.4.5:compile
-[INFO] |     \- commons-codec:commons-codec:jar:1.10:compile
-[INFO] +- commons-io:commons-io:jar:2.5:compile
-[INFO] +- org.springframework.boot:spring-boot-devtools:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  +- org.springframework.boot:spring-boot:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] |  \- org.springframework.boot:spring-boot-autoconfigure:jar:1.5.0.BUILD-SNAPSHOT:compile
-[INFO] +- org.apache.commons:commons-lang3:jar:3.0.1:compile
-[INFO] +- org.projectlombok:lombok:jar:1.16.10:provided
-[INFO] +- org.immutables:value:jar:2.3:provided
-[INFO] +- org.immutables:builder:jar:2.3:provided
-[INFO] +- com.google.code.findbugs:findbugs:jar:3.0.0:compile
-[INFO] |  +- com.google.code.findbugs:bcel-findbugs:jar:6.0:compile
-[INFO] |  +- com.google.code.findbugs:annotations:jar:3.0.0:compile
-[INFO] |  +- com.google.code.findbugs:jFormatString:jar:3.0.0:compile
-[INFO] |  +- dom4j:dom4j:jar:1.6.1:compile
-[INFO] |  |  \- xml-apis:xml-apis:jar:1.4.01:compile
-[INFO] |  +- jaxen:jaxen:jar:1.1.6:compile
-[INFO] |  +- org.ow2.asm:asm-debug-all:jar:5.0.2:compile
-[INFO] |  \- commons-lang:commons-lang:jar:2.6:compile
-[INFO] +- com.google.guava:guava:jar:19.0:compile
-[INFO] +- com.fasterxml.jackson.core:jackson-core:jar:2.8.5:compile
-[INFO] +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.8.5:compile
-[INFO] +- com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:2.8.5:compile
-[INFO] +- com.querydsl:querydsl-apt:jar:4.1.4:provided
-[INFO] |  +- com.querydsl:querydsl-codegen:jar:4.1.4:provided
-[INFO] |  |  +- com.mysema.codegen:codegen:jar:0.6.8:provided
-[INFO] |  |  |  \- org.eclipse.jdt.core.compiler:ecj:jar:4.3.1:provided
-[INFO] |  |  +- javax.inject:javax.inject:jar:1:provided
-[INFO] |  |  \- org.reflections:reflections:jar:0.9.9:provided
-[INFO] |  \- javax.jdo:jdo-api:jar:3.0.1:provided
-[INFO] |     \- javax.transaction:jta:jar:1.1:provided
-[INFO] +- com.querydsl:querydsl-jpa:jar:4.1.4:compile
-[INFO] |  \- com.querydsl:querydsl-core:jar:4.1.4:compile
-[INFO] |     +- com.google.code.findbugs:jsr305:jar:1.3.9:compile
-[INFO] |     +- com.mysema.commons:mysema-commons-lang:jar:0.2.4:compile
-[INFO] |     \- com.infradna.tool:bridge-method-annotation:jar:1.13:compile
-[INFO] +- org.slf4j:slf4j-log4j12:jar:1.6.1:compile
-[INFO] |  \- log4j:log4j:jar:1.2.16:compile
-[INFO] +- org.apache.commons:commons-collections4:jar:4.1:compile
-[INFO] +- org.postgresql:postgresql:jar:9.4.1212.jre7:compile
-[INFO] +- com.github.nithril:smtp-connection-pool:jar:1.2.1:compile
-[INFO] |  +- javax.mail:javax.mail-api:jar:1.5.6:compile
-[INFO] |  \- org.apache.commons:commons-pool2:jar:2.4.2:compile
-[INFO] +- io.jsonwebtoken:jjwt:jar:0.7.0:compile
-[INFO] +- org.freemarker:freemarker:jar:2.3.25-incubating:compile
-[INFO] +- org.jsoup:jsoup:jar:1.10.1:compile
-[INFO] +- org.outerj.daisy:daisydiff:jar:1.2-NX4-SNAPSHOT:compile
-[INFO] |  +- org.cyberneko:html:jar:1.9.8:compile
-[INFO] |  +- org.eclipse.core.runtime:eclipse-core-runtime:jar:20070801:compile
-[INFO] |  \- xerces:xercesImpl:jar:2.9.1:compile
-[INFO] +- com.fasterxml.staxmate:staxmate:jar:2.3.0:compile
-[INFO] |  \- org.codehaus.woodstox:stax2-api:jar:3.1.4:compile
-[INFO] +- com.fasterxml.woodstox:woodstox-core:jar:5.0.2:compile
-[INFO] +- com.github.nithril:xml-stream-css:jar:1.0.0-RC3:compile
-[INFO] +- org.jgrapht:jgrapht-core:jar:1.0.0:compile
-[INFO] +- org.jooq:jool:jar:0.9.11:compile
-[INFO] +- org.mockito:mockito-core:jar:2.2.15:test
-[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.5.3:test
-[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.5.3:test
-[INFO] |  \- org.objenesis:objenesis:jar:2.4:test
-[INFO] +- io.javaslang:javaslang:jar:2.0.4:compile
-[INFO] |  \- io.javaslang:javaslang-match:jar:2.0.4:compile
-[INFO] +- io.javaslang:javaslang-pure:jar:2.0.4:compile
-[INFO] \- org.apache.commons:commons-exec:jar:1.3:compile
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 22.758 s
-[INFO] Finished at: 2016-12-17T00:11:56+01:00
-[INFO] Final Memory: 24M/135M
-[INFO] ------------------------------------------------------------------------

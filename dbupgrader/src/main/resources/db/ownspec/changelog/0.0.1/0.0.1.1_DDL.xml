@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE databaseChangeLog  []>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="0.1.0.1_DDL" author="nla">
+        <createSequence
+                cycle="false"
+                incrementBy="50"
+                maxValue="9999999999999999"
+                minValue="10"
+                sequenceName="MAIN_SEQUENCE"
+                startValue="1000"/>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- USER -->
+        <createTable tableName="OSUSER">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USERNAME" type="VARCHAR2(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="EMAIL" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ROLE" type="VARCHAR2(64)"/>
+            <column name="FULL_NAME" type="VARCHAR2(128)"/>
+            <column name="FIRST_NAME" type="VARCHAR2(128)"/>
+            <column name="LAST_NAME" type="VARCHAR2(128)"/>
+            <column name="COMPANY" type="VARCHAR2(128)"/>
+            <column name="PHONE" type="VARCHAR2(64)"/>
+            <column name="FAX" type="VARCHAR2(64)"/>
+            <column name="SIGNATURE" type="VARCHAR2(255)"/>
+
+            <column name="LAST_CONNECTION" type="TIMESTAMP"/>
+
+            <column name="LOGGED_IN" type="boolean" defaultValueNumeric="0"/>
+
+            <column name="ENABLED" type="boolean" defaultValueNumeric="1"/>
+            <column name="ACCOUNT_NON_EXPIRED" type="boolean" defaultValueNumeric="1"/>
+            <column name="ACCOUNT_NON_LOCKED" type="boolean" defaultValueNumeric="1"/>
+            <column name="CREDENTIALS_NON_EXPIRED" type="boolean" defaultValueNumeric="1"/>
+
+            <column name="EMPOWERED_SECRET" type="boolean" defaultValueNumeric="0"/>
+
+            <column name="LANGUAGE" type="VARCHAR2(8)"/>
+            <column name="TIMEZONE" type="VARCHAR2(32)"/>
+
+            <column name="CATEGORY" type="VARCHAR2(32)"/>
+            <column name="HOURLY_VALUE" type="float8"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- PROJECT -->
+        <createTable tableName="PROJECT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TITLE" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="VARCHAR2(255)"/>
+            <column name="MANAGER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_MANAGER_ID"/>
+            </column>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- USER_PROJECT -->
+        <createTable tableName="USER_PROJECT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" nullable="false" foreignKeyName="FK_USER_PROJECT_USER_ID"/>
+            </column>
+            <column name="PROJECT_ID" type="bigint">
+                <constraints references="PROJECT(ID)" nullable="false" foreignKeyName="FK_USER_PROJECT_PROJECT_ID"/>
+            </column>
+            <column name="FAVORITE" type="boolean" defaultValueNumeric="0"/>
+            <column name="VISITED_TIME" type="bigint" defaultValueNumeric="0"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_USER_PROJECT_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_USER_PROJECT_MOD_USR_ID"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="USER_PROJECT" columnNames="USER_ID, PROJECT_ID"/>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPONENT -->
+        <createTable tableName="COMPONENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TITLE" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FILENAME" type="VARCHAR2(255)"/>
+            <column name="MEDIA_TYPE" type="VARCHAR2(128)"/>
+            <column name="CURRENT_WORKFLOW_INSTANCE_ID" type="bigint"/>
+            <column name="PROJECT_ID" type="bigint">
+                <constraints nullable="true" references="PROJECT(ID)" foreignKeyName="FK_CMP_PROJECT_ID"/>
+            </column>
+            <column name="TYPE" type="VARCHAR2(64)"/>
+            <column name="EDITABLE" type="boolean" defaultValueNumeric="1"/>
+            <column name="REQUIRE_TEST" type="boolean" defaultValueNumeric="0"/>
+            <column name="ASSIGNED_TO_USER_ID" type="bigint">
+                <constraints nullable="true" references="OSUSER(ID)" foreignKeyName="FK_CMP_ASSIGNED_USER_ID"/>
+            </column>
+            <column name="DISTRIBUTION_LEVEL" type="VARCHAR2(64)"/>
+            <column name="REQUIREMENT_TYPE" type="VARCHAR2(64)"/>
+            <column name="COVERAGE_STATUS" type="VARCHAR2(64)"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_MOD_USR_ID"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="COMPONENT" columnNames="ID,PROJECT_ID"/>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- WORKFLOW_INSTANCE -->
+        <createTable tableName="WORKFLOW_INSTANCE">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_WRKFLW_INST_COMP_ID"/>
+            </column>
+            <column name="VERSION" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="GIT_REFERENCE" type="VARCHAR2(128)"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_WRKFLW_INST_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_WRKFLW_INST_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="COMPONENT" baseColumnNames="CURRENT_WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_CMP_CUR_WRKFLW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+        <!-- ******************************************************************************** -->
+        <!-- WORKFLOW_STATUS -->
+        <createTable tableName="WORKFLOW_STATUS">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint">
+                <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_WRKFLW_STS_WRKFLW_INST_ID"/>
+            </column>
+            <column name="STATUS" type="VARCHAR2(64)"/>
+            <column name="FIRST_GIT_REFERENCE" type="VARCHAR2(128)"/>
+            <column name="LAST_GIT_REFERENCE" type="VARCHAR2(128)"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_WRKFLW_STS_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_WRKFLW_STS_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPONENT_REFERENCE -->
+        <createTable tableName="COMPONENT_REFERENCE">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="SOURCE_COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_REF_SRC_CMP_ID"/>
+            </column>
+
+            <column name="SOURCE_WRKFLW_INST_ID" type="bigint">
+                <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_CMP_REF_SRC_WRKFLW_INST_ID"/>
+            </column>
+
+            <column name="TARGET_COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_REF_TRGT_CMP_ID"/>
+            </column>
+
+            <column name="TARGET_WRKFLW_INST_ID" type="bigint">
+                <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_CMP_REF_TRGT_WRKFLW_INST_ID"/>
+            </column>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_REF_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_REF_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- TAG -->
+        <createTable tableName="TAG">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="LABEL" type="VARCHAR2(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_TAG_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_TAG_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPONENT_TAG -->
+        <createTable tableName="COMPONENT_TAG">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TAG_ID" type="bigint">
+                <constraints nullable="false" references="TAG(ID)" foreignKeyName="FK_CMP_TAG_TAG_ID"/>
+            </column>
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_TAG_CMP_ID"/>
+            </column>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_TAG_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_TAG_MOD_USR_ID"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="COMPONENT_TAG" columnNames="TAG_ID, COMPONENT_ID"/>
+
+        <!-- ******************************************************************************** -->
+        <!-- USER_COMPONENT -->
+        <createTable tableName="USER_COMPONENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USER_ID" type="bigint">
+                <constraints nullable="false" references="OSUSER(ID)" foreignKeyName="FK_USER_CMP_USER_ID"/>
+            </column>
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_USER_CMP_CMP_ID"/>
+            </column>
+            <column name="FAVORITE" type="boolean" defaultValueNumeric="0"/>
+            <column name="VISITED_TIME" type="BIGINT" defaultValueNumeric="1"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_USER_CMP_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_USER_CMP_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- COMMENT -->
+        <createTable tableName="COMMENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_COMMENT_CMP_ID"/>
+            </column>
+            <column name="VALUE" type="VARCHAR2(256)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_COMMENT_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_COMMENT_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- ESTIMATED_TIME -->
+        <createTable tableName="ESTIMATED_TIME">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_EST_TIME_CMP_ID"/>
+            </column>
+            <column name="TIME" type="float8" defaultValueNumeric="0"/>
+            <column name="TIME_UNIT" type="VARCHAR2(16)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="CATEGORY" type="VARCHAR2(32)"/>
+            <column name="HOURLY_VALUE" type="float8"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_EST_TIME_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_EST_TIME_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
+    </changeSet>
+
+</databaseChangeLog>
