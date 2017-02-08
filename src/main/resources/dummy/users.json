@@ -1,0 +1,62 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@ownspec.com",
+    "password": "$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda",
+    "role": "ADMIN",
+    "firstName": "Administrator",
+    "lastName": "",
+    "preference": {
+      "notifyMeOnNewTask": true,
+      "notifyMeOnWatchedDocumentChange": true
+    },
+    "category": {
+      "category": "ADMINISTRATOR"
+    }
+  },
+  {
+    "username": "b.ramos@ownspec.com",
+    "email": "b.ramos@ownspec.com",
+    "password": "$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda",
+    "role": "USER",
+    "firstName": "Bruno",
+    "lastName": "Ramos",
+    "preference": {
+      "notifyMeOnNewTask": true,
+      "notifyMeOnWatchedDocumentChange": true
+    },
+    "category": {
+      "category": "Analyst"
+    }
+  },
+  {
+    "username": "n.labrot@ownspec.com",
+    "email": "n.labrot@ownspec.com",
+    "password": "$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda",
+    "role": "USER",
+    "firstName": "Nicolas",
+    "lastName": "Labrot",
+    "preference": {
+      "notifyMeOnNewTask": true,
+      "notifyMeOnWatchedDocumentChange": true
+    },
+    "category": {
+      "category": "Developer"
+    }
+  },
+  {
+    "username": "l.careto@ownspec.com",
+    "email": "l.careto@ownspec.com",
+    "password": "$2a$06$5uTQvTwHAHkVqUaVakAB6ui0ljYU5R0W5Qzjhj9UIVXs0LHIKCzda",
+    "role": "USER",
+    "firstName": "Lyrold",
+    "lastName": "Careto",
+    "preference": {
+      "notifyMeOnNewTask": true,
+      "notifyMeOnWatchedDocumentChange": true
+    },
+    "category": {
+      "category": "Developer"
+    }
+  }
+]
