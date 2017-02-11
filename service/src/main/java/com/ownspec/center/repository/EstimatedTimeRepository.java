@@ -12,6 +12,6 @@ import java.util.List;
  */
 public interface EstimatedTimeRepository extends JpaRepository<EstimatedTime, Long> {
 
-  List<EstimatedTime> findAllByComponentId(Long id);
+  List<EstimatedTime> findAllByComponentVersionId(Long id);
 
 }

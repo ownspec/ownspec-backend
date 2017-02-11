@@ -12,12 +12,10 @@ import java.util.List;
 public interface ComponentReferenceRepository extends JpaRepository<ComponentReference, Long> {
 
 
-  Long deleteBySourceIdAndSourceWorkflowInstanceId(Long sourceId, Long wrkflowInstanceId);
+  Long deleteBySourceId(Long sourceId);
 
-  List<ComponentReference> findAllBySourceIdAndSourceWorkflowInstanceId(Long sourceId, Long sourceWorkflowInstanceId);
   List<ComponentReference> findAllBySourceId(Long sourceId);
 
   List<ComponentReference> findAllByTargetId(Long targetId);
-  List<ComponentReference> findAllByTargetIdAndTargetWorkflowInstanceId(Long targetId, Long targetWorkflowInstanceId);
 
 }

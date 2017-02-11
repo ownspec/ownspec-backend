@@ -1,21 +1,25 @@
 package com.ownspec.center.service.content;
 
-import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVersionDto;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
+import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.service.content.parser.HtmlComponentContentParser;
+import com.ownspec.center.service.content.parser.ParserCallBack;
+import com.ownspec.center.service.content.parser.ParserContext;
+import com.ownspec.center.service.workflow.WorkflowService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
@@ -29,10 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,9 +47,10 @@ public class HtmlContentSaver {
 
   public static final String DATA_REFERENCE_ID = "data-reference-id";
 
-  public static final String DATA_REQUIREMENT_ID = "data-requirement-id";
+  public static final String DATA_COMPONENT_VERSION_ID = "data-os-cv-id";
   public static final String DATA_REQUIREMENT_SCM_REF = "data-requirement-scm-ref";
-  public static final String DATA_WORKFLOW_INSTANCE_ID = "data-workflow-instance-id";
+
+
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
@@ -69,6 +72,14 @@ public class HtmlContentSaver {
   @Autowired
   private ComponentService componentService;
 
+  @Autowired
+  private ComponentVersionRepository componentVersionRepository;
+
+
+  @Autowired
+  private WorkflowService workflowService;
+
+
   // Keep the insertion order, insertion order are reversed depth first
   // eg nested components A => B => C will be inserted C => B => A
   private Map<String, ComponentContent> referencesByComponent = new LinkedHashMap<>();
@@ -76,25 +87,24 @@ public class HtmlContentSaver {
   private DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 
-  public void save(Component c, byte[] contentAsByteArray) {
+  public void save(ComponentVersion c, byte[] contentAsByteArray) {
     save(c, new String(contentAsByteArray));
   }
 
 
-  public void save(Component component, String content) {
-    extractReferences(component, content);
+  public void save(ComponentVersion componentVersion, String content) {
+    extractReferences(componentVersion, content);
     save();
   }
 
 
-  private void extractReferences(Component component, String content) {
-    ComponentContent componentContent = new ComponentContent(component.getId().toString());
-    componentContent.componentId = component.getId();
-    componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
+  private void extractReferences(ComponentVersion componentVersion, String content) {
+    ComponentContent componentContent = new ComponentContent(componentVersion.getId().toString());
+    componentContent.componentVersionId = componentVersion.getId();
 
     graph.addVertex(componentContent.tempId);
 
-    parseComponent(content, new SaveParseCallBack(componentContent));
+    HtmlComponentContentParser.parse(content , new SaveParseCallBack(componentContent));
   }
 
 
@@ -111,45 +121,48 @@ public class HtmlContentSaver {
 
       ComponentContent componentContent = referencesByComponent.get(tempId);
 
-      Component component;
+      ComponentVersion componentVersion;
 
-      if (componentContent.componentId == null) {
+      if (componentContent.componentVersionId == null) {
         // Create the component
-        component = componentService.create(newComponentVersionDto()
+        componentVersion = componentService.create(newComponentVersionDto()
             .title("TBD")
-            .type(ComponentType.COMPONENT).build());
+            .version("1")
+            .type(ComponentType.COMPONENT).build()).getRight();
 
         // Update the component status to draft
-        componentService.updateStatus(component.getId() , Status.DRAFT);
+        workflowService.updateStatus(componentVersion.getId() , Status.DRAFT);
 
-        componentContent.componentId = component.getId();
-        componentContent.workflowInstanceId = component.getCurrentWorkflowInstance().getId();
+        componentContent.componentVersionId = componentVersion.getId();
 
       } else {
         // Find the component
-        component = componentRepository.findOne(componentContent.componentId);
+        componentVersion = componentVersionRepository.findOne(componentContent.componentVersionId);
       }
 
-      if (component.getType() == ComponentType.RESOURCE) {
+      // Resource can't be updated through html content saver
+      if (componentVersion.getComponent().getType() == ComponentType.RESOURCE) {
         continue;
       }
 
 
-      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusByComponentId(component.getId());
+      WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId());
 
       componentContent.scmReference = workflowStatus.getLastGitReference();
 
 
       if (!workflowStatus.getStatus().isEditable()) {
-        LOG.info("Component [{}] is not editable", component);
+        LOG.info("Component [{}] is not editable", componentVersion);
         continue;
       }
 
+/*
       if (!componentContent.workflowInstanceId.equals(workflowStatus.getWorkflowInstance().getId())) {
         LOG.info("Current workflowInstanceId [{}] is not equal to the submitted one provided [{}]",
             workflowStatus.getWorkflowInstance().getId(), componentContent.workflowInstanceId);
         continue;
       }
+*/
 
 
 
@@ -158,7 +171,7 @@ public class HtmlContentSaver {
 
       if (!componentContent.created) {
         // Delete old refs if not created
-        componentReferenceRepository.deleteBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowStatus.getWorkflowInstance().getId());
+        componentReferenceRepository.deleteBySourceId(componentVersion.getId());
       }
 
       // Save the new references
@@ -166,10 +179,8 @@ public class HtmlContentSaver {
         ComponentContent referenceComponentContent = referencesByComponent.get(refTempId);
 
         ComponentReference componentReference = new ComponentReference();
-        componentReference.setSource(component);
-        componentReference.setSourceWorkflowInstance(component.getCurrentWorkflowInstance());
-        componentReference.setTarget(componentRepository.findOne(referenceComponentContent.componentId));
-        componentReference.setTargetWorkflowInstance(workflowInstanceRepository.findOne(referenceComponentContent.workflowInstanceId));
+        componentReference.setSource(componentVersion);
+        componentReference.setTarget(componentVersionRepository.findOne(referenceComponentContent.componentVersionId));
         componentReference = componentReferenceRepository.save(componentReference);
 
         // Store the reference id
@@ -182,7 +193,7 @@ public class HtmlContentSaver {
       componentContent.content = document.body().html();
 
       // Update content
-      String hash = gitService.updateAndCommit(component.getId().toString(), component.getFilename(), new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
+      String hash = gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
           authenticationService.getAuthenticatedUser(), "");
       if (hash == null) {
         // No modification continue
@@ -196,13 +207,14 @@ public class HtmlContentSaver {
         workflowStatus.setLastGitReference(hash);
       }
 
-      workflowStatus.getWorkflowInstance().setGitReference(hash);
+      //workflowStatus.getWorkflowInstance().setGitReference(hash);
+      componentVersion.setGitReference(hash);
 
       workflowStatusRepository.save(workflowStatus);
 
       workflowInstanceRepository.save(workflowStatus.getWorkflowInstance());
 
-      componentRepository.save(component);
+      componentVersionRepository.save(componentVersion);
 
     }
   }
@@ -214,8 +226,7 @@ public class HtmlContentSaver {
 
   private static class ComponentContent {
     private String tempId;
-    private Long componentId;
-    private Long workflowInstanceId;
+    private Long componentVersionId;
     private String content;
     private String scmReference;
     private List<String> referencedTarget = new ArrayList<>();
@@ -233,16 +244,8 @@ public class HtmlContentSaver {
   }
 
 
-  private interface ParseCallBack<T> {
-    void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference);
 
-    void parseResource(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference);
-
-    T endComponent(Element parent);
-  }
-
-
-  class UpdateReferenceCallBack implements ParseCallBack {
+  class UpdateReferenceCallBack implements ParserCallBack {
 
     ComponentContent componentContent;
     int referenceIndex = 0;
@@ -252,21 +255,19 @@ public class HtmlContentSaver {
     }
 
     @Override
-    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
+    public void parseReference(ParserContext parserContext) {
       ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
-      element.attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
-      element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, refComponentContent.componentVersionId.toString());
     }
 
     @Override
-    public void parseResource(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
+    public void parseResource(ParserContext parserContext) {
       ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
-      element.attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      element.attr(DATA_REQUIREMENT_ID, refComponentContent.componentId.toString());
-      element.attr(DATA_WORKFLOW_INSTANCE_ID, refComponentContent.workflowInstanceId.toString());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, refComponentContent.componentVersionId.toString());
     }
 
     @Override
@@ -275,7 +276,7 @@ public class HtmlContentSaver {
     }
   }
 
-  class SaveParseCallBack implements ParseCallBack {
+  class SaveParseCallBack implements ParserCallBack {
     ComponentContent componentContent;
 
     public SaveParseCallBack(ComponentContent componentContent) {
@@ -283,15 +284,14 @@ public class HtmlContentSaver {
     }
 
     @Override
-    public void parseReference(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
+    public void parseReference(ParserContext parserContext) {
 
       ComponentContent nestedComponent;
 
-      if (!nestedComponentId.startsWith("_")) {
-        nestedComponent = new ComponentContent(nestedComponentId);
-        nestedComponent.componentId = Long.valueOf(nestedComponentId);
-        nestedComponent.workflowInstanceId = Long.valueOf(nestedWorkflowInstanceId);
-        nestedComponent.scmReference = nestedScmReference;
+      if (!parserContext.getNestedComponentId().startsWith("_")) {
+        nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
+        nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
+        //nestedComponent.scmReference = parserContext.getNestedComponentId();
       } else {
         nestedComponent = new ComponentContent();
       }
@@ -301,22 +301,21 @@ public class HtmlContentSaver {
       componentContent.referencedTarget.add(nestedComponent.tempId);
 
       // extract reference from the nested reference content (second children, first children is the title)
-      parseComponent(element.children().get(1), new SaveParseCallBack(nestedComponent));
+      parseComponent(parserContext.getElement().children().get(1), new SaveParseCallBack(nestedComponent));
       // remove all the childrens to keep only the reference
-      element.empty();
+      parserContext.getElement().empty();
     }
 
 
     @Override
-    public void parseResource(Element element, String nestedComponentId, String nestedWorkflowInstanceId, String nestedScmReference) {
-      ComponentContent nestedComponent = new ComponentContent(nestedComponentId);
-      nestedComponent.componentId = Long.valueOf(nestedComponentId);
-      nestedComponent.workflowInstanceId = Long.valueOf(nestedWorkflowInstanceId);
-      nestedComponent.scmReference = nestedScmReference;
+    public void parseResource(ParserContext parserContext) {
+      ComponentContent nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
+      nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
+      //nestedComponent.scmReference = nestedScmReference;
 
       componentContent.referencedTarget.add(nestedComponent.tempId);
 
-      parseComponent(element, new SaveParseCallBack(nestedComponent));
+      parseComponent(parserContext.getElement(), new SaveParseCallBack(nestedComponent));
     }
 
 
@@ -329,35 +328,13 @@ public class HtmlContentSaver {
   }
 
 
-  private <T> T parseComponent(String content, ParseCallBack<T> cb) {
-    Document document = Jsoup.parse(content);
-    return parseComponent(document.body(), cb);
+  private <T> T parseComponent(String content, ParserCallBack<T> cb) {
+    return HtmlComponentContentParser.parse(content, cb);
   }
 
 
-  private <T> T parseComponent(Element parent, ParseCallBack<T> cb) {
-    Deque<Element> stack = new LinkedList<>(parent.children());
-    while (!stack.isEmpty()) {
-      Element element = stack.pop();
-
-      if ("div".equals(element.nodeName()) && element.hasAttr(DATA_REQUIREMENT_ID)) {
-        String nestedComponentId = element.attr(DATA_REQUIREMENT_ID);
-        String nestedWorkflowInstanceId = element.attr(DATA_WORKFLOW_INSTANCE_ID);
-        String nestedScmReference = element.attr(DATA_REQUIREMENT_SCM_REF);
-
-        cb.parseReference(element, nestedComponentId, nestedWorkflowInstanceId, nestedScmReference);
-
-      } else if ("img".equals(element.nodeName()) && element.hasAttr(DATA_REQUIREMENT_ID)) {
-        String nestedComponentId = element.attr(DATA_REQUIREMENT_ID);
-        String nestedWorkflowInstanceId = element.attr(DATA_WORKFLOW_INSTANCE_ID);
-        String nestedScmReference = element.attr(DATA_REQUIREMENT_SCM_REF);
-
-        cb.parseResource(element, nestedComponentId, nestedWorkflowInstanceId, nestedScmReference);
-      } else {
-        stack.addAll(element.children());
-      }
-    }
-    return cb.endComponent(parent);
+  private <T> T parseComponent(Element parent, ParserCallBack<T> cb) {
+    return HtmlComponentContentParser.parse(parent, cb);
   }
 
 }

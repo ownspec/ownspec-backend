@@ -32,7 +32,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/components")
 public class ComponentContentController {
-
+/*
   @Autowired
   private ComponentService componentService;
 
@@ -76,5 +76,5 @@ public class ComponentContentController {
     } else {
       return componentService.getHeadRawContent(component);
     }
-  }
+  }*/
 }

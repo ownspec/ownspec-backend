@@ -20,8 +20,5 @@ public interface ParserContext {
   String getNestedComponentId();
 
   @Nullable
-  String getNestedWorkflowInstanceId();
-
-  @Nullable
   String getNestedReferenceId();
 }

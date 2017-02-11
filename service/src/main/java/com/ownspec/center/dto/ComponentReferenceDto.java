@@ -2,11 +2,8 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.component.ComponentType;
 import org.immutables.value.Value;
 
-import java.time.Instant;
-import java.util.List;
 import javax.annotation.Nullable;
 
 /**
@@ -16,26 +13,12 @@ import javax.annotation.Nullable;
 @Value.Style(builder = "newComponentReferenceDto")
 @JsonSerialize(as = ImmutableComponentReferenceDto.class)
 @JsonDeserialize(as = ImmutableComponentReferenceDto.class)
-public interface ComponentReferenceDto {
+public interface ComponentReferenceDto extends AuditableDto {
 
   @Nullable
   Long getId();
 
-  ComponentDto getSource();
-  WorkflowInstanceDto getSourceWorkflowInstance();
+  ComponentVersionDto getSource();
 
-  ComponentDto getTarget();
-  WorkflowInstanceDto getTargetWorkflowInstance();
-
-  @Nullable
-  Instant getCreatedDate();
-
-  @Nullable
-  UserDto getCreatedUser();
-
-  @Nullable
-  Instant getLastModifiedDate();
-
-  @Nullable
-  UserDto getLastModifiedUser();
+  ComponentVersionDto getTarget();
 }

@@ -14,25 +14,27 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
  */
 public interface WorkflowStatusRepository extends JpaRepository<WorkflowStatus, Long> {
 
-  List<WorkflowStatus> findAllByWorkflowInstanceComponentId(long id, Sort sort);
+
 
   List<WorkflowStatus> findAllByWorkflowInstanceId(long id, Sort sort);
 
-  @Query("FROM WorkflowStatus status WHERE status.workflowInstance.component.id=:id AND status.id IN " +
-      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.component.id=:id)")
-  WorkflowStatus findLatestWorkflowStatusByComponentId(@Param("id") Long id);
+  @Query(nativeQuery = true , value =
+      "SELECT WS.* " +
+          "FROM WORKFLOW_STATUS WS " +
+          "INNER JOIN WORKFLOW_INSTANCE WI ON WI.ID = WS.WORKFLOW_INSTANCE_ID " +
+          "INNER JOIN COMPONENT_VERSION CV ON CV.WORKFLOW_INSTANCE_ID = WI.ID " +
+          "WHERE CV.ID=:id " +
+          "ORDER BY WS.WSORDER DESC " +
+          "LIMIT 1")
+  WorkflowStatus findLatestWorkflowStatusByComponentVersionId(@Param("id") Long id);
 
-  @Query("FROM WorkflowStatus status WHERE status.workflowInstance.component.id=:id AND status.id IN " +
-      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.component.id=:id AND status2.lastGitReference IS NOT NULL)")
-  WorkflowStatus findLatestWorkflowStatusWithGitReferenceByComponentId(@Param("id") Long id);
-
-  @Query("FROM WorkflowStatus status WHERE status.workflowInstance.id=:id AND status.id IN " +
-      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.id=:id)")
+  @Query(nativeQuery = true , value =
+      "SELECT WS.* " +
+          "FROM WORKFLOW_STATUS WS " +
+          "INNER JOIN WORKFLOW_INSTANCE WI ON WI.ID = WS.WORKFLOW_INSTANCE_ID " +
+          "WHERE WI.ID=:id " +
+          "ORDER BY WS.WSORDER DESC " +
+          "LIMIT 1")
   WorkflowStatus findLatestWorkflowStatusByWorkflowInstanceId(@Param("id") Long id);
-
-  @Query("FROM WorkflowStatus status WHERE status.workflowInstance.id=:id AND status.id IN " +
-      "(SELECT MAX(status2.id) FROM WorkflowStatus status2 WHERE status2.workflowInstance.id=:id AND status2.lastGitReference IS NOT NULL)")
-  WorkflowStatus findLatestWorkflowStatusWithGitReferenceByWorkflowInstanceId(@Param("id") Long id);
-
 
 }

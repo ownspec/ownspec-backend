@@ -31,20 +31,10 @@ public class ComponentReference extends AbstractAuditable implements Persistable
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "SOURCE_COMPONENT_ID")
-  private Component source;
-  // A reference target a component in a specific workflow cycle
-  @ManyToOne
-  @JoinColumn(name = "SOURCE_WRKFLW_INST_ID")
-  private WorkflowInstance sourceWorkflowInstance;
-
+  @JoinColumn(name = "SOURCE_COMPONENT_VERSION_ID")
+  private ComponentVersion source;
 
   @ManyToOne
-  @JoinColumn(name = "TARGET_COMPONENT_ID")
-  private Component target;
-  // A reference target a component in a specific workflow cycle
-  @ManyToOne
-  @JoinColumn(name = "TARGET_WRKFLW_INST_ID")
-  private WorkflowInstance targetWorkflowInstance;
-
+  @JoinColumn(name = "TARGET_COMPONENT_VERSION_ID")
+  private ComponentVersion target;
 }

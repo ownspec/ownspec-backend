@@ -138,16 +138,44 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="TITLE" type="VARCHAR2(128)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="FILENAME" type="VARCHAR2(255)"/>
-            <column name="MEDIA_TYPE" type="VARCHAR2(128)"/>
-            <column name="CURRENT_WORKFLOW_INSTANCE_ID" type="bigint"/>
             <column name="PROJECT_ID" type="bigint">
                 <constraints nullable="true" references="PROJECT(ID)" foreignKeyName="FK_CMP_PROJECT_ID"/>
             </column>
             <column name="TYPE" type="VARCHAR2(64)"/>
+            <column name="VCS_ID" type="VARCHAR2(64)">
+                <constraints unique="true"/>
+            </column>
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_MOD_USR_ID"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="COMPONENT" columnNames="ID,PROJECT_ID"/>
+
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPONENT_VERSION -->
+        <createTable tableName="COMPONENT_VERSION">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TITLE" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="VARCHAR2(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FILENAME" type="VARCHAR2(255)"/>
+            <column name="MEDIA_TYPE" type="VARCHAR2(128)"/>
+            <column name="GIT_REFERENCE" type="VARCHAR2(128)"/>
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+            <column name="COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_VER_CMP_ID"/>
+            </column>
             <column name="EDITABLE" type="boolean" defaultValueNumeric="1"/>
             <column name="REQUIRE_TEST" type="boolean" defaultValueNumeric="0"/>
             <column name="ASSIGNED_TO_USER_ID" type="bigint">
@@ -166,7 +194,6 @@
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_MOD_USR_ID"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="COMPONENT" columnNames="ID,PROJECT_ID"/>
 
 
         <!-- ******************************************************************************** -->
@@ -175,12 +202,7 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="COMPONENT_ID" type="bigint">
-                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_WRKFLW_INST_COMP_ID"/>
-            </column>
-            <column name="VERSION" type="BIGINT" defaultValueNumeric="0"/>
-            <column name="GIT_REFERENCE" type="VARCHAR2(128)"/>
-
+            <column name="CLOSED" type="boolean" defaultValueBoolean="false"/>
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_WRKFLW_INST_CR_USR_ID"/>
@@ -191,14 +213,17 @@
             </column>
         </createTable>
 
-        <addForeignKeyConstraint baseTableName="COMPONENT" baseColumnNames="CURRENT_WORKFLOW_INSTANCE_ID"
-                                 constraintName="FK_CMP_CUR_WRKFLW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+        <addForeignKeyConstraint baseTableName="COMPONENT_VERSION" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_CMP_VER_WRKFLW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
 
         <!-- ******************************************************************************** -->
         <!-- WORKFLOW_STATUS -->
         <createTable tableName="WORKFLOW_STATUS">
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="WSORDER" type="int4">
+                <constraints nullable="false"/>
             </column>
             <column name="WORKFLOW_INSTANCE_ID" type="bigint">
                 <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_WRKFLW_STS_WRKFLW_INST_ID"/>
@@ -223,23 +248,12 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-
-            <column name="SOURCE_COMPONENT_ID" type="bigint">
-                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_REF_SRC_CMP_ID"/>
+            <column name="SOURCE_COMPONENT_VERSION_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_CMP_REF_SRC_CMP_VER_ID"/>
             </column>
-
-            <column name="SOURCE_WRKFLW_INST_ID" type="bigint">
-                <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_CMP_REF_SRC_WRKFLW_INST_ID"/>
+            <column name="TARGET_COMPONENT_VERSION_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_CMP_REF_TRGT_CMP_VER_ID"/>
             </column>
-
-            <column name="TARGET_COMPONENT_ID" type="bigint">
-                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_REF_TRGT_CMP_ID"/>
-            </column>
-
-            <column name="TARGET_WRKFLW_INST_ID" type="bigint">
-                <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_CMP_REF_TRGT_WRKFLW_INST_ID"/>
-            </column>
-
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_REF_CR_USR_ID"/>
@@ -282,8 +296,8 @@
             <column name="TAG_ID" type="bigint">
                 <constraints nullable="false" references="TAG(ID)" foreignKeyName="FK_CMP_TAG_TAG_ID"/>
             </column>
-            <column name="COMPONENT_ID" type="bigint">
-                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_TAG_CMP_ID"/>
+            <column name="COMPONENT_VERSION_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_CMP_TAG_CMP_VER_ID"/>
             </column>
 
             <column name="CREATED_DATE" type="TIMESTAMP"/>
@@ -295,7 +309,7 @@
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_TAG_MOD_USR_ID"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="COMPONENT_TAG" columnNames="TAG_ID, COMPONENT_ID"/>
+        <addUniqueConstraint tableName="COMPONENT_TAG" columnNames="TAG_ID, COMPONENT_VERSION_ID"/>
 
         <!-- ******************************************************************************** -->
         <!-- USER_COMPONENT -->
@@ -354,8 +368,8 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="COMPONENT_ID" type="bigint">
-                <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_EST_TIME_CMP_ID"/>
+            <column name="COMPONENT_VERSION_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_EST_TIME_CMP_VER_ID"/>
             </column>
             <column name="USER_CATEGORY_ID" type="bigint">
                 <constraints nullable="false" references="USER_CATEGORY(ID)" foreignKeyName="FK_EST_TIME_USER_CAT_ID"/>

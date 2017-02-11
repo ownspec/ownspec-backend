@@ -3,6 +3,8 @@ package com.ownspec.center.service.component;
 import static com.ownspec.center.dto.ComponentDto.newBuilderFromComponent;
 import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.model.component.QComponent.component;
+import static com.ownspec.center.model.workflow.QWorkflowInstance.workflowInstance;
 
 import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.CommentDto;
@@ -20,6 +22,7 @@ import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.workflow.WorkflowInstance;
@@ -71,72 +74,6 @@ public class ComponentConverter {
 
 
 
-  public ComponentDto toDto(Long id, boolean content, boolean workflow, boolean comments, boolean references) {
-    return toDto(componentService.findOne(id), content, workflow, comments, references);
-  }
-
-  public ComponentDto toDto(Component c, boolean content, boolean workflow, boolean comments, boolean references) {
-    ImmutableComponentDto.Builder builder = newBuilderFromComponent(c);
-
-
-    if (c.getType() != ComponentType.RESOURCE) {
-      Pair<String, String> contentPair = componentService.generateContent(c);
-
-      if (content) {
-        builder.content(contentPair.getLeft());
-      }
-      builder.summary(contentPair.getRight());
-    }
-
-    WorkflowInstance currentWorkflowInstance = componentService.getCurrentWorkflowInstance(c.getId());
-
-    builder.currentWorkflowInstance(convert(c, currentWorkflowInstance, workflow));
-
-    if (workflow) {
-      builder.workflowInstances(workflowConfiguration.changesExtractor(c).getWorkflowInstances());
-    }
-
-    if (comments) {
-      builder.comments(commentService.getComments(c.getId()).stream()
-          .map(CommentDto::createFromComment)
-          .collect(Collectors.toList()));
-    }
-
-    builder.tags(componentTagRepository.findOneByComponentId(c.getId()).stream()
-        .map(ct -> ct.getTag().getLabel())
-        .collect(Collectors.toList()));
-
-    if (references) {
-      List<ComponentReferenceDto> componentReferences = getComponentReferences(c, c.getCurrentWorkflowInstance());
-      builder.componentReferences(componentReferences);
-//      builder.coverageStatus(getGlobalCoverageStatus(componentReferences));
-    } else {
-      builder.coverageStatus(c.getCoverageStatus());
-    }
-
-    if (c.isRequirement()) {
-      builder.requirementType(c.getRequirementType());
-    }
-    if (c.getAssignedTo() != null) {
-      builder.assignedTo(UserDto.fromUser(c.getAssignedTo()));
-    }
-
-    List<UserComponent> userComponents = userComponentRepository.findAllByComponentId(c.getId());
-    if (userComponents != null) {
-      builder.componentUsers(
-          userComponents.stream()
-              .map(UserComponentDto::fromUserComponent)
-              .collect(Collectors.toList())
-      );
-    }
-    builder.estimatedTimes(estimatedTimeService.getEstimatedTimes(c.getId()).stream()
-        .map(EstimatedTimeDto::createFromEstimatedTime)
-        .collect(Collectors.toList()));
-
-
-    return builder.build();
-  }
-
   private CoverageStatus getGlobalCoverageStatus(List<ComponentReferenceDto> componentReferences) {
     for (ComponentReferenceDto componentReference : componentReferences) {
       CoverageStatus coverageStatus = componentReference.getSource().getCoverageStatus();
@@ -153,12 +90,13 @@ public class ComponentConverter {
   }
 
 
-  public List<ComponentReferenceDto> getComponentReferences(Component component, WorkflowInstance workflowInstance) {
-    return convertReferences(componentReferenceRepository.findAllBySourceIdAndSourceWorkflowInstanceId(component.getId(), workflowInstance.getId()));
+  public List<ComponentReferenceDto> getComponentReferences(ComponentVersion componentVersion) {
+    return convertReferences(componentReferenceRepository.findAllBySourceId(componentVersion.getId()));
   }
 
-  public List<ComponentReferenceDto> getComponentUsePoints(Component component, WorkflowInstance workflowInstance) {
-    return convertReferences(componentReferenceRepository.findAllByTargetIdAndTargetWorkflowInstanceId(component.getId(), workflowInstance.getId()));
+
+  public List<ComponentReferenceDto> getComponentUsePoints(ComponentVersion component, WorkflowInstance workflowInstance) {
+    return convertReferences(componentReferenceRepository.findAllByTargetId(component.getId()));
   }
 
   public List<ComponentReferenceDto> convertReferences(List<ComponentReference> refs) {
@@ -166,10 +104,8 @@ public class ComponentConverter {
     return refs.stream()
         .map(r -> newComponentReferenceDto()
             .id(r.getId())
-            .source(toDto(r.getSource(), false, false, false, false))
-            .sourceWorkflowInstance(convert(r.getSource(), r.getSourceWorkflowInstance(), false))
-            .target(toDto(r.getTarget(), false, false, false, false))
-            .targetWorkflowInstance(convert(r.getTarget(), r.getTargetWorkflowInstance(), false))
+            .source(toComponentVersionDto(r.getSource(), false, false, false))
+            .target(toComponentVersionDto(r.getTarget(), false, false, false))
             .build()
         ).collect(Collectors.toList());
   }
@@ -178,7 +114,7 @@ public class ComponentConverter {
 
 
 
-  public WorkflowInstanceDto convert(Component component, WorkflowInstance workflowInstance, boolean statuses) {
+  public WorkflowInstanceDto convert(ComponentVersion component, WorkflowInstance workflowInstance, boolean statuses) {
 
     ImmutableWorkflowInstanceDto.Builder workflowInstanceBuilder = WorkflowInstanceDto.newBuilderFromWorkflowInstance(workflowInstance);
 
@@ -200,43 +136,37 @@ public class ComponentConverter {
 
   }
 
-  public ComponentVersionDto toComponentVersionDto(Component c, WorkflowInstance workflowInstance, boolean content, boolean statuses, boolean references, Boolean usePoints){
-    ImmutableComponentVersionDto.Builder builder = ComponentVersionDto.newBuilderFromComponent(c);
+  public ComponentVersionDto toComponentVersionDto(ComponentVersion cv, boolean statuses, boolean references, Boolean usePoints){
+    ImmutableComponentVersionDto.Builder builder = ComponentVersionDto.newBuilderFromComponent(cv);
 
+    Component c = cv.getComponent();
 
-    if (c.getType() != ComponentType.RESOURCE) {
-      Pair<String, String> contentPair = componentService.generateContent(c);
+    builder.workflowInstance(convert(cv, cv.getWorkflowInstance(), statuses));
 
-      if (content) {
-        builder.content(contentPair.getLeft());
-      }
-      builder.summary(contentPair.getRight());
-    }
-
-    builder.workflowInstance(convert(c, workflowInstance, statuses));
-
-    builder.tags(componentTagRepository.findOneByComponentId(c.getId()).stream()
+    builder.tags(componentTagRepository.findAllByComponentVersionId(c.getId()).stream()
         .map(ct -> ct.getTag().getLabel())
         .collect(Collectors.toList()));
 
+
     if (references) {
-      List<ComponentReferenceDto> componentReferences = getComponentReferences(c, workflowInstance);
-      builder.componentReferences(componentReferences);
-    } else {
-      builder.coverageStatus(c.getCoverageStatus());
+      builder.componentReferences(getComponentReferences(cv));
     }
 
+    builder.coverageStatus(cv.getCoverageStatus());
+
+
     if (usePoints){
-      List<ComponentReference> componentUsePoints = componentService.findUsePoints(c.getId(), workflowInstance.getId());
-      builder.componentUsePoints(convertReferences(componentUsePoints));
+      List<ComponentReference> list = componentReferenceRepository.findAllByTargetId(cv.getId());
+      builder.componentUsePoints(convertReferences(list));
     }
 
 
     if (c.isRequirement()) {
-      builder.requirementType(c.getRequirementType());
+      builder.requirementType(cv.getRequirementType());
     }
-    if (c.getAssignedTo() != null) {
-      builder.assignedTo(UserDto.fromUser(c.getAssignedTo()));
+
+    if (cv.getAssignedTo() != null) {
+      builder.assignedTo(UserDto.fromUser(cv.getAssignedTo()));
     }
 
     List<UserComponent> userComponents = userComponentRepository.findAllByComponentId(c.getId());
@@ -254,6 +184,7 @@ public class ComponentConverter {
 
     return builder.build();
   }
+
 
 
 

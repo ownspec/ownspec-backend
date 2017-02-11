@@ -3,6 +3,7 @@ package com.ownspec.center.service.content.generator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.content.ContentConfiguration;
@@ -33,14 +34,14 @@ public class HtmlContentGenerator {
   @Autowired
   private ContentConfiguration contentConfiguration;
 
-  public Pair<String, String> generate(Component c, WorkflowInstance workflowInstance) {
-    Element body = generateComponentContent(c, workflowInstance, false, null);
+  public Pair<String, String> generate(ComponentVersion c) {
+    Element body = generateComponentContent(c, false, null);
     String substring = body.text().replaceAll("(?<=.{" + summaryLength + "})\\b.*", "...");
     return Pair.of(body.html(), substring);
   }
 
-  public Path generateForComposition(Component c, WorkflowInstance workflowInstance, boolean forComposition, Path outputDirectory) {
-    Element body = generateComponentContent(c, workflowInstance, forComposition, outputDirectory);
+  public Path generateForComposition(ComponentVersion c, boolean forComposition, Path outputDirectory) {
+    Element body = generateComponentContent(c, forComposition, outputDirectory);
     Path path = outputDirectory.resolve(Paths.get("component.html"));
 
     try {
@@ -51,11 +52,11 @@ public class HtmlContentGenerator {
     return path;
   }
 
-  private Element generateComponentContent(Component c, WorkflowInstance workflowInstance, boolean forComposition, Path outputDirectory) {
+  private Element generateComponentContent(ComponentVersion c, boolean forComposition, Path outputDirectory) {
     HtmlGeneratorParserCallBack callBack = contentConfiguration.htmlGeneratorParserCallBack(forComposition, outputDirectory);
 
-    HtmlComponentContentParser<Element> contentParser = new HtmlComponentContentParser();
-    Resource resource = componentService.getContent(c, workflowInstance.getId());
-    return contentParser.parse(resource, callBack);
+    HtmlComponentContentParser<Element> contentParser = new HtmlComponentContentParser(callBack);
+    Resource resource = componentService.getContent(c);
+    return contentParser.parse(resource);
   }
 }

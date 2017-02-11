@@ -11,7 +11,9 @@ import java.util.List;
  */
 public interface ComponentTagRepository extends JpaRepository<ComponentTag, Long> {
 
-  ComponentTag findOneByComponentIdAndTagId(long componentId, long tagId);
+  ComponentTag findOneByComponentVersionIdAndTagId(long componentId, long tagId);
 
-  List<ComponentTag> findOneByComponentId(long componentId);
+
+  List<ComponentTag> findAllByComponentVersionId(long componentVersionId);
+
 }

@@ -2,9 +2,10 @@ package com.ownspec.center.service.content.generator;
 
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
-import com.ownspec.center.model.workflow.WorkflowInstance;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
+import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.content.TocGenerator;
@@ -30,6 +31,12 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
   @Autowired
   private ComponentService componentService;
 
+
+
+  @Autowired
+  private ComponentVersionRepository componentVersionRepository;
+
+
   @Autowired
   private ComponentReferenceRepository componentReferenceRepository;
 
@@ -48,13 +55,13 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
 
   @Override
   public void parseReference(ParserContext parserContext) {
-    Component nestedComponent = componentService.findOne(Long.valueOf(parserContext.getNestedComponentId()));
+    ComponentVersion nestedComponent = componentVersionRepository.findOne(Long.valueOf(parserContext.getNestedComponentId()));
 
     ComponentReference componentReference = componentReferenceRepository.findOne(Long.valueOf(parserContext.getNestedReferenceId()));
 
-    WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(componentReference.getTargetWorkflowInstance().getId());
+    WorkflowStatus workflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(componentReference.getTarget().getWorkflowInstance().getId());
 
-    Element nestedBody = parseNestedComponent(nestedComponent, componentReference.getTargetWorkflowInstance());
+    Element nestedBody = parseNestedComponent(nestedComponent);
 
     // Create title tag
     if (!forComposition) {
@@ -76,10 +83,10 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
   @Override
   public void parseResource(ParserContext parserContext) {
     try {
-      Component nestedComponent = componentService.findOne(Long.valueOf(parserContext.getNestedComponentId()));
+      ComponentVersion nestedComponent = componentVersionRepository.findOne(Long.valueOf(parserContext.getNestedComponentId()));
 
       if (forComposition) {
-        Resource content = componentService.getContent(nestedComponent, Long.valueOf(parserContext.getNestedWorkflowInstanceId()));
+        Resource content = componentService.getContent(nestedComponent);
 
         Path filePath = outputDirectory.resolve(Paths.get(nestedComponent.getFilename()));
 
@@ -110,10 +117,10 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
     }
   }
 
-  private Element parseNestedComponent(Component c, WorkflowInstance workflowInstance) {
-    HtmlComponentContentParser<Element> contentParser = new HtmlComponentContentParser();
-    Resource resource = componentService.getContent(c, workflowInstance.getId());
-    return contentParser.parse(resource, this);
+  private Element parseNestedComponent(ComponentVersion c) {
+    HtmlComponentContentParser<Element> contentParser = new HtmlComponentContentParser(this);
+    Resource resource = componentService.getContent(c);
+    return contentParser.parse(resource);
   }
 
 }

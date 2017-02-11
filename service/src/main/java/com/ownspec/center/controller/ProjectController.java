@@ -52,8 +52,7 @@ public class ProjectController {
     return projectService.findOne(id);
   }
 
-  @RequestMapping(value = "/create", method = RequestMethod.POST)
-  @ResponseBody
+  @PostMapping
   public ResponseEntity create(@RequestBody ProjectDto projectDto) {
     Project project = new Project();
     project.setTitle(projectDto.getTitle());
@@ -78,13 +77,13 @@ public class ProjectController {
     return ResponseEntity.ok("Project successfully created");
   }
 
-  @RequestMapping(value = "/{id}/update", method = RequestMethod.POST)
+  @PostMapping(value = "/{id}/update")
   @ResponseBody
   public ResponseEntity update(@PathVariable("id") Long id, @RequestBody ProjectDto source) {
     return projectService.update(id, source);
   }
 
-  @RequestMapping(value = "/{id}/delete", method = RequestMethod.POST)
+  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   @ResponseBody
   public ResponseEntity delete(@PathVariable("id") Long id) {
     Project project = projectRepository.findOne(id);

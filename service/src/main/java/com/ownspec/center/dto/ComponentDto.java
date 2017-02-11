@@ -30,8 +30,6 @@ public interface ComponentDto {
   @Nullable
   Long getProjectId();
 
-  String getTitle();
-
   ComponentType getType();
 
   @Nullable
@@ -46,64 +44,13 @@ public interface ComponentDto {
   @Nullable
   UserDto getLastModifiedUser();
 
-  @Nullable
-  String getContent();
-
-  @Nullable
-  String getSummary();
-
-  @Nullable
-  WorkflowInstanceDto getCurrentWorkflowInstance();
-
-  @Nullable
-  List<WorkflowInstanceDto> getWorkflowInstances();
-
-  @Nullable
-  List<CommentDto> getComments();
-
-  @Nullable
-  List<ComponentReferenceDto> getComponentReferences();
-
-  @Nullable
-  Boolean getRequiredTest();
-
-  @Nullable
-  List<EstimatedTimeDto> getEstimatedTimes();
-
-  @Nullable
-  UserDto getAssignedTo();
-
-  @Nullable
-  DistributionLevel getDistributionLevel();
-
-  @Nullable
-  RequirementType getRequirementType();
-
-  @Nullable
-  CoverageStatus getCoverageStatus();
-
-  @Nullable
-  List<UserComponentDto> getComponentUsers();
-
-  @Nullable
-  String getUploadedFileId();
-
-  @Nullable
-  String getFilename();
-
-  List<String> getTags();
-
   static ImmutableComponentDto.Builder newBuilderFromComponent(Component c) {
     return newComponentDto()
         .id(c.getId())
         .projectId(c.getProject() != null ? c.getProject().getId() : null)
-        .title(c.getTitle())
+
         .type(c.getType())
         .createdDate(c.getCreatedDate())
-        .createdUser(UserDto.fromUser(c.getCreatedUser()))
-        .requiredTest(c.isRequireTest())
-        .distributionLevel(c.getDistributionLevel())
-        .coverageStatus(c.getCoverageStatus())
-        .requirementType(c.getRequirementType());
+        .createdUser(UserDto.fromUser(c.getCreatedUser()));
   }
 }

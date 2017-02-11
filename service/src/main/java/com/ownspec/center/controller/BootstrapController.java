@@ -71,6 +71,7 @@ public class BootstrapController {
     for (Integer index = 0; index < nbComponents; index++) {
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
           .title(prefix + " COMPONENT " + index)
+          .version("1")
           .type(ComponentType.COMPONENT)
           .content("test1")
           .projectId(projectId)
@@ -87,6 +88,7 @@ public class BootstrapController {
 
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
           .title(prefix + " REQUIREMENT " + index)
+          .version("1")
           .type(ComponentType.REQUIREMENT)
           .content("test1")
           .projectId(projectId)
@@ -96,14 +98,14 @@ public class BootstrapController {
           .requiredTest(index % 5 == 0)
           .build();
 
-      Component component = componentService.create(componentDto);
+      Component component = componentService.create(componentDto).getLeft();
     }
 
 
     for (Integer index = 0; index < nbDocuments; index++) {
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
-
           .title(prefix + " DOCUMENT " + index)
+          .version("1")
           .type(ComponentType.DOCUMENT)
           .content("test1")
           .projectId(projectId)
@@ -112,7 +114,7 @@ public class BootstrapController {
           .requiredTest(false)
           .build();
 
-      Component component = componentService.create(componentDto);
+      Component component = componentService.create(componentDto).getLeft();
     }
 
   }

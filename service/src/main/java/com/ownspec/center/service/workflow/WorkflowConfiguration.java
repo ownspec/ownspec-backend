@@ -3,6 +3,7 @@ package com.ownspec.center.service.workflow;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentVersion;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -15,7 +16,7 @@ public class WorkflowConfiguration {
 
   @Bean
   @Scope(SCOPE_PROTOTYPE)
-  public ChangesExtractor changesExtractor(Component c) {
+  public ChangesExtractor changesExtractor(ComponentVersion c) {
     return new ChangesExtractor(c);
   }
 }

@@ -10,7 +10,7 @@ import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
-import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
@@ -21,7 +21,6 @@ import com.ownspec.center.service.GitService;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.outerj.daisy.diff.tag.Atom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 
@@ -49,28 +48,36 @@ public class ChangesExtractor {
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
-  private final Component component;
+  private final ComponentVersion componentVersion;
 
   private List<RevCommit> commits;
 
-  public ChangesExtractor(Component component) {
-    this.component = component;
+  public ChangesExtractor(ComponentVersion componentVersion) {
+    this.componentVersion = componentVersion;
   }
 
   @PostConstruct
-  public void init(){
-    commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(component.getId().toString(), component.getFilename())));
+  public void init() {
+    commits = Lists.reverse(Lists.newArrayList(gitService.getHistoryFor(componentVersion.getComponent().getVcsId(), componentVersion.getFilename())));
   }
 
-  public List<Pair<WorkflowStatus, List<ChangeDto>>> getChanges(List<WorkflowStatus> workflowStatuses){
 
-    List<Pair<WorkflowStatus , List<ChangeDto>>> results = new ArrayList<>();
+  public List<Pair<WorkflowStatus, List<ChangeDto>>> getChanges() {
+    List<WorkflowStatus> workflowStatuses = workflowStatusRepository.findAllByWorkflowInstanceId(componentVersion.getWorkflowInstance().getId(), new Sort("id"));
+    return getChanges(workflowStatuses);
+
+  }
+
+
+  public List<Pair<WorkflowStatus, List<ChangeDto>>> getChanges(List<WorkflowStatus> workflowStatuses) {
+
+    List<Pair<WorkflowStatus, List<ChangeDto>>> results = new ArrayList<>();
 
     String firstGitReference = workflowStatuses.stream().map(WorkflowStatus::getFirstGitReference).filter(Objects::nonNull).findFirst().get();
 
     AtomicInteger commitIndex = new AtomicInteger();
     for (RevCommit commit : commits) {
-      if (commit.name().equals(firstGitReference)){
+      if (commit.name().equals(firstGitReference)) {
         break;
       }
       commitIndex.incrementAndGet();
@@ -90,7 +97,7 @@ public class ChangesExtractor {
 
     List<WorkflowInstanceDto> workflowInstanceDtos = new ArrayList<>();
 
-    for (WorkflowInstance workflowInstance : workflowInstanceRepository.findAllByComponentId(component.getId(), new Sort("id"))) {
+    for (WorkflowInstance workflowInstance : workflowInstanceRepository.findAllByComponentId(componentVersion.getId())) {
 
       ImmutableWorkflowInstanceDto.Builder workflowInstanceDto = newBuilderFromWorkflowInstance(workflowInstance);
 

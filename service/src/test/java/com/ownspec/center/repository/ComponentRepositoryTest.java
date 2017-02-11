@@ -2,6 +2,7 @@ package com.ownspec.center.repository;
 
 import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
+import com.ownspec.center.model.component.ComponentVersion;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +24,14 @@ public class ComponentRepositoryTest extends AbstractTest {
         .content("doo")
         .title("title").build();
 
-    Component component = componentService.create(componentDto);
+    ComponentVersion component = componentService.create(componentDto).getRight();
 
 
   }
 
   @Test
   public void name1() throws Exception {
-    componentRepository.findAllByComponentTagTagLabel("dd");
+    componentVersionRepository.findAllByComponentTagTagLabel("dd");
     //componentRepository.findAll2();
 
   }

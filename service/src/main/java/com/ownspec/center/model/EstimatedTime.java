@@ -2,6 +2,7 @@ package com.ownspec.center.model;
 
 import com.ownspec.center.model.audit.AbstractAuditable;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.persistable.Persistable;
 import com.ownspec.center.model.user.UserCategory;
 import lombok.Data;
@@ -35,8 +36,8 @@ public class EstimatedTime extends AbstractAuditable implements Persistable {
   private Long id;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "COMPONENT_ID")
-  Component component;
+  @JoinColumn(name = "COMPONENT_VERSION_ID")
+  ComponentVersion componentVersion;
 
   @ManyToOne
   @JoinColumn(name = "USER_CATEGORY_ID")

@@ -9,6 +9,7 @@ import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.UploadService;
@@ -56,6 +57,7 @@ public class ComponentController {
   private ComponentTagService componentTagService;
 
 
+
   @RequestMapping
   public List<ComponentDto> findAll(
       @RequestParam(value = "types", required = false) ComponentType[] types,
@@ -74,11 +76,18 @@ public class ComponentController {
                                  FAVORITES_ONLY.equals(mode) ? componentService.getFavorites(types[0]) :
                                  componentService.findAll(projectId, types, tags, query);
 
+/*
     return components.stream()
         .map(c -> componentConverter.toDto(c, content, workflow, comments, references))
         .collect(Collectors.toList());
+*/
+
+    return null;
   }
 
+
+
+/*
   @RequestMapping("/{id}")
   public ComponentDto get(@PathVariable("id") Long id,
                           @RequestParam(value = "content", required = false, defaultValue = "false") Boolean content,
@@ -93,7 +102,7 @@ public class ComponentController {
 
   @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
-    Component component = componentService.create(source);
+    ComponentVersion component = componentService.create(source).getRight();
     return ok(componentConverter.toDto(component, false, false, false, false));
   }
 
@@ -183,5 +192,6 @@ public class ComponentController {
     return ResponseEntity.ok().build();
   }
 
+*/
 
 }

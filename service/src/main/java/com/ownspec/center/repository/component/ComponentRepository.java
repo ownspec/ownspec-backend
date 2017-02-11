@@ -16,14 +16,7 @@ import javax.persistence.Tuple;
  */
 public interface ComponentRepository extends JpaRepository<Component, Long>, QueryDslPredicateExecutor<Component> {
 
-  Component findByTitle(String title);
-
   Component findByType(ComponentType componentType);
-
-  @Query(nativeQuery = true , value = "SELECT C.* FROM COMPONENT C INNER JOIN COMPONENT_TAG CT ON CT.COMPONENT_ID = C.ID INNER JOIN TAG T ON T.ID = CT.TAG_ID WHERE T.LABEL=:label")
-  List<Component> findAllByComponentTagTagLabel(@Param("label") String label);
-
-
 
 
   @Query(nativeQuery = true , value = "SELECT * FROM COMPONENT WHERE ID = :id FOR UPDATE")

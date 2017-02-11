@@ -1,12 +1,14 @@
 package com.ownspec.center.dto;
 
 import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVersionDto;
+import static jodd.util.StringUtil.title;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
+import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.component.RequirementType;
 import org.immutables.value.Value;
@@ -91,15 +93,18 @@ public interface ComponentVersionDto {
   @Nullable
   String getFilename();
 
+  String getVersion();
+
   List<String> getTags();
 
-  static ImmutableComponentVersionDto.Builder newBuilderFromComponent(Component c) {
+  static ImmutableComponentVersionDto.Builder newBuilderFromComponent(ComponentVersion c) {
     return newComponentVersionDto()
         .id(c.getId())
         .componentId(c.getId())
-        .projectId(c.getProject() != null ? c.getProject().getId() : null)
+        .version(c.getVersion())
+        .projectId(c.getComponent().getProject() != null ? c.getComponent().getProject().getId() : null)
         .title(c.getTitle())
-        .type(c.getType())
+        .type(c.getComponent().getType())
         .createdDate(c.getCreatedDate())
         .createdUser(UserDto.fromUser(c.getCreatedUser()))
         .requiredTest(c.isRequireTest())

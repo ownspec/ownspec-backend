@@ -35,6 +35,6 @@ public class ComponentTag extends AbstractAuditable implements Persistable {
   private Tag tag;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "COMPONENT_ID")
-  private Component component;
+  @JoinColumn(name = "COMPONENT_VERSION_ID")
+  private ComponentVersion componentVersion;
 }

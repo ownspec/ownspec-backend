@@ -38,6 +38,9 @@ public class WorkflowStatus extends AbstractAuditable implements Persistable {
   @Column(name = "ID")
   private Long id;
 
+  @Column(name = "WSORDER")
+  private int order;
+
   @ManyToOne
   @JoinColumn(name = "WORKFLOW_INSTANCE_ID")
   private WorkflowInstance workflowInstance;
