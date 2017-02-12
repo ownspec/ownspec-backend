@@ -1,7 +1,6 @@
 package com.ownspec.center.controller.component;
 
 import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.ImmutableWorkflowStatusDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.Status;
@@ -21,6 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,7 +66,6 @@ public class ComponentVersionController {
   private WorkflowService workflowService;
 
 
-
   @GetMapping
   public List<ComponentVersionDto> findAllVersion(@RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
                                                   @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
@@ -80,10 +79,15 @@ public class ComponentVersionController {
 
   @GetMapping("{id}")
   public ComponentVersionDto findOne(@PathVariable("id") Long id, @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
-                                           @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
-                                           @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
+                                     @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+                                     @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
 
-    return componentConverter.toComponentVersionDto(componentVersionRepository.findOne(id), statuses, references, usePoints );
+    return componentConverter.toComponentVersionDto(componentVersionRepository.findOne(id), statuses, references, usePoints);
+  }
+
+  @PatchMapping(value = "/{id}")
+  public ComponentVersionDto update(@PathVariable("id") Long id, @RequestBody ComponentVersionDto componentVersion) {
+    return componentConverter.toComponentVersionDto(componentVersionService.update(componentVersion, id), true, true, true);
   }
 
 
@@ -111,11 +115,8 @@ public class ComponentVersionController {
   }
 
 
-
   @PostMapping("/{id}/workflow-statuses")
   public WorkflowStatusDto updateWorkflowStatus(@PathVariable("id") Long id, @RequestBody Map next) {
-
-
 
     WorkflowStatus workflowStatus = workflowService.updateStatus(id, Status.valueOf(next.get("nextStatus").toString()),
         next.get("reason").toString());

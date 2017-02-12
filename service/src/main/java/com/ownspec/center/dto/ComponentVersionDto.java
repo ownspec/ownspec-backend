@@ -1,12 +1,10 @@
 package com.ownspec.center.dto;
 
 import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVersionDto;
-import static jodd.util.StringUtil.title;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.DistributionLevel;
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
@@ -93,6 +91,7 @@ public interface ComponentVersionDto {
   @Nullable
   String getFilename();
 
+  @Nullable
   String getVersion();
 
   List<String> getTags();
@@ -107,7 +106,9 @@ public interface ComponentVersionDto {
         .type(c.getComponent().getType())
         .createdDate(c.getCreatedDate())
         .createdUser(UserDto.fromUser(c.getCreatedUser()))
-        .requiredTest(c.isRequireTest())
+        .lastModifiedDate(c.getLastModifiedDate())
+        .lastModifiedUser(UserDto.fromUser(c.getLastModifiedUser()))
+        .requiredTest(c.isRequiredTest())
         .distributionLevel(c.getDistributionLevel())
         .coverageStatus(c.getCoverageStatus())
         .requirementType(c.getRequirementType());

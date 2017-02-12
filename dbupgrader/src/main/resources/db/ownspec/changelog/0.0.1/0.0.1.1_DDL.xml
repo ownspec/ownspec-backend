@@ -177,7 +177,7 @@
                 <constraints nullable="false" references="COMPONENT(ID)" foreignKeyName="FK_CMP_VER_CMP_ID"/>
             </column>
             <column name="EDITABLE" type="boolean" defaultValueNumeric="1"/>
-            <column name="REQUIRE_TEST" type="boolean" defaultValueNumeric="0"/>
+            <column name="REQUIRED_TEST" type="boolean" defaultValueNumeric="0"/>
             <column name="ASSIGNED_TO_USER_ID" type="bigint">
                 <constraints nullable="true" references="OSUSER(ID)" foreignKeyName="FK_CMP_ASSIGNED_USER_ID"/>
             </column>

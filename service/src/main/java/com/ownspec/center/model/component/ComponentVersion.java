@@ -61,8 +61,8 @@ public class ComponentVersion extends AbstractAuditable implements Auditable<Use
   @Column(name = "EDITABLE", columnDefinition = "boolean default true")
   protected boolean editable;
 
-  @Column(name = "REQUIRE_TEST", columnDefinition = "boolean default false")
-  protected boolean requireTest;
+  @Column(name = "REQUIRED_TEST", columnDefinition = "boolean default false")
+  protected boolean requiredTest;
 
   @ManyToOne
   @JoinColumn(name = "ASSIGNED_TO_USER_ID")
@@ -91,7 +91,7 @@ public class ComponentVersion extends AbstractAuditable implements Auditable<Use
     this.gitReference = toCopy.gitReference;
     this.component = toCopy.component;
     this.editable = toCopy.editable;
-    this.requireTest = toCopy.requireTest;
+    this.requiredTest = toCopy.requiredTest;
     this.distributionLevel = toCopy.distributionLevel;
     this.requirementType = toCopy.requirementType;
     this.coverageStatus = toCopy.coverageStatus;
