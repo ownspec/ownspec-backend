@@ -131,7 +131,7 @@ public class HtmlContentSaver {
             .type(ComponentType.COMPONENT).build()).getRight();
 
         // Update the component status to draft
-        workflowService.updateStatus(componentVersion.getId() , Status.DRAFT);
+        workflowService.updateStatus(componentVersion.getId() , Status.DRAFT , "draft");
 
         componentContent.componentVersionId = componentVersion.getId();
 

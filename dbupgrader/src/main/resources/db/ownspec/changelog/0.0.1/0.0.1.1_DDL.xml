@@ -50,7 +50,7 @@
             <column name="PHONE" type="VARCHAR2(64)"/>
             <column name="MOBILE" type="VARCHAR2(64)"/>
             <column name="FAX" type="VARCHAR2(64)"/>
-            <column name="SIGNATURE" type="VARCHAR2(255)"/>
+            <column name="SIGNATURE" type="VARCHAR2(256)"/>
 
             <column name="LAST_CONNECTION" type="TIMESTAMP"/>
 
@@ -90,7 +90,7 @@
             <column name="TITLE" type="VARCHAR2(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="DESCRIPTION" type="VARCHAR2(255)"/>
+            <column name="DESCRIPTION" type="VARCHAR2(256)"/>
             <column name="MANAGER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_MANAGER_ID"/>
             </column>
@@ -169,7 +169,7 @@
             <column name="VERSION" type="VARCHAR2(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="FILENAME" type="VARCHAR2(255)"/>
+            <column name="FILENAME" type="VARCHAR2(256)"/>
             <column name="MEDIA_TYPE" type="VARCHAR2(128)"/>
             <column name="GIT_REFERENCE" type="VARCHAR2(128)"/>
             <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
@@ -229,6 +229,7 @@
                 <constraints nullable="false" references="WORKFLOW_INSTANCE(ID)" foreignKeyName="FK_WRKFLW_STS_WRKFLW_INST_ID"/>
             </column>
             <column name="STATUS" type="VARCHAR2(64)"/>
+            <column name="REASON" type="VARCHAR2(256)"/>
             <column name="FIRST_GIT_REFERENCE" type="VARCHAR2(128)"/>
             <column name="LAST_GIT_REFERENCE" type="VARCHAR2(128)"/>
 

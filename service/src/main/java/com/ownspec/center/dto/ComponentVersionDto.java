@@ -100,7 +100,7 @@ public interface ComponentVersionDto {
   static ImmutableComponentVersionDto.Builder newBuilderFromComponent(ComponentVersion c) {
     return newComponentVersionDto()
         .id(c.getId())
-        .componentId(c.getId())
+        .componentId(c.getComponent().getId())
         .version(c.getVersion())
         .projectId(c.getComponent().getProject() != null ? c.getComponent().getProject().getId() : null)
         .title(c.getTitle())

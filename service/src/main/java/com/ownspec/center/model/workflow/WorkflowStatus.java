@@ -49,6 +49,9 @@ public class WorkflowStatus extends AbstractAuditable implements Persistable {
   @Column(name = "STATUS")
   protected Status status;
 
+  @Column(name = "REASON")
+  private String reason;
+
   @Column(name = "FIRST_GIT_REFERENCE")
   private String firstGitReference;
 

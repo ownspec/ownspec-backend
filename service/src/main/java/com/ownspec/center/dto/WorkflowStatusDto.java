@@ -19,9 +19,13 @@ import com.ownspec.center.model.workflow.WorkflowStatus;
 @JsonSerialize(as = ImmutableWorkflowStatusDto.class)
 @JsonDeserialize(as = ImmutableWorkflowStatusDto.class)
 public interface WorkflowStatusDto {
+  @Nullable
   Long getId();
 
   StatusDto getStatus();
+
+  @Nullable
+  String getReason();
 
   @Nullable
   Instant getCreatedDate();
@@ -36,6 +40,7 @@ public interface WorkflowStatusDto {
     ImmutableWorkflowStatusDto.Builder builder = ImmutableWorkflowStatusDto.newWorkflowStatusDto()
         .id(workflowStatus.getId())
         .status(StatusDto.createFromStatus(workflowStatus.getStatus()))
+        .reason(workflowStatus.getReason())
         .createdDate(workflowStatus.getCreatedDate());
 
     if (workflowStatus.getCreatedUser() != null) {

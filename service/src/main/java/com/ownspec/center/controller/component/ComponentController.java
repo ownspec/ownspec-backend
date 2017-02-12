@@ -137,19 +137,19 @@ public class ComponentController {
     componentService.remove(id);
     return ok().build();
   }
-
+*/
   @RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
   public List<Comment> getComments(@PathVariable("id") Long id) {
     return commentService.getComments(id);
   }
 
-  @RequestMapping(value = "/{id}/comments/add", method = RequestMethod.POST)
-  public ComponentDto addComment(@PathVariable("id") Long id, @RequestBody String comment) {
+  @RequestMapping(value = "/{id}/comments", method = RequestMethod.POST)
+  public List<Comment> addComment(@PathVariable("id") Long id, @RequestBody String comment) {
     commentService.addComment(id, comment);
-    return componentConverter.toDto(id, true, true, true, true);
+    return commentService.getComments(id);
   }
 
-
+/*
   @RequestMapping(value = "/{id}/diff", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
   public Resource diff(@PathVariable("id") Long id, @RequestParam(value = "from", required = false) String fromRevision,
                        @RequestParam(value = "to", required = false) String toRevision) {

@@ -46,10 +46,10 @@ public class ReferenceTest extends AbstractTest {
     ComponentVersion component2 = componentService.create(componentDto).getRight();
     ComponentVersion component3 = componentService.create(componentDto).getRight();
     // Update their statuses to DRAFT to allow content update
-    workflowService.updateStatus(component0.getId(), Status.DRAFT);
-    workflowService.updateStatus(component1.getId(), Status.DRAFT);
-    workflowService.updateStatus(component2.getId(), Status.DRAFT);
-    workflowService.updateStatus(component3.getId(), Status.DRAFT);
+    workflowService.updateStatus(component0.getId(), Status.DRAFT , "draft");
+    workflowService.updateStatus(component1.getId(), Status.DRAFT , "draft");
+    workflowService.updateStatus(component2.getId(), Status.DRAFT , "draft");
+    workflowService.updateStatus(component3.getId(), Status.DRAFT , "draft");
 
 
     // Update the content of component0
@@ -94,7 +94,7 @@ public class ReferenceTest extends AbstractTest {
 
 
     // Update component 3 status
-    workflowService.updateStatus(component3.getId(), Status.IN_VALIDATION);
+    workflowService.updateStatus(component3.getId(), Status.IN_VALIDATION , "in validation");
 
 
 

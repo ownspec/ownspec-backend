@@ -32,7 +32,7 @@ public class WorkflowService {
   @Autowired
   private ComponentVersionRepository componentVersionRepository;
 
-  public ComponentVersion updateStatus(Long cvId, Status nextStatus) {
+  public WorkflowStatus updateStatus(Long cvId, Status nextStatus, String reason) {
     // Lock
     ComponentVersion componentVersion = requireNonNull(componentVersionRepository.findOneAndLock(cvId));
 
@@ -49,9 +49,11 @@ public class WorkflowService {
     nextWorkflowStatus.setStatus(nextStatus);
     nextWorkflowStatus.setWorkflowInstance(componentVersion.getWorkflowInstance());
     nextWorkflowStatus.setOrder(currentWorkflowStatus.getOrder() + 1);
+    nextWorkflowStatus.setReason(reason);
     nextWorkflowStatus = workflowStatusRepository.save(nextWorkflowStatus);
 
-    return componentVersion;
+
+    return nextWorkflowStatus;
   }
 
   public Pair<WorkflowInstance, WorkflowStatus> createNew(String hash){

@@ -238,7 +238,7 @@ public class HtmlContentSaverTest {
     // Component 2: update git ref
     verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 2L && "hash2".equals(w.getGitReference())));
     // Component : update workflow to draft
-    verify(workflowService).updateStatus(component2.v1.getId() , Status.DRAFT);
+    verify(workflowService).updateStatus(component2.v1.getId() , Status.DRAFT , "draft");
   }
 
 

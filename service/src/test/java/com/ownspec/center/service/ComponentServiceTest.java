@@ -44,9 +44,9 @@ public class ComponentServiceTest extends AbstractTest {
     ComponentVersion component2 = componentService.create(componentDto).getRight();
     ComponentVersion component3 = componentService.create(componentDto).getRight();
     // Update their statuses to DRAFT to allow content update
-    workflowService.updateStatus(component1.getId() , Status.DRAFT);
-    workflowService.updateStatus(component2.getId() , Status.DRAFT);
-    workflowService.updateStatus(component3.getId() , Status.DRAFT);
+    workflowService.updateStatus(component1.getId() , Status.DRAFT , "draft");
+    workflowService.updateStatus(component2.getId() , Status.DRAFT , "draft");
+    workflowService.updateStatus(component3.getId() , Status.DRAFT , "draft");
 
     // Update component1 content with a reference to component 2
     component1 = componentService.updateContent(component1.getId(), generateReference(component2.getId(), component2.getWorkflowInstance().getId()).getBytes());
@@ -87,7 +87,7 @@ public class ComponentServiceTest extends AbstractTest {
 
     // ********************************************
     // Update the state to DRAFT
-    workflowService.updateStatus(componentVersion.getId() , Status.DRAFT);
+    workflowService.updateStatus(componentVersion.getId() , Status.DRAFT , "draft");
     // Git reference is null
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference());
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getFirstGitReference());
@@ -104,14 +104,14 @@ public class ComponentServiceTest extends AbstractTest {
 
     // ********************************************
     // Change status, no content update
-    componentVersion = workflowService.updateStatus(componentVersion.getId(), Status.OPEN);
+    workflowService.updateStatus(componentVersion.getId(), Status.OPEN , "open");
     // Git reference is null
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference());
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getFirstGitReference());
 
     // *********************************************
     // Change status
-    componentVersion = workflowService.updateStatus(componentVersion.getId(), Status.DRAFT);
+    workflowService.updateStatus(componentVersion.getId(), Status.DRAFT , "draft");
     // Git reference is null
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference());
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getFirstGitReference());
