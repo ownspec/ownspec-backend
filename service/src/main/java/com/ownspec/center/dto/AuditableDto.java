@@ -1,5 +1,7 @@
 package com.ownspec.center.dto;
 
+import com.ownspec.center.dto.user.UserDto;
+
 import java.time.Instant;
 import javax.annotation.Nullable;
 

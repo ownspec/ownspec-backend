@@ -3,7 +3,7 @@ package com.ownspec.center.controller;
 import static com.ownspec.center.dto.StatusDto.createFromStatuses;
 
 import com.google.common.collect.ImmutableMap;
-import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by nlabrot on 29/09/16.
@@ -37,14 +40,14 @@ public class UserController {
 
   @RequestMapping
   @ResponseBody
-  public List<User> findAll() {
-    return userService.findAll();
+  public List<UserDto> findAll() {
+    return userService.findAll().stream().map(UserDto::fromUser).collect(Collectors.toList());
   }
 
   @GetMapping(value = "/me")
   @ResponseBody
-  public User me(@AuthenticationPrincipal User user) {
-    return user;
+  public UserDto me(@AuthenticationPrincipal User user) {
+    return UserDto.fromUser(user);
   }
 
   @GetMapping(value = "/me/profile")
@@ -64,8 +67,9 @@ public class UserController {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping(value = "/new")
   @ResponseBody
-  public ResponseEntity create(@RequestBody UserDto source) {
-    userService.create(source);
+  public ResponseEntity create(@RequestBody UserDto source, HttpServletRequest request) throws Exception {
+    URL requestURL = new URL(request.getRequestURL().toString());
+    userService.create(source, requestURL);
     return ResponseEntity.ok().build();
   }
 

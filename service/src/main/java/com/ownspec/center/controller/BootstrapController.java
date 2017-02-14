@@ -1,18 +1,13 @@
 package com.ownspec.center.controller;
 
-import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.EstimatedTimeDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
-import com.ownspec.center.dto.ImmutableEstimatedTimeDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.component.RequirementType;
-import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.service.component.ComponentService;
@@ -22,10 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by nlabrot on 03/10/16.

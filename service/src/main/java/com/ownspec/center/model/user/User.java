@@ -2,21 +2,24 @@ package com.ownspec.center.model.user;
 
 import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.audit.Auditable;
 import com.ownspec.center.model.persistable.Persistable;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Created by lyrold on 23/08/2016.
@@ -50,16 +53,10 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   private String firstName;
   @Column(name = "LAST_NAME")
   private String lastName;
-  @Column(name = "COMPANY")
-  private String company;
   @Column(name = "PHONE")
   private String phone;
   @Column(name = "MOBILE")
   private String mobile;
-  @Column(name = "FAX")
-  private String fax;
-  @Column(name = "SIGNATURE")
-  private String signature;
 
   @Column(name = "LAST_CONNECTION")
   private Instant lastConnection;
@@ -70,6 +67,10 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   @ManyToOne
   @JoinColumn(name = "CATEGORY_ID")
   private UserCategory category;
+
+  @ManyToOne
+  @JoinColumn(name = "GROUP_ID")
+  private UserGroup group;
 
   @Column(name = "LOGGED_IN")
   private boolean loggedIn;
@@ -84,6 +85,9 @@ public class User extends AbstractAuditable implements UserDetails, Persistable 
   private boolean credentialsNonExpired;
 
   // TODO: what's the purpose of this field?
+  /**
+   * In case of a component where distribution level is "SECRET"
+   */
   @Column(name = "EMPOWERED_SECRET")
   private boolean empoweredSecret;
 

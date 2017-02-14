@@ -7,7 +7,7 @@ import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowSta
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
-import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.component.ComponentVersion;

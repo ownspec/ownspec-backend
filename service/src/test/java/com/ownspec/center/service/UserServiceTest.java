@@ -1,7 +1,7 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.ImmutableUserDto;
+import com.ownspec.center.dto.user.ImmutableUserDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;

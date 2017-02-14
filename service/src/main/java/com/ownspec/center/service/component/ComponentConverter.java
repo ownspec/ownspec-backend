@@ -1,27 +1,20 @@
 package com.ownspec.center.service.component;
 
-import static com.ownspec.center.dto.ComponentDto.newBuilderFromComponent;
 import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
-import static com.ownspec.center.model.component.QComponent.component;
-import static com.ownspec.center.model.workflow.QWorkflowInstance.workflowInstance;
 
 import com.ownspec.center.dto.ChangeDto;
-import com.ownspec.center.dto.CommentDto;
-import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.ComponentReferenceDto;
 import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
-import com.ownspec.center.dto.UserComponentDto;
-import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.user.UserComponentDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
-import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.user.UserComponent;

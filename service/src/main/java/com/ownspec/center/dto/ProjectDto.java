@@ -2,6 +2,7 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.Project;
 import org.immutables.value.Value;
 

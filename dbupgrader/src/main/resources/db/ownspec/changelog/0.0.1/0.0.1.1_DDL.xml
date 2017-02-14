@@ -13,7 +13,6 @@
                 sequenceName="MAIN_SEQUENCE"
                 startValue="1000"/>
 
-
         <!-- ******************************************************************************** -->
         <!-- USER_CATEGORY -->
         <createTable tableName="USER_CATEGORY">
@@ -26,6 +25,17 @@
             <column name="HOURLY_PRICE" type="float8"/>
         </createTable>
 
+
+        <!-- ******************************************************************************** -->
+        <!-- USER_GROUP -->
+        <createTable tableName="USER_GROUP">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
         <!-- ******************************************************************************** -->
         <!-- USER -->
@@ -46,16 +56,17 @@
             <column name="FULL_NAME" type="VARCHAR2(128)"/>
             <column name="FIRST_NAME" type="VARCHAR2(128)"/>
             <column name="LAST_NAME" type="VARCHAR2(128)"/>
-            <column name="COMPANY" type="VARCHAR2(128)"/>
             <column name="PHONE" type="VARCHAR2(64)"/>
             <column name="MOBILE" type="VARCHAR2(64)"/>
-            <column name="FAX" type="VARCHAR2(64)"/>
-            <column name="SIGNATURE" type="VARCHAR2(256)"/>
 
             <column name="LAST_CONNECTION" type="TIMESTAMP"/>
 
             <column name="CATEGORY_ID" type="bigint">
                 <constraints references="USER_CATEGORY(ID)" foreignKeyName="FK_USER_CAT_ID"/>
+            </column>
+
+            <column name="GROUP_ID" type="bigint">
+                <constraints references="USER_GROUP(ID)" foreignKeyName="FK_USER_GROUP_ID"/>
             </column>
 
             <column name="LOGGED_IN" type="boolean" defaultValueNumeric="0"/>
@@ -80,6 +91,54 @@
             </column>
         </createTable>
 
+      <!-- ******************************************************************************** -->
+      <!-- VERIFICATION_TOKEN -->
+      <createTable tableName="VERIFICATION_TOKEN">
+        <column name="ID" type="bigint">
+          <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="TOKEN" type="VARCHAR2(64)">
+          <constraints nullable="false"/>
+        </column>
+        <column name="USER_ID" type="bigint">
+          <constraints references="OSUSER(ID)" foreignKeyName="FK_VERIFICATION_TOKEN_USER_ID"/>
+        </column>
+        <column name="EXPIRY_DATE" type="TIMESTAMP"/>
+      </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPANY -->
+        <createTable tableName="COMPANY">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR2(64)"/>
+            <column name="ADDRESS" type="VARCHAR2(128)"/>
+            <column name="PHONE" type="VARCHAR2(64)"/>
+            <column name="FAX" type="VARCHAR2(64)"/>
+            <column name="CONTACT_EMAIL" type="VARCHAR2(64)"/>
+            <column name="WEBSITE" type="VARCHAR2(64)"/>
+            <column name="REGISTRATION_NUMBER" type="VARCHAR2(64)"/>
+            <column name="HOST" type="boolean" defaultValueNumeric="0"/>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- USER_COMPANY -->
+        <createTable tableName="USER_COMPANY">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name = "COMPANY_ID" type="bigint">
+                <constraints references="COMPANY(ID)" nullable="false" foreignKeyName="FK_OSUSER_COMPANY_COMPANY_ID"/>
+            </column>
+            <column name = "USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" nullable="false" foreignKeyName="FK_OSUSER_COMPANY_USER_ID"/>
+            </column>
+            <column name="IS_LEGAL_REPRESENTATIVE" type="boolean" defaultValueNumeric="1"/>
+        </createTable>
 
         <!-- ******************************************************************************** -->
         <!-- PROJECT -->

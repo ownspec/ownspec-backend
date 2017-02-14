@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 
+import com.ownspec.center.dto.user.UserDto;
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

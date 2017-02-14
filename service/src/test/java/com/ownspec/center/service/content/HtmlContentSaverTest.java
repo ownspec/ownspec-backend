@@ -1,6 +1,5 @@
 package com.ownspec.center.service.content;
 
-import static com.ownspec.center.model.component.QComponentVersion.componentVersion;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.mockito.ArgumentMatchers.any;

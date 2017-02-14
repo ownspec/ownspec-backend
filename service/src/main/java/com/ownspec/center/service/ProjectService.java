@@ -1,7 +1,7 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.dto.ProjectDto;
-import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserProject;
@@ -28,16 +28,16 @@ import java.util.stream.Collectors;
 public class ProjectService {
 
   @Autowired
-  ProjectRepository projectRepository;
+  private ProjectRepository projectRepository;
 
   @Autowired
-  UserProjectRepository userProjectRepository;
+  private UserProjectRepository userProjectRepository;
 
   @Autowired
-  AuthenticationService authenticationService;
+  private AuthenticationService authenticationService;
 
   @Autowired
-  UserService userService;
+  private UserService userService;
 
   public ResponseEntity addVisit(Long id) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();

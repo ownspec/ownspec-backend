@@ -9,7 +9,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
-import com.ownspec.center.dto.UserComponentDto;
+import com.ownspec.center.dto.user.UserComponentDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;

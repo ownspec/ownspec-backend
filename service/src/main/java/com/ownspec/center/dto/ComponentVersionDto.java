@@ -4,6 +4,8 @@ import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVe
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.user.UserComponentDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;

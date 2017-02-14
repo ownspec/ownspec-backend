@@ -1,10 +1,6 @@
 package com.ownspec.center.service.content.generator;
 
-import static com.ownspec.center.model.workflow.QWorkflowInstance.workflowInstance;
-
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentVersion;
-import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.service.FreeMarkerService;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.content.ContentConfiguration;

@@ -38,11 +38,11 @@ public class UserProject extends AbstractAuditable implements Persistable {
   @JoinColumn(name = "PROJECT_ID")
   private Project project;
 
-  @JoinColumn(name = "FAVORITE")
+  @Column(name = "FAVORITE")
   private boolean favorite;
 
   // TODO: to refactor, most visited project make sense on limited time range
-  @JoinColumn(name = "VISITED_TIME")
+  @Column(name = "VISITED_TIME")
   private Long visitedTime;
 
   //todo access mode (RO,RW...etc);

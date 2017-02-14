@@ -40,6 +40,7 @@ public class SecurityConfiguration {
   public FilterChainProxy configure() throws Exception {
     return new FilterChainProxy(asList(
         new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/auth/login")),
+        new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/auth/registrationConfirmation/**")),
         new DefaultSecurityFilterChain(new AntPathRequestMatcher("/**"), jwtFilter())));
   }
 

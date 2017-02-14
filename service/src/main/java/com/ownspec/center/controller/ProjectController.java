@@ -4,7 +4,7 @@ import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 
 import com.ownspec.center.dto.ProjectDto;
-import com.ownspec.center.dto.UserDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.user.UserProject;
 import com.ownspec.center.repository.ProjectRepository;

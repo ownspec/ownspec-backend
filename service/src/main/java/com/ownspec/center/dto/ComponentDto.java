@@ -4,15 +4,12 @@ import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.component.CoverageStatus;
-import com.ownspec.center.model.component.RequirementType;
 import org.immutables.value.Value;
 
 import java.time.Instant;
-import java.util.List;
 import javax.annotation.Nullable;
 
 /**

@@ -3,6 +3,7 @@ package com.ownspec.center.dto;
 import javax.annotation.Nullable;
 import java.time.Instant;
 
+import com.ownspec.center.dto.user.UserDto;
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
