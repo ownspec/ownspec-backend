@@ -128,7 +128,7 @@ public class UserService implements UserDetailsService {
     String verificationUrl = requestUrl.getProtocol() + "://" +
                              requestUrl.getHost() + ":" +
                              requestUrl.getPort() +
-                             "/api/auth/registrationConfirmation?token=" + verificationToken;
+                             "/registrationConfirmation?token=" + verificationToken;
     //todo use standard URI/URL builder;
 
     // Compose email body
