@@ -67,9 +67,12 @@ public class ComponentVersionController {
 
 
   @GetMapping
-  public List<ComponentVersionDto> findAllVersion(@RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
-                                                  @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
-                                                  @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
+  public List<ComponentVersionDto> findAllVersion(
+
+      @RequestParam(value = "types", required = false, defaultValue = "false") List<String> types,
+      @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
+      @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
+      @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
 
     return componentVersionRepository.findAll()
         .stream()
@@ -89,7 +92,6 @@ public class ComponentVersionController {
   public ComponentVersionDto update(@PathVariable("id") Long id, @RequestBody ComponentVersionDto componentVersion) {
     return componentConverter.toComponentVersionDto(componentVersionService.update(componentVersion, id), true, true, true);
   }
-
 
 
   @PostMapping(value = "/{id}/content")

@@ -53,7 +53,7 @@ public interface UserDto {
   UserPreference getUserPreference();
 
   @Nullable
-  UserCategory getCategory();
+  UserCategoryDto getCategory();
 
   @Nullable
   UserGroup getGroup();
@@ -88,7 +88,7 @@ public interface UserDto {
         .mobile(user.getMobile())
         .lastConnection(user.getLastConnection())
         .userPreference(user.getPreference())
-        .category(user.getCategory())
+        .category(UserCategoryDto.fromUserCategory(user.getCategory()))
         .group(user.getGroup())
         .loggedIn(user.isLoggedIn())
         .enabled(user.isEnabled())

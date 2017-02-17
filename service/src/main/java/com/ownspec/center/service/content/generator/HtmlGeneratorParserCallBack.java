@@ -95,7 +95,7 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
         }
         parserContext.getElement().attr("src", nestedComponent.getFilename());
       } else {
-        parserContext.getElement().attr("src", "/api/components/" + nestedComponent.getId() + "/content");
+        parserContext.getElement().attr("src", "/api/component-versions/" + nestedComponent.getId() + "/content");
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
