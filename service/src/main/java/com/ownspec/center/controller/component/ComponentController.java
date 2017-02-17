@@ -99,13 +99,17 @@ public class ComponentController {
     return componentConverter.toDto(c, content, workflow, comments, references);
   }
 
+*/
 
-  @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
     ComponentVersion component = componentService.create(source).getRight();
-    return ok(componentConverter.toDto(component, false, false, false, false));
+    return ok(componentConverter.toComponentVersionDto(component, false, false, false));
   }
 
+
+/*
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity createCv(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
     Component component = componentService.create(source);

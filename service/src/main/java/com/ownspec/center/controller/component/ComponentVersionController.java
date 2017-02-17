@@ -91,6 +91,7 @@ public class ComponentVersionController {
   }
 
 
+
   @PostMapping(value = "/{id}/content")
   public ResponseEntity updateContent(@PathVariable("id") Long id, @RequestBody(required = false) byte[] content,
                                       @RequestParam(value = "uploadId", required = false) String uploadId) throws GitAPIException, UnsupportedEncodingException {
@@ -112,6 +113,12 @@ public class ComponentVersionController {
   public Resource getContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
     ComponentVersion component = componentVersionRepository.findOne(id);
     return componentService.getHeadRawContent(component);
+  }
+
+  @GetMapping(value = "/{id}/resolved-content")
+  public String getResolvedContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
+    ComponentVersion component = componentVersionRepository.findOne(id);
+    return componentService.generateContent(component).getLeft();
   }
 
 

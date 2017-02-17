@@ -12,7 +12,6 @@ import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.user.VerificationTokenRepository;
 import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.util.AbstractMimeMessage;
-import com.sun.javafx.fxml.builder.URLBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
