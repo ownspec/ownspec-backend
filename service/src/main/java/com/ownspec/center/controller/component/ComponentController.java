@@ -176,13 +176,6 @@ public class ComponentController {
   }
 
 
-  @RequestMapping(value = "/{id}/compose", method = RequestMethod.GET)
-  public ResponseEntity<Resource> print(@PathVariable("id") Long id) throws IOException {
-
-    return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_PDF)
-        .header("Content-Disposition", "attachment; filename=\"filename.pdf\"")
-        .body(componentService.composePdf(id));
-  }
 
   @PostMapping("/{id}/addVisit")
   public ResponseEntity addVisit(@PathVariable("id") Long id) {

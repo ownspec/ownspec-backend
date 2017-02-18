@@ -1,6 +1,7 @@
 package com.ownspec.center.repository.component;
 
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,6 +36,8 @@ public interface ComponentVersionRepository extends JpaRepository<ComponentVersi
   ComponentVersion findOneByComponentIdAndId(long id, long componentId);
 
   List<ComponentVersion> findAllByComponentId(Long componentId, Sort sort);
+
+  List<ComponentVersion> findAllByComponentTypeIn(List<ComponentType> componentTypes);
 
 
   @Query(nativeQuery = true, value = "SELECT * FROM COMPONENT_VERSION WHERE ID = :id FOR UPDATE")

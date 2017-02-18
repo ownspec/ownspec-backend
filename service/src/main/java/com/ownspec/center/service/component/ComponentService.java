@@ -434,19 +434,6 @@ public class ComponentService {
   }
 
 
-  public Resource composePdf(Long id) throws IOException {
-
-    ComponentVersion component = componentVersionRepository.findOne(id);
-
-
-    Path tempDirectory = Files.createTempDirectory("foo");
-
-    Path compo = contentConfiguration.compositionHtmlContentGenerator().generate(component, true, tempDirectory);
-
-    return compositionService.flyingHtmlToPdf(compo);
-  }
-
-
   public ResponseEntity addVisit(Long id) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();
     UserComponent foundUserComponent = userComponentRepository.findOneByUserIdAndComponentId(

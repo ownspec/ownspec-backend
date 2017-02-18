@@ -27,10 +27,14 @@ import com.ownspec.center.service.workflow.WorkflowService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -138,4 +142,19 @@ public class ComponentVersionService {
     componentReference.setTarget(componentVersionRepository.findOne(targetComponentVersionId));
     componentReferenceRepository.save(componentReference);
   }
+
+
+
+  public Resource composePdf(Long id) throws IOException {
+
+    ComponentVersion component = componentVersionRepository.findOne(id);
+
+    Path tempDirectory = Files.createTempDirectory("foo");
+
+    Path compo = contentConfiguration.compositionHtmlContentGenerator().generate(component, true, tempDirectory);
+
+    return compositionService.flyingHtmlToPdf(compo);
+  }
+
+
 }
