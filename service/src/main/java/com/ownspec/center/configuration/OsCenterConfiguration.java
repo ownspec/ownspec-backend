@@ -13,6 +13,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.ResourceBundle;
@@ -23,6 +24,7 @@ import java.util.ResourceBundle;
  */
 @Configuration
 @EnableTransactionManagement
+@EnableAsync
 @EnableJpaAuditing(auditorAwareRef = "")
 @EnableJpaRepositories(basePackages = "com.ownspec.center")
 @EntityScan(

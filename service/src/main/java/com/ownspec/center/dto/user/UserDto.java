@@ -3,7 +3,6 @@ package com.ownspec.center.dto.user;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.ownspec.center.model.user.User;
-import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.model.user.UserGroup;
 import com.ownspec.center.model.user.UserPreference;
 import org.immutables.value.Value;
@@ -77,7 +76,7 @@ public interface UserDto {
   Boolean getEmpoweredSecret();
 
   static UserDto fromUser(User user) {
-    return ImmutableUserDto.newUserDto()
+    ImmutableUserDto.Builder builder = ImmutableUserDto.newUserDto()
         .id(user.getId())
         .username(user.getUsername())
         .email(user.getEmail())
@@ -87,16 +86,23 @@ public interface UserDto {
         .phone(user.getPhone())
         .mobile(user.getMobile())
         .lastConnection(user.getLastConnection())
-        .userPreference(user.getPreference())
-        .category(UserCategoryDto.fromUserCategory(user.getCategory()))
-        .group(user.getGroup())
         .loggedIn(user.isLoggedIn())
         .enabled(user.isEnabled())
         .accountNonExpired(user.isAccountNonExpired())
         .accountNonLocked(user.isAccountNonLocked())
         .credentialsNonExpired(user.isCredentialsNonExpired())
-        .empoweredSecret(user.isEmpoweredSecret())
-        .build();
+        .empoweredSecret(user.isEmpoweredSecret());
+
+    if (user.getPreference() != null) {
+      builder.userPreference(user.getPreference());
+    }
+    if (user.getCategory() != null) {
+      builder.category(UserCategoryDto.fromUserCategory(user.getCategory()));
+    }
+    if (user.getGroup() != null) {
+      builder.group(user.getGroup());
+    }
+    return builder.build();
   }
 
 }

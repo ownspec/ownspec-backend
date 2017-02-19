@@ -51,12 +51,12 @@ public class BootstrapConfiguration {
     preference.setTimezone("foo");
 
     User u = new User();
-    u.setUsername("SYSTEM");
+    u.setUsername("system.admin");
     u.setPassword("$2a$06$OhekMKiSRgT/YYNv.57J1uqZJ60z9wefWl135v5MvpirQwjYdAaxe");
     u.setRole("ADMIN");
-    u.setFirstName("SYSTEM");
-    u.setLastName("SYSTEM");
-    u.setFullName("SYSTEM");
+    u.setFirstName("System");
+    u.setLastName("Administrator");
+    u.setFullName(u.getFirstName() + " " + u.getLastName());
     u.setEmail("system.administrator@ownspec.com");
     u.setPhone("333");
     u.setMobile("333");
@@ -64,6 +64,9 @@ public class BootstrapConfiguration {
     u.setGroup(group);
     u.setLastConnection(Instant.now());
     u.setEnabled(true);
+    u.setAccountNonExpired(true);
+    u.setAccountNonLocked(true);
+    u.setCredentialsNonExpired(true);
     u.setPreference(preference);
 
     SecurityContextHolder.getContext().setAuthentication(

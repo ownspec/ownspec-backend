@@ -6,7 +6,7 @@
 </head>
 <body>
 <header>
-    <p>${salutation} ${firstName},</p>
+    <p>Hello ${firstName},</p>
 </header>
 
 <div class="container">${content}</div>

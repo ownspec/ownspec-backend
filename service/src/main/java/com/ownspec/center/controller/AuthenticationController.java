@@ -10,6 +10,7 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,6 +42,8 @@ public class AuthenticationController {
 
   @Autowired
   private UserService userService;
+  @Autowired
+  private PasswordEncoder encoder;
 
   @PostMapping("/login")
   @ResponseBody
@@ -48,6 +51,7 @@ public class AuthenticationController {
     LOG.info("Request login with username [{}]", source.getUsername());
     try {
       String token = authenticationService.getLoginToken(source);
+      LOG.info("Built token [{}]");
       User user = userService.loadUserByUsername(source.getUsername());
       if (user.isLoggedIn()) {
         LOG.warn("User [{}] already logged in.", user.getUsername());
@@ -85,7 +89,7 @@ public class AuthenticationController {
   }
 
   @GetMapping("/registrationConfirmation/{token}")
-  public ResponseEntity confirmRegistration(@RequestParam("token") String token, HttpServletResponse response) {
+  public ResponseEntity confirmRegistration(@RequestParam("token") String token, @RequestBody String password, HttpServletResponse response) {
 
     VerificationToken verificationToken = authenticationService.getVerificationToken(token);
     if (verificationToken == null) {
@@ -95,8 +99,11 @@ public class AuthenticationController {
     //todo check token's expiry date
 
     User user = verificationToken.getUser();
+    user.setPassword(encoder.encode(password));
     user.setEnabled(true);
     user.setAccountNonLocked(true);
+    user.setAccountNonExpired(true);
+    user.setCredentialsNonExpired(true);
     userService.update(user);
     return ResponseEntity.ok("Registration successfully completed");
   }

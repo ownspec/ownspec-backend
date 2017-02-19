@@ -3,13 +3,13 @@ package com.ownspec.center.util;
 import lombok.Data;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nonnull;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 /**
  * Created by lyrold on 09/10/2016.
@@ -83,5 +83,15 @@ public class AbstractMimeMessage {
   public AbstractMimeMessage addRecipientsBcc(List<String> recipientsBcc) {
     this.recipientsBcc.addAll(recipientsBcc);
     return this;
+  }
+
+  public String toString() {
+    return String.join(", ",
+        "From: " + from,
+        "Subject: " + subject,
+        "Recipients: " + recipients.toString(),
+        "RecipientsCc: " + recipientsCc.toString(),
+        "RecipientsBcc: " + recipientsBcc.toString()
+    );
   }
 }

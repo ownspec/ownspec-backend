@@ -35,6 +35,7 @@ public class AuthenticationService {
   private VerificationTokenRepository verificationTokenRepository;
 
   public String getLoginToken(UserDto user) {
+    LOG.info("Start building Jwt for user [{}]", user.getUsername());
     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
     Authentication authentication = authenticationManager.authenticate(token);
     User target = (User) authentication.getPrincipal();

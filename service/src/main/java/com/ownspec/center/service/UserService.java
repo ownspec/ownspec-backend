@@ -20,10 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.net.InetAddress;
-import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -60,38 +57,43 @@ public class UserService implements UserDetailsService {
     return foundUser;
   }
 
+
   public void create(UserDto source, URL requestUrl) throws Exception {
     String username = source.getUsername();
+    LOG.info("Start create new user with username [{}]", username);
     if (null != userRepository.findByUsername(username)) {
       throw new UserAlreadyExistsException(username);
     }
 
     User user = new User();
     user.setUsername(source.getUsername());
-    user.setPassword(encoder.encode(source.getPassword()));
     user.setFirstName(source.getFirstName());
+    user.setFullName(user.getFirstName() + " " + user.getLastName());
     user.setLastName(source.getLastName());
     user.setEmail(source.getEmail());
     user.setRole(source.getRole());
     user.setEnabled(false);
     user.setAccountNonLocked(false);
 
-    String verificationToken = buildAndSaveVerificationToken(user);
+    LOG.info("Build verification token");
+    VerificationToken verificationToken = buildVerificationToken(user);
 
-    AbstractMimeMessage message = buildConfirmRegistrationMessage(user, verificationToken, requestUrl);
+    LOG.info("Send user the registration confirmation with token [{}]", verificationToken.getToken());
+    AbstractMimeMessage message = buildConfirmRegistrationMessage(user, verificationToken.getToken(), requestUrl);
     emailService.send(message);
 
+    LOG.info("Save user and token to repositories");
     userRepository.save(user);
+    verificationTokenRepository.save(verificationToken);
   }
 
-  private String buildAndSaveVerificationToken(User user) {
+  private VerificationToken buildVerificationToken(User user) {
     VerificationToken verificationToken = new VerificationToken();
     verificationToken.setUser(user);
     verificationToken.setToken(UUID.randomUUID().toString());
     verificationToken.setExpiryDate(DateUtils.addDays(new Date(), 5));
 
-    verificationTokenRepository.save(verificationToken);
-    return verificationToken.getToken();
+    return verificationToken;
   }
 
   public User update(UserDto source, Long id) {
@@ -123,29 +125,28 @@ public class UserService implements UserDetailsService {
   }
 
   private AbstractMimeMessage buildConfirmRegistrationMessage(User user, String verificationToken, URL requestUrl) {
-
     // Build verification url
     String verificationUrl = requestUrl.getProtocol() + "://" +
                              requestUrl.getHost() + ":" +
                              requestUrl.getPort() +
-                             "/registrationConfirmation?token=" + verificationToken;
+                             "/registrationConfirmation/" + verificationToken;
     //todo use standard URI/URL builder;
 
     // Compose email body
+    LOG.info("Compose email body");
     String content = compositionService.compose(
-        "templates/email/confirm_registration_content.ftl",
+        "email/confirm_registration_content",
         ImmutableMap.of("verificationUrl", verificationUrl));
 
     String emailBody = compositionService.compose(
-        "templates/email/abstract_notification.ftl",
+        "email/abstract_notification",
         ImmutableMap.of(
             "firstName", user.getFirstName(),
             "content", content
         ));
-
     return AbstractMimeMessage.builder()
         .addRecipient(user.getEmail())
-        .subject("Account registration") //todo to be internationalized
+        .subject("Ownspec - Account registration") //todo to be internationalized
         .body(emailBody);
   }
 

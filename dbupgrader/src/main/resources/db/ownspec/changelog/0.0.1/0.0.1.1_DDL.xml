@@ -49,10 +49,10 @@
             <column name="EMAIL" type="VARCHAR2(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="PASSWORD" type="VARCHAR2(128)">
+            <column name="PASSWORD" type="VARCHAR2(128)"/>
+            <column name="ROLE" type="VARCHAR2(64)">
                 <constraints nullable="false"/>
             </column>
-            <column name="ROLE" type="VARCHAR2(64)"/>
             <column name="FULL_NAME" type="VARCHAR2(128)"/>
             <column name="FIRST_NAME" type="VARCHAR2(128)"/>
             <column name="LAST_NAME" type="VARCHAR2(128)"/>

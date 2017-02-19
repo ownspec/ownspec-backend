@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 
 /**
  * Created by lyrold on 09/10/2016.
@@ -49,14 +50,18 @@ public class CompositionService {
   @Autowired
   private FreeMarkerService freeMarkerService;
 
+  @PostConstruct
+  public void init(){
+    File outputDir = new File(outputDirectory);
+    if(!outputDir.exists()){
+      outputDir.mkdirs();
+    }
+  }
 
   public String compose(String templateName, Map model) {
     try {
       File outputFile = File.createTempFile("tmp-", ".html", new File(outputDirectory));
-      File composedFile = compose(
-          templateName,
-          model,
-          outputFile.getAbsolutePath());
+      File composedFile = compose(templateName, model, outputFile.getAbsolutePath());
       return FileUtils.readFileToString(composedFile, CharEncoding.UTF_8);
     } catch (IOException e) {
       throw new CompositionException(e);
