@@ -14,6 +14,7 @@ import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.component.ComponentTagService;
 import com.ownspec.center.service.component.ComponentVersionService;
 import com.ownspec.center.service.workflow.WorkflowService;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -146,5 +147,20 @@ public class ComponentVersionController {
         .body(componentVersionService.composePdf(id));
   }
 
+
+  @PostMapping("{sourceId}/references/{refId}/{targetId}")
+  public void updateReference(@PathVariable("sourceId") Long sourceComponentVersionId, @PathVariable("refId") Long refId,
+                              @PathVariable("targetId") String targetComponentVersionId) {
+
+
+
+
+    if (NumberUtils.isNumber(targetComponentVersionId)) {
+      componentVersionService.updateTargetReference(sourceComponentVersionId, refId, NumberUtils.toLong(targetComponentVersionId));
+    } else  {
+      componentVersionService.updateToLatestTargetReference(sourceComponentVersionId, refId);
+
+    }
+  }
 
 }

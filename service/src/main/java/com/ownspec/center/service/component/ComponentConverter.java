@@ -136,7 +136,7 @@ public class ComponentConverter {
 
     builder.workflowInstance(convert(cv, cv.getWorkflowInstance(), statuses));
 
-    builder.tags(componentTagRepository.findAllByComponentVersionId(c.getId()).stream()
+    builder.tags(componentTagRepository.findAllByComponentVersionId(cv.getId()).stream()
         .map(ct -> ct.getTag().getLabel())
         .collect(Collectors.toList()));
 

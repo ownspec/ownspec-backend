@@ -135,7 +135,7 @@ public class ComponentVersionService {
     componentReferenceRepository.save(componentReference);
   }
 
-  public void updateTargetReference(Long sourceComponentVersionId, Long refId, long targetComponentVersionId) {
+  public void updateTargetReference(long sourceComponentVersionId, long refId, long targetComponentVersionId) {
     ComponentReference componentReference = componentReferenceRepository.findOne(refId);
     // Validate reference
     Validate.isTrue(componentReference.getSource().getId() == sourceComponentVersionId);
