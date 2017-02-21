@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -88,8 +89,9 @@ public class AuthenticationController {
     response.addCookie(cookie);
   }
 
-  @GetMapping("/registrationConfirmation/{token}")
-  public ResponseEntity confirmRegistration(@RequestParam("token") String token, @RequestBody String password, HttpServletResponse response) {
+  @PostMapping("/registrationConfirmation/{token}")
+  @ResponseBody
+  public ResponseEntity confirmRegistration(@PathVariable("token") String token, @RequestBody String password, HttpServletResponse response) {
 
     VerificationToken verificationToken = authenticationService.getVerificationToken(token);
     if (verificationToken == null) {
