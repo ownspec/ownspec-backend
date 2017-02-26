@@ -109,6 +109,7 @@ public class UserService implements UserDetailsService {
   }
 
   public void delete(Long id) {
+    // todo Remove only if user has contributed content as "comment", "component modification" etc...
     userRepository.delete(id);
   }
 

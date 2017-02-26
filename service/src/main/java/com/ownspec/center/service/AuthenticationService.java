@@ -55,4 +55,7 @@ public class AuthenticationService {
     return verificationTokenRepository.findOneByToken(token);
   }
 
+  public void deleteVerificationToken(VerificationToken verificationToken){
+    verificationTokenRepository.delete(verificationToken);
+  }
 }

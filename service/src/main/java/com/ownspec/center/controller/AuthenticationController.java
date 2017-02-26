@@ -55,6 +55,9 @@ public class AuthenticationController {
     try {
       String token = authenticationService.getLoginToken(source);
       LOG.info("Authentication succeed; built token is [{}]", token);
+      User user = authenticationService.getAuthenticatedUser();
+      user.setLastConnection(Instant.now());
+      userService.update(user);
 
       Cookie newCookie = new Cookie(cookieName, token);
       newCookie.setMaxAge(cookieMaxAge);
@@ -71,9 +74,6 @@ public class AuthenticationController {
   @PostMapping("/logout")
   public void logout(HttpServletResponse response) {
     User user = authenticationService.getAuthenticatedUser();
-    user.setLastConnection(Instant.now());
-    userService.update(user);
-
     LOG.info("Request logout for user with username [{}]", user.getUsername());
     Cookie cookie = new Cookie(cookieName, "");
     cookie.setPath("/");
@@ -85,6 +85,7 @@ public class AuthenticationController {
   @ResponseBody
   public ResponseEntity confirmRegistration(@PathVariable("token") String token, @RequestBody String password, HttpServletResponse response) {
 
+    // Check token
     VerificationToken verificationToken = authenticationService.getVerificationToken(token);
     if (verificationToken == null) {
       response.setStatus(HttpStatus.SC_NOT_FOUND);
@@ -92,15 +93,19 @@ public class AuthenticationController {
     }
     //todo check token's expiry date
 
+    // Update user
     User user = verificationToken.getUser();
     user.setPassword(encoder.encode(password));
     user.setEnabled(true);
     user.setAccountNonLocked(true);
     user.setAccountNonExpired(true);
     user.setCredentialsNonExpired(true);
-
     SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, user.getPassword()));
     userService.update(user);
+
+    // Remove token
+    authenticationService.deleteVerificationToken(verificationToken);
+
     return ResponseEntity.ok("Registration successfully completed");
   }
 
