@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
  */
 @Configuration
 @EnableTransactionManagement
-@EnableAsync
+@EnableAsync (proxyTargetClass=true)
 @EnableJpaAuditing(auditorAwareRef = "")
 @EnableJpaRepositories(basePackages = "com.ownspec.center")
 @EntityScan(

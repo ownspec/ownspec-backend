@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
 import java.util.Date;
@@ -30,6 +31,7 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@Transactional
 public class UserService implements UserDetailsService {
 
   @Autowired
@@ -130,8 +132,6 @@ public class UserService implements UserDetailsService {
                              requestUrl.getHost() + ":" +
                              requestUrl.getPort() +
                              "/registrationConfirmation/" + verificationToken;
-    //todo use standard URI/URL builder;
-
     // Compose email body
     LOG.info("Compose email body");
     String content = compositionService.compose(

@@ -38,6 +38,7 @@ public class AuthenticationService {
     LOG.info("Start building Jwt for user [{}]", user.getUsername());
     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
     Authentication authentication = authenticationManager.authenticate(token);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
     User target = (User) authentication.getPrincipal();
     return Jwts.builder()
         .setSubject(user.getUsername())
