@@ -42,6 +42,8 @@ public interface ProjectDto {
   @Nullable
   UserDto getManager();
 
+  String getKey();
+
   @Nullable
   List<UserDto> getProjectUsers();
 
@@ -50,6 +52,7 @@ public interface ProjectDto {
     ImmutableProjectDto.Builder builder = ImmutableProjectDto.newProjectDto()
         .id(project.getId())
         .title(project.getTitle())
+        .key(project.getComponentCodeCounter().getKey())
         .description(project.getDescription())
         .createdDate(project.getCreatedDate())
         .lastModifiedDate(project.getLastModifiedDate())

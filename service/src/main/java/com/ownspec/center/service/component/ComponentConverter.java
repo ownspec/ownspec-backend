@@ -140,6 +140,7 @@ public class ComponentConverter {
         .map(ct -> ct.getTag().getLabel())
         .collect(Collectors.toList()));
 
+    builder.code(c.getCode());
 
     if (references) {
       builder.componentReferences(getComponentReferences(cv));
@@ -148,7 +149,7 @@ public class ComponentConverter {
     builder.coverageStatus(cv.getCoverageStatus());
 
 
-    if (usePoints){
+    if (references || usePoints){
       List<ComponentReference> list = componentReferenceRepository.findAllByTargetId(cv.getId());
       builder.componentUsePoints(convertReferences(list));
     }

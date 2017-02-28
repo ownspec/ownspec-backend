@@ -3,8 +3,10 @@ package com.ownspec.center.service;
 import com.ownspec.center.dto.ProjectDto;
 import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.Project;
+import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserProject;
+import com.ownspec.center.repository.ComponentCodeCounterRepository;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.user.UserProjectRepository;
 import com.ownspec.center.util.OsUtils;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +40,43 @@ public class ProjectService {
   private AuthenticationService authenticationService;
 
   @Autowired
+  private ComponentCodeCounterRepository componentCodeCounterRepository;
+
+
+  @Autowired
   private UserService userService;
+
+  public Project createProject(@RequestBody ProjectDto projectDto){
+
+    ComponentCodeCounter ccc = new ComponentCodeCounter();
+    ccc.setKey(projectDto.getKey());
+    ccc = componentCodeCounterRepository.save(ccc);
+
+
+    Project project = new Project();
+    project.setTitle(projectDto.getTitle());
+    project.setDescription(projectDto.getDescription());
+    project.setComponentCodeCounter(ccc);
+
+    if (projectDto.getManager() != null) {
+      project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
+    }
+    project = projectRepository.save(project);
+
+
+
+    List<UserDto> projectUsers = projectDto.getProjectUsers();
+    if (projectUsers != null) {
+      for (UserDto user: projectUsers) {
+        UserProject userProject = new UserProject();
+        userProject.setUser(userService.loadUserByUsername(user.getUsername()));
+        userProject.setProject(project);
+
+        userProjectRepository.save(userProject);
+      }
+    }
+    return project;
+  }
 
   public ResponseEntity addVisit(Long id) {
     User authenticatedUser = authenticationService.getAuthenticatedUser();

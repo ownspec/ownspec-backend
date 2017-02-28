@@ -1,9 +1,9 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.component;
 
+import com.ownspec.center.model.MainSequenceConstants;
+import com.ownspec.center.model.Project;
 import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.persistable.Persistable;
-import com.ownspec.center.model.user.User;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -17,29 +17,29 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
- * Created by lyrold on 23/08/2016.
+ * Created by nlabrot on 26/02/17.
  */
 @Data
 @Entity
-@Table(name = "PROJECT")
-public class Project extends AbstractAuditable implements Persistable {
+@Table(name = "COMPONENT_CODE_COUNTER")
+public class ComponentCodeCounter  extends AbstractAuditable implements Persistable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
   @Column(name = "ID")
   private Long id;
 
-  @Column(name = "TITLE")
-  private String title;
+  @Column(name = "COMPONENT_KEY")
+  private String key;
 
-  @OneToOne
-  @JoinColumn(name = "COMPONENT_CODE_COUNTER_ID")
-  private ComponentCodeCounter componentCodeCounter;
+  @Column(name = "COUNTER")
+  private long counter;
 
-  @Column(name = "DESCRIPTION")
-  private String description;
+  @Column(name = "GENERIC")
+  private boolean generic;
 
-  @ManyToOne
-  @JoinColumn(name = "MANAGER_ID")
-  protected User manager;
+  public long incrementAndGet(){
+    return ++counter;
+
+  }
 }

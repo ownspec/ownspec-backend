@@ -28,7 +28,7 @@ public interface ComponentVersionRepository extends JpaRepository<ComponentVersi
   @Query(nativeQuery = true, value =
       "SELECT CV.* FROM COMPONENT_VERSION CV " +
           "WHERE CV.COMPONENT_ID=:componentId " +
-          "ORDER BY CREATED_DATE DESC" +
+          "ORDER BY CREATED_DATE DESC " +
           "LIMIT 1")
   ComponentVersion findLatestByComponentId(@Param("componentId") Long componentId);
 

@@ -127,7 +127,7 @@ public class ComponentVersionService {
   }
 
 
-  public void updateToLatestTargetReference(Long sourceComponentVersionId, Long refId) {
+  public void updateToLatestTargetReference(long sourceComponentVersionId, long refId) {
     ComponentReference componentReference = componentReferenceRepository.findOne(refId);
     // Validate reference
     Validate.isTrue(componentReference.getSource().getId() == sourceComponentVersionId);

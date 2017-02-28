@@ -140,6 +140,29 @@
             <column name="IS_LEGAL_REPRESENTATIVE" type="boolean" defaultValueNumeric="1"/>
         </createTable>
 
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPONENT_CODE_COUNTER -->
+        <createTable tableName="COMPONENT_CODE_COUNTER">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="COMPONENT_KEY" type="VARCHAR2(32)">
+                <constraints unique="true"/>
+            </column>
+            <column name="GENERIC" type="boolean" defaultValueNumeric="0"/>
+            <column name="COUNTER" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_COMMENT_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_COMMENT_MOD_USR_ID"/>
+            </column>
+        </createTable>
+
+
         <!-- ******************************************************************************** -->
         <!-- PROJECT -->
         <createTable tableName="PROJECT">
@@ -149,11 +172,13 @@
             <column name="TITLE" type="VARCHAR2(128)">
                 <constraints nullable="false"/>
             </column>
+            <column name="COMPONENT_CODE_COUNTER_ID" type="bigint">
+                <constraints nullable="false" unique="true" references="COMPONENT_CODE_COUNTER(ID)" foreignKeyName="FK_PROJECT_CCC_ID"/>
+            </column>
             <column name="DESCRIPTION" type="VARCHAR2(256)"/>
             <column name="MANAGER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_MANAGER_ID"/>
             </column>
-
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_PROJECT_CR_USR_ID"/>
@@ -197,6 +222,7 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="CODE" type="VARCHAR2(64)"/>
             <column name="PROJECT_ID" type="bigint">
                 <constraints nullable="true" references="PROJECT(ID)" foreignKeyName="FK_CMP_PROJECT_ID"/>
             </column>
@@ -213,8 +239,7 @@
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_MOD_USR_ID"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="COMPONENT" columnNames="ID,PROJECT_ID"/>
-
+        <addUniqueConstraint tableName="COMPONENT" columnNames="CODE,PROJECT_ID"/>
 
         <!-- ******************************************************************************** -->
         <!-- COMPONENT_VERSION -->
@@ -447,6 +472,7 @@
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_EST_TIME_MOD_USR_ID"/>
             </column>
         </createTable>
+
 
 
     </changeSet>

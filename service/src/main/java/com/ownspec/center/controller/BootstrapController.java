@@ -5,9 +5,11 @@ import com.ownspec.center.dto.ImmutableComponentVersionDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
 import com.ownspec.center.model.component.RequirementType;
+import com.ownspec.center.repository.ComponentCodeCounterRepository;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.service.component.ComponentService;
@@ -34,6 +36,8 @@ public class BootstrapController {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private ComponentCodeCounterRepository componentCodeCounterRepository;
 
   @RequestMapping
   @Transactional
@@ -47,9 +51,15 @@ public class BootstrapController {
     Project project = null;
 
     if (projectName != null) {
+      ComponentCodeCounter ccc = new ComponentCodeCounter();
+      ccc.setKey(projectName.toUpperCase());
+      ccc = componentCodeCounterRepository.save(ccc);
+
+
       project = new Project();
       project.setTitle(projectName);
       project.setManager(userRepository.findAll().get(0));
+      project.setComponentCodeCounter(ccc);
       project = projectRepository.save(project);
       projectId = project.getId();
     }

@@ -132,9 +132,14 @@ public class ComponentVersionController {
   @PostMapping("/{id}/workflow-statuses")
   public WorkflowStatusDto updateWorkflowStatus(@PathVariable("id") Long id, @RequestBody Map next) {
 
-    WorkflowStatus workflowStatus = workflowService.updateStatus(id, Status.valueOf(next.get("nextStatus").toString()),
-        next.get("reason").toString());
-    return WorkflowStatusDto.newBuilderFromWorkflowStatus(workflowStatus).build();
+    if (!"new".equals(next.get("nextStatus").toString())){
+      WorkflowStatus workflowStatus = workflowService.updateStatus(id, Status.valueOf(next.get("nextStatus").toString()),
+          next.get("reason").toString());
+      return WorkflowStatusDto.newBuilderFromWorkflowStatus(workflowStatus).build();
+    }else{
+      return WorkflowStatusDto.newBuilderFromWorkflowStatus(componentService.newWorkflowInstance(id).v3).build();
+    }
+
   }
 
 

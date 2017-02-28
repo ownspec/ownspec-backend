@@ -55,26 +55,8 @@ public class ProjectController {
 
   @PostMapping
   public ResponseEntity create(@RequestBody ProjectDto projectDto) {
-    Project project = new Project();
-    project.setTitle(projectDto.getTitle());
-    project.setDescription(projectDto.getDescription());
-
-    if (projectDto.getManager() != null) {
-      project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
-    }
-    projectRepository.save(project);
-
-    List<UserDto> projectUsers = projectDto.getProjectUsers();
-    if (projectUsers != null) {
-      for (UserDto user: projectUsers) {
-        UserProject userProject = new UserProject();
-        userProject.setUser(userService.loadUserByUsername(user.getUsername()));
-        userProject.setProject(project);
-
-        userProjectRepository.save(userProject);
-      }
-    }
-
+    projectService.createProject(projectDto);
+    // TODO: return created with a valid URI
     return ResponseEntity.ok("Project successfully created");
   }
 
@@ -84,7 +66,7 @@ public class ProjectController {
     return projectService.update(id, source);
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+  @DeleteMapping(value = "/{id}")
   @ResponseBody
   public ResponseEntity delete(@PathVariable("id") Long id) {
     Project project = projectRepository.findOne(id);

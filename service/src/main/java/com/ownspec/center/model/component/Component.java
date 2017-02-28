@@ -35,6 +35,9 @@ public class Component extends AbstractAuditable implements Auditable<User>, Per
   @Column(name = "ID")
   protected Long id;
 
+  @JoinColumn(name = "CODE")
+  protected String code;
+
   // Project which owns this component, if any
   @ManyToOne
   @JoinColumn(name = "PROJECT_ID")

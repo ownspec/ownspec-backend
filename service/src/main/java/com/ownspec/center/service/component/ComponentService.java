@@ -13,6 +13,7 @@ import com.ownspec.center.dto.user.UserComponentDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
@@ -20,6 +21,7 @@ import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
+import com.ownspec.center.repository.ComponentCodeCounterRepository;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentRepository;
@@ -41,6 +43,8 @@ import com.ownspec.center.util.AbstractMimeMessage;
 import com.ownspec.center.util.OsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.lambda.tuple.Tuple;
+import org.jooq.lambda.tuple.Tuple3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -49,8 +53,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -121,6 +123,10 @@ public class ComponentService {
   @Autowired
   private WorkflowService workflowService;
 
+  @Autowired
+  private ComponentCodeCounterRepository componentCodeCounterRepository;
+
+
 
   public List<Component> findAll(Long projectId, ComponentType[] types, String[] tags, String query) {
     return null;
@@ -171,17 +177,23 @@ public class ComponentService {
     }
 
     Project project = null;
+    ComponentCodeCounter ccc = null;
 
     if (source.getProjectId() != null) {
       project = projectRepository.findOne(source.getProjectId());
+      ccc = componentCodeCounterRepository.findOneAndLockById(project.getComponentCodeCounter().getId());
+    }else{
+      ccc = componentCodeCounterRepository.findGenericAndLock();
     }
-
 
     // Component
     Component component = new Component();
     component.setProject(project);
     component.setType(source.getType());
     component.setVcsId(UUID.randomUUID().toString());
+    component.setCode(ccc.getKey() + "-" + ccc.incrementAndGet());
+
+    ccc = componentCodeCounterRepository.save(ccc);
 
 
     // Update
@@ -250,7 +262,7 @@ public class ComponentService {
   }
 
 
-  public ComponentVersion newWorkflowInstance(Long id) {
+  public Tuple3<ComponentVersion, WorkflowInstance,WorkflowStatus> newWorkflowInstance(Long id) {
     // Lock
     ComponentVersion componentVersion = requireNonNull(componentVersionRepository.findOneAndLock(id));
 
@@ -272,11 +284,18 @@ public class ComponentService {
     nextComponentVersion.setVersion(String.valueOf(Long.valueOf(componentVersion.getVersion()) + 1));
     nextComponentVersion.setWorkflowInstance(workflowStatusPair.getLeft());
 
-    // TODO: clone the link
+    nextComponentVersion = componentVersionRepository.save(nextComponentVersion);
 
-    componentVersion = componentVersionRepository.save(componentVersion);
+    // Clone the link
 
-    return componentVersion;
+    for (ComponentReference r : componentReferenceRepository.findAllBySourceId(id)) {
+      ComponentReference componentReference = new ComponentReference();
+      componentReference.setSource(nextComponentVersion);
+      componentReference.setTarget(r.getTarget());
+      componentReferenceRepository.save(componentReference);
+    }
+
+    return Tuple.tuple(componentVersion , workflowStatusPair.getLeft(), workflowStatusPair.getRight());
   }
 
   public ComponentVersion updateContent(Long id, byte[] b) {

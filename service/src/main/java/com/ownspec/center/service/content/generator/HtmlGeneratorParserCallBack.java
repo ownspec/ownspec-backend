@@ -65,7 +65,7 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
 
     // Create title tag
     if (!forComposition) {
-      parserContext.getElement().appendChild(parserContext.getElement().ownerDocument().createElement("div").addClass("requirements-id").text(nestedComponent.getId().toString()));
+      parserContext.getElement().appendChild(parserContext.getElement().ownerDocument().createElement("div").addClass("requirements-id").text(nestedComponent.getComponent().getCode()));
     }
 
     //Create content tag

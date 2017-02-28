@@ -35,6 +35,9 @@ public interface ComponentVersionDto {
   @Nullable
   Long getProjectId();
 
+  @Nullable
+  String getCode();
+
   String getTitle();
 
   ComponentType getType();
