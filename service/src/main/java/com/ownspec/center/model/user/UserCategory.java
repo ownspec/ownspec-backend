@@ -4,7 +4,6 @@ import com.ownspec.center.model.MainSequenceConstants;
 import lombok.Data;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,6 +24,7 @@ public class UserCategory {
 
   @Column(name = "NAME")
   private String name;
+
   @Column(name = "HOURLY_PRICE")
   private Double hourlyPrice;
 

@@ -93,6 +93,11 @@ public class ComponentVersionController {
     return componentConverter.toComponentVersionDto(componentVersionRepository.findOne(id), statuses, references, usePoints);
   }
 
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  public ComponentVersionDto create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
+    return componentConverter.toComponentVersionDto(componentService.create(source).getRight(), false, false, false);
+  }
+
   @PatchMapping(value = "/{id}")
   public ComponentVersionDto update(@PathVariable("id") Long id, @RequestBody ComponentVersionDto componentVersion) {
     return componentConverter.toComponentVersionDto(componentVersionService.update(componentVersion, id), true, true, true);

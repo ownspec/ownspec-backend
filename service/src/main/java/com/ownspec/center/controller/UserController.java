@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Created by nlabrot on 29/09/16.
  */
-// TODO: use DTO instead of JPA entities
 @RestController
 @RequestMapping(value = "/api/users")
 @Slf4j

@@ -4,7 +4,6 @@ import static com.ownspec.center.dto.user.ImmutableUserCategoryDto.newUserCatego
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserCategory;
 import org.immutables.value.Value;
 

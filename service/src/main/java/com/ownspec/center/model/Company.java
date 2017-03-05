@@ -33,4 +33,6 @@ public class Company {
   @Column(name = "WEBSITE") private String website;
   @Column(name = "REGISTRATION_NUMBER") private String registrationNumber;
   @Column(name = "HOST") private boolean host;
+
+  //todo add company's billing currency
 }

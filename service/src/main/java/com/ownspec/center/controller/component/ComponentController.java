@@ -101,12 +101,13 @@ public class ComponentController {
 
 */
 
+/*
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  public ResponseEntity create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
-    ComponentVersion component = componentService.create(source).getRight();
-    return ok(componentConverter.toComponentVersionDto(component, false, false, false));
+  public ComponentVersionDto create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
+    return componentConverter.toComponentVersionDto(componentService.create(source).getRight(), false, false, false);
   }
+*/
 
 
 /*
