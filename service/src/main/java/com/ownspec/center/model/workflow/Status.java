@@ -9,7 +9,7 @@ import java.util.List;
  * Created by lyrold on 18/09/2016.
  */
 public enum Status {
-  OPEN(false, false),
+  OPEN(true, false),
   DRAFT(true, false),
   IN_VALIDATION(false, false),
   VALIDATED(false, false),

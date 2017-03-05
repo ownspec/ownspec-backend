@@ -1,13 +1,10 @@
 package com.ownspec.center.service;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.jdom2.filter.Filters.text;
 
 import com.ownspec.center.AbstractTest;
 import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
@@ -58,7 +55,7 @@ public class ReferenceTest extends AbstractTest {
         "$COMPID2$", component2.getId().toString(),
         "$COMPID3$", component3.getId().toString());
 
-    componentService.updateContent(component0, new ByteArrayResource(content.getBytes(UTF_8)));
+    componentVersionService.updateContent(component0, new ByteArrayResource(content.getBytes(UTF_8)));
 
     // Check that references have been created between the 4 components
     List<ComponentReference> component0References = componentReferenceRepository.findAllBySourceId(component0.getId());
@@ -104,7 +101,7 @@ public class ReferenceTest extends AbstractTest {
         .replace("$COMPID2$", component2.getId().toString())
         .replace("$COMPID3$", component3.getId().toString());
 
-    componentService.updateContent(component2, content.getBytes(UTF_8));
+    componentVersionService.updateContent(component2, content.getBytes(UTF_8));
 
 
     component0 = componentVersionRepository.findOne(component0.getId());

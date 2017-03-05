@@ -12,6 +12,7 @@ import com.ownspec.center.repository.user.UserRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.service.component.ComponentVersionService;
 import com.ownspec.center.service.workflow.WorkflowConfiguration;
 import com.ownspec.center.service.workflow.WorkflowService;
 import org.apache.commons.io.FileUtils;
@@ -56,6 +57,10 @@ public abstract class AbstractTest {
 
   @Autowired
   protected ComponentService componentService;
+
+  @Autowired
+  protected ComponentVersionService componentVersionService;
+
 
   @Autowired
   protected WorkflowStatusRepository workflowStatusRepository;

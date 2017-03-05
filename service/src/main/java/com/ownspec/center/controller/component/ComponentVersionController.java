@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -93,6 +93,7 @@ public class ComponentVersionController {
     return componentConverter.toComponentVersionDto(componentVersionRepository.findOne(id), statuses, references, usePoints);
   }
 
+  // TODO: revert this one into ComponentController, we create a Component not a component version
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ComponentVersionDto create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
     return componentConverter.toComponentVersionDto(componentService.create(source).getRight(), false, false, false);
@@ -116,21 +117,21 @@ public class ComponentVersionController {
       optional = Optional.of(new ByteArrayResource(content));
     }
 
-    return optional.map(r -> ResponseEntity.ok(componentConverter.toComponentVersionDto(componentService.updateContent(id, r), false, false, false)))
+    return optional.map(r -> ResponseEntity.ok(componentConverter.toComponentVersionDto(componentVersionService.updateContent(id, r), false, false, false)))
         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
   }
 
 
   @GetMapping(value = "/{id}/content")
-  public Resource getContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
+  public ResponseEntity<Resource> getContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
     ComponentVersion component = componentVersionRepository.findOne(id);
-    return componentService.getHeadRawContent(component);
+    return ResponseEntity.ok().cacheControl(CacheControl.noCache()).body(componentService.getHeadRawContent(component));
   }
 
   @GetMapping(value = "/{id}/resolved-content")
-  public String getResolvedContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
+  public ResponseEntity<String> getResolvedContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
     ComponentVersion component = componentVersionRepository.findOne(id);
-    return componentService.generateContent(component).getLeft();
+    return ResponseEntity.ok().cacheControl(CacheControl.noCache()).body(componentService.generateContent(component).getLeft());
   }
 
 

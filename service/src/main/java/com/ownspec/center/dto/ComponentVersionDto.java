@@ -99,6 +99,9 @@ public interface ComponentVersionDto {
   @Nullable
   String getVersion();
 
+  @Nullable
+  String getGitReference();
+
   List<String> getTags();
 
   static ImmutableComponentVersionDto.Builder newBuilderFromComponent(ComponentVersion c) {
@@ -116,6 +119,7 @@ public interface ComponentVersionDto {
         .requiredTest(c.isRequiredTest())
         .distributionLevel(c.getDistributionLevel())
         .coverageStatus(c.getCoverageStatus())
-        .requirementType(c.getRequirementType());
+        .requirementType(c.getRequirementType())
+        .gitReference(c.getGitReference());
   }
 }

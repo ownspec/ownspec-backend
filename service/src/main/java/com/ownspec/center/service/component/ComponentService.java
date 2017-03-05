@@ -40,7 +40,6 @@ import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.service.workflow.WorkflowService;
 import com.ownspec.center.util.AbstractMimeMessage;
-import com.ownspec.center.util.OsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.lambda.tuple.Tuple;
@@ -191,9 +190,9 @@ public class ComponentService {
     component.setProject(project);
     component.setType(source.getType());
     component.setVcsId(UUID.randomUUID().toString());
-// todo fix   component.setCode(ccc.getKey() + "-" + ccc.incrementAndGet());
+    component.setCode(ccc.getKey() + "-" + ccc.incrementAndGet());
 
-// todo fix   ccc = componentCodeCounterRepository.save(ccc);
+    ccc = componentCodeCounterRepository.save(ccc);
 
 
     // Update
@@ -298,39 +297,7 @@ public class ComponentService {
     return Tuple.tuple(componentVersion , workflowStatusPair.getLeft(), workflowStatusPair.getRight());
   }
 
-  public ComponentVersion updateContent(Long id, byte[] b) {
-    return updateContent(id, new ByteArrayResource(b));
-  }
 
-  public ComponentVersion updateContent(Long id, Resource resource) {
-    return updateContent(requireNonNull(componentVersionRepository.findOneAndLock(id)), resource);
-  }
-
-  public ComponentVersion updateContent(ComponentVersion component, byte[] b) {
-    return updateContent(component, new ByteArrayResource(b));
-  }
-
-  public ComponentVersion updateContent(ComponentVersion componentVersion, Resource resource) {
-    // Lock
-    componentVersion = requireNonNull(componentVersionRepository.findOneAndLock(componentVersion.getId()));
-
-    // Retrieve current workflow status
-    WorkflowStatus currentWorkflowStatus = workflowStatusRepository.findLatestWorkflowStatusByWorkflowInstanceId(componentVersion.getWorkflowInstance().getId());
-
-    // Check if the transition is legit
-    if (currentWorkflowStatus.getStatus().isEditable()) {
-
-      if (RESOURCE != componentVersion.getComponent().getType()) {
-        contentConfiguration.htmlContentSaver().save(componentVersion, OsUtils.toString(resource));
-      } else {
-        gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
-      }
-
-    } else {
-      throw new IllegalStateException("Content update is not allowed for this statue");
-    }
-    return componentVersion;
-  }
 
 
   public Pair<String, String> generateContent(ComponentVersion c) {

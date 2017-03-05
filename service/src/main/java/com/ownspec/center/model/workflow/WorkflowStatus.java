@@ -1,5 +1,10 @@
 package com.ownspec.center.model.workflow;
 
+import com.ownspec.center.model.MainSequenceConstants;
+import com.ownspec.center.model.audit.AbstractAuditable;
+import com.ownspec.center.model.persistable.Persistable;
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,20 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.Instant;
-
-import com.ownspec.center.model.MainSequenceConstants;
-import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.persistable.Persistable;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import com.ownspec.center.model.audit.Auditable;
-import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.user.User;
-import lombok.Data;
+import javax.persistence.Transient;
 
 /**
  * Created by nlabrot on 22/09/16.
@@ -58,5 +50,14 @@ public class WorkflowStatus extends AbstractAuditable implements Persistable {
   @Column(name = "LAST_GIT_REFERENCE")
   private String lastGitReference;
 
+  @Transient
+  public void updateGitReference(String hash) {
+    if (getFirstGitReference() == null) {
+      setFirstGitReference(hash);
+      setLastGitReference(hash);
+    } else {
+      setLastGitReference(hash);
+    }
+  }
 
 }

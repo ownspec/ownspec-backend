@@ -2,36 +2,25 @@ package com.ownspec.center.controller.component;
 
 import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
-import static org.springframework.http.ResponseEntity.ok;
 
+import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.model.Comment;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.component.ComponentVersion;
-import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.component.ComponentTagService;
 import com.ownspec.center.util.RequestFilterMode;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,14 +133,20 @@ public class ComponentController {
   }
 */
   @RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
-  public List<Comment> getComments(@PathVariable("id") Long id) {
-    return commentService.getComments(id);
+  public List<CommentDto> getComments(@PathVariable("id") Long id) {
+    return commentService.getComments(id)
+        .stream()
+        .map(CommentDto::createFromComment)
+        .collect(Collectors.toList());
   }
 
   @RequestMapping(value = "/{id}/comments", method = RequestMethod.POST)
-  public List<Comment> addComment(@PathVariable("id") Long id, @RequestBody String comment) {
+  public List<CommentDto> addComment(@PathVariable("id") Long id, @RequestBody String comment) {
     commentService.addComment(id, comment);
-    return commentService.getComments(id);
+    return commentService.getComments(id)
+        .stream()
+        .map(CommentDto::createFromComment)
+        .collect(Collectors.toList());
   }
 
 /*

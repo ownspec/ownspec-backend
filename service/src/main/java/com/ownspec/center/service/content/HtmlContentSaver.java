@@ -16,6 +16,7 @@ import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.service.component.ComponentVersionService;
 import com.ownspec.center.service.content.parser.HtmlComponentContentParser;
 import com.ownspec.center.service.content.parser.ParserCallBack;
 import com.ownspec.center.service.content.parser.ParserContext;
@@ -71,6 +72,9 @@ public class HtmlContentSaver {
 
   @Autowired
   private ComponentService componentService;
+
+  @Autowired
+  private ComponentVersionService componentVersionService;
 
   @Autowired
   private ComponentVersionRepository componentVersionRepository;
@@ -192,6 +196,8 @@ public class HtmlContentSaver {
       parseComponent(document.body(), new UpdateReferenceCallBack(componentContent));
       componentContent.content = document.body().html();
 
+      componentVersionService.updateRawContent(componentVersion, new ByteArrayResource(componentContent.content.getBytes(UTF_8)));
+
       // Update content
       String hash = gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
           authenticationService.getAuthenticatedUser(), "");
@@ -199,23 +205,6 @@ public class HtmlContentSaver {
         // No modification continue
         continue;
       }
-
-      if (workflowStatus.getFirstGitReference() == null) {
-        workflowStatus.setFirstGitReference(hash);
-        workflowStatus.setLastGitReference(hash);
-      } else {
-        workflowStatus.setLastGitReference(hash);
-      }
-
-      //workflowStatus.getWorkflowInstance().setGitReference(hash);
-      componentVersion.setGitReference(hash);
-
-      workflowStatusRepository.save(workflowStatus);
-
-      workflowInstanceRepository.save(workflowStatus.getWorkflowInstance());
-
-      componentVersionRepository.save(componentVersion);
-
     }
   }
 

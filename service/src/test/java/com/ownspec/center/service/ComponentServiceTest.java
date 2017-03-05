@@ -1,24 +1,22 @@
 package com.ownspec.center.service;
 
-import java.util.List;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.ownspec.center.AbstractTest;
 import com.ownspec.center.dto.ChangeDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.ComponentReference;
+import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
+import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.io.Resource;
-
-import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.WorkflowStatusDto;
-import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.workflow.Status;
 import org.springframework.transaction.annotation.Transactional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.List;
 
 /**
  * Created by nlabrot on 01/10/16.
@@ -49,7 +47,7 @@ public class ComponentServiceTest extends AbstractTest {
     workflowService.updateStatus(component3.getId() , Status.DRAFT , "draft");
 
     // Update component1 content with a reference to component 2
-    component1 = componentService.updateContent(component1.getId(), generateReference(component2.getId(), component2.getWorkflowInstance().getId()).getBytes());
+    component1 = componentVersionService.updateContent(component1.getId(), generateReference(component2.getId(), component2.getWorkflowInstance().getId()).getBytes());
 
     // Test the created reference to component 2
     Assert.assertEquals(1, componentReferenceRepository.findAll().size());
@@ -58,7 +56,7 @@ public class ComponentServiceTest extends AbstractTest {
     Assert.assertTrue(component2 == workflowInstances.get(0).getTarget());
 
     // Update component1 content with a reference to component 3
-    component1 = componentService.updateContent(component1.getId(), generateReference(component3.getId(), component3.getWorkflowInstance().getId()).getBytes());
+    component1 = componentVersionService.updateContent(component1.getId(), generateReference(component3.getId(), component3.getWorkflowInstance().getId()).getBytes());
 
     // Test the created reference to component 3
     Assert.assertEquals(1, componentReferenceRepository.findAll().size());
@@ -93,12 +91,12 @@ public class ComponentServiceTest extends AbstractTest {
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getFirstGitReference());
 
     // Update content #1
-    componentService.updateContent(componentVersion.getId(), "test1".getBytes(UTF_8));
+    componentVersionService.updateContent(componentVersion.getId(), "test1".getBytes(UTF_8));
     // save git reference of last update content #3
     String startGitReference2 = workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference();
 
     // Update content #2
-    componentVersion = componentService.updateContent(componentVersion.getId(), "test2".getBytes(UTF_8));
+    componentVersion = componentVersionService.updateContent(componentVersion.getId(), "test2".getBytes(UTF_8));
     // save git reference of last update content #3
     String endGitReference2 = workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference();
 
@@ -117,12 +115,12 @@ public class ComponentServiceTest extends AbstractTest {
     Assert.assertNull(workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getFirstGitReference());
 
     // Update content #1
-    componentVersion = componentService.updateContent(componentVersion.getId(), "test4".getBytes(UTF_8));
+    componentVersion = componentVersionService.updateContent(componentVersion.getId(), "test4".getBytes(UTF_8));
     // save its git reference - update content #1
     String startGitReference3 = workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference();
 
     // Update content #2
-    componentVersion = componentService.updateContent(componentVersion.getId(), "test5".getBytes(UTF_8));
+    componentVersion = componentVersionService.updateContent(componentVersion.getId(), "test5".getBytes(UTF_8));
     // save git reference of last update content #2
     String endGitReference3 = workflowStatusRepository.findLatestWorkflowStatusByComponentVersionId(componentVersion.getId()).getLastGitReference();
 
