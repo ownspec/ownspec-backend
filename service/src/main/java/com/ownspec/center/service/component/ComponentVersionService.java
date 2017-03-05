@@ -1,6 +1,5 @@
 package com.ownspec.center.service.component;
 
-import static com.ownspec.center.model.component.QComponent.component;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static java.util.Objects.requireNonNull;
 
@@ -117,6 +116,8 @@ public class ComponentVersionService {
     ComponentVersion componentVersion = requireNonNull(componentVersionRepository.findOneAndLock(componentVersionId));
     mergeWithNotNullProperties(source, componentVersion);
     componentTagService.tagComponent(componentVersion, source.getTags());
+    estimatedTimeService.addEstimatedTimes(componentVersion, source.getEstimatedTimes());
+
     return componentVersionRepository.save(componentVersion);
   }
 
@@ -142,7 +143,6 @@ public class ComponentVersionService {
     componentReference.setTarget(componentVersionRepository.findOne(targetComponentVersionId));
     componentReferenceRepository.save(componentReference);
   }
-
 
 
   public Resource composePdf(Long id) throws IOException {

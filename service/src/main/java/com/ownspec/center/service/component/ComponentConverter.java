@@ -171,7 +171,7 @@ public class ComponentConverter {
               .collect(Collectors.toList())
       );
     }
-    builder.estimatedTimes(estimatedTimeService.getEstimatedTimes(c.getId()).stream()
+    builder.estimatedTimes(estimatedTimeService.getEstimatedTimes(cv.getId()).stream()
         .map(EstimatedTimeDto::createFromEstimatedTime)
         .collect(Collectors.toList()));
 

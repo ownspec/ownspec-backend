@@ -4,6 +4,7 @@ import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.model.EstimatedTime;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.repository.EstimatedTimeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @author lyrold
  */
 @Service
+@Slf4j
 public class EstimatedTimeService {
 
   @Autowired
@@ -25,6 +27,8 @@ public class EstimatedTimeService {
   }
 
   public EstimatedTime addEstimatedTime(ComponentVersion target, EstimatedTimeDto estimatedTimeDto) {
+    LOG.info("Adding {}'s estimated time for component with ID {}", estimatedTimeDto.getUserCategory(), target.getId());
+
     EstimatedTime estimatedTime = new EstimatedTime();
     estimatedTime.setUserCategory(estimatedTimeDto.getUserCategory());
     estimatedTime.setTime(estimatedTimeDto.getTime());
@@ -34,8 +38,11 @@ public class EstimatedTimeService {
     return estimatedTimeRepository.save(estimatedTime);
   }
 
-
-
+  public void addEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
+    if (estimatedTimeDtos != null) {
+      estimatedTimeDtos.forEach(e -> addEstimatedTime(target, e));
+    }
+  }
 
 
 }
