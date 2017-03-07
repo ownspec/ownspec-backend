@@ -34,7 +34,7 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
     List<Predicate> predicates = new ArrayList<>();
 
     if (StringUtils.isNotBlank(query)) {
-      predicates.add(componentVersion.title.likeIgnoreCase(query));
+      predicates.add(componentVersion.title.containsIgnoreCase(query));
     }
 
     if (projectId != null) {
