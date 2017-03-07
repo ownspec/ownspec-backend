@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by lyrold on 18/09/2016.
  */
-public interface ComponentVersionRepository extends JpaRepository<ComponentVersion, Long>, QueryDslPredicateExecutor<ComponentVersion> {
+public interface ComponentVersionRepository extends JpaRepository<ComponentVersion, Long>, QueryDslPredicateExecutor<ComponentVersion>, ComponentVersionRepositoryCustom {
 
 
   Component findByTitle(String title);

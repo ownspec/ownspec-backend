@@ -74,12 +74,15 @@ public class ComponentVersionController {
   @GetMapping
   public List<ComponentVersionDto> findAllVersion(
 
+      @RequestParam(value = "projectId", required = false) Long projectId,
+      @RequestParam(value = "q", required = false) String query,
+      @RequestParam(value = "sort", required = false) String sort,
       @RequestParam(value = "types", required = false, defaultValue = "false") List<ComponentType> types,
       @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
       @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
       @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
 
-    return componentVersionRepository.findAllByComponentTypeIn(types)
+    return componentVersionRepository.findAll(projectId, types, query, null)
         .stream()
         .map(cv -> componentConverter.toComponentVersionDto(cv, statuses, references, usePoints))
         .collect(Collectors.toList());

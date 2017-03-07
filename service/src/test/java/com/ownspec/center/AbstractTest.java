@@ -30,8 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -91,21 +89,6 @@ public abstract class AbstractTest {
   public void init() throws IOException {
     FileUtils.forceMkdir(new File(outputDirectory));
     SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(userRepository.findOne(0l), ""));
-  }
-
-
-  private void m(Predicate<String> ps) { /* ... */ }
-
-  private void m(Function<String, String> fss) { /* ... */ }
-
-  private void callingM() {
-    m((String s) -> s.isEmpty());
-  }
-
-  private void m2(Function<String, Integer> fss) { /* ... */ }
-
-  private void callingM2() {
-    m2(s -> s.length());
   }
 
 }

@@ -6,6 +6,7 @@
   <groupId>com.ownspec</groupId>
   <artifactId>ownspec-center-backend</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+
   <modules>
     <module>dbupgrader</module>
     <module>service</module>
@@ -173,6 +174,12 @@
     <dependency>
       <groupId>com.querydsl</groupId>
       <artifactId>querydsl-jpa</artifactId>
+        <version>${querydsl.version}</version>
+    </dependency>
+
+      <dependency>
+          <groupId>com.querydsl</groupId>
+          <artifactId>querydsl-sql</artifactId>
       <version>${querydsl.version}</version>
     </dependency>
 
