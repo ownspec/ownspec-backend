@@ -14,4 +14,6 @@ public interface EstimatedTimeRepository extends JpaRepository<EstimatedTime, Lo
 
   List<EstimatedTime> findAllByComponentVersionId(Long id);
 
+  EstimatedTime findOneByComponentVersionIdAndUserCategoryId(Long componentVersionId, Long userCategoryId);
+
 }

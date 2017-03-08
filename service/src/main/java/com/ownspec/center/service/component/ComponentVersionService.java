@@ -123,7 +123,7 @@ public class ComponentVersionService {
     mergeWithNotNullProperties(source, componentVersion);
     componentTagService.tagComponent(componentVersion, source.getTags());
 
-    estimatedTimeService.addEstimatedTimes(componentVersion, source.getEstimatedTimes());
+    estimatedTimeService.addAndUpdateEstimatedTimes(componentVersion, source.getEstimatedTimes());
 
     Resource resource = null;
     if (source.getUploadedFileId() == null) {

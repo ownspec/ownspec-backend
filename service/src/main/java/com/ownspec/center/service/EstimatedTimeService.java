@@ -4,6 +4,7 @@ import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.model.EstimatedTime;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.repository.EstimatedTimeRepository;
+import com.ownspec.center.util.OsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,21 +27,26 @@ public class EstimatedTimeService {
     return estimatedTimeRepository.findAllByComponentVersionId(componentVersionId);
   }
 
-  public EstimatedTime addEstimatedTime(ComponentVersion target, EstimatedTimeDto estimatedTimeDto) {
-    LOG.info("Adding {}'s estimated time for component with ID {}", estimatedTimeDto.getUserCategory(), target.getId());
+  public EstimatedTime addOrUpdateEstimatedTime(ComponentVersion target, EstimatedTimeDto estimatedTimeDto) {
+    EstimatedTime estimatedTime = estimatedTimeRepository.findOneByComponentVersionIdAndUserCategoryId(target.getId(), estimatedTimeDto.getUserCategory().getId());
 
-    EstimatedTime estimatedTime = new EstimatedTime();
-    estimatedTime.setUserCategory(estimatedTimeDto.getUserCategory());
-    estimatedTime.setTime(estimatedTimeDto.getTime());
-    estimatedTime.setTimeUnit(estimatedTimeDto.getTimeUnit());
-    estimatedTime.setComponentVersion(target);
+    if (estimatedTime != null) {
+      OsUtils.mergeWithNotNullProperties(estimatedTimeDto, estimatedTime);
+    } else {
+      LOG.info("Adding {}'s estimated time for component with ID {}", estimatedTimeDto.getUserCategory().getName(), target.getId());
+      estimatedTime = new EstimatedTime();
+      estimatedTime.setUserCategory(estimatedTimeDto.getUserCategory());
+      estimatedTime.setTime(estimatedTimeDto.getTime());
+      estimatedTime.setTimeUnit(estimatedTimeDto.getTimeUnit());
+      estimatedTime.setComponentVersion(target);
+    }
 
     return estimatedTimeRepository.save(estimatedTime);
   }
 
-  public void addEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
+  public void addAndUpdateEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
     if (estimatedTimeDtos != null) {
-      estimatedTimeDtos.forEach(e -> addEstimatedTime(target, e));
+      estimatedTimeDtos.forEach(e -> addOrUpdateEstimatedTime(target, e));
     }
   }
 

@@ -1,8 +1,6 @@
 package com.ownspec.center.repository;
 
-import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.ComponentCodeCounter;
-import com.ownspec.center.model.component.ComponentVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
