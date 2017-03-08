@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface ComponentVersionRepositoryCustom {
 
-  List<ComponentVersion> findAll(Long projectId, List<ComponentType> types, String query, String sort);
+  List<ComponentVersion> findAll(Long projectId, Boolean generic, List<ComponentType> types, String query, String sort);
 
 
 }

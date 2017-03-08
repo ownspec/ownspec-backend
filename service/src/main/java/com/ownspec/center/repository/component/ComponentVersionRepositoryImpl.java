@@ -4,7 +4,9 @@ import static com.ownspec.center.model.component.QComponentVersion.componentVers
 
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
+import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.apache.commons.lang.StringUtils;
 
@@ -22,7 +24,7 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
   private EntityManager entityManager;
 
   @Override
-  public List<ComponentVersion> findAll(Long projectId, List<ComponentType> types, String query, String sort) {
+  public List<ComponentVersion> findAll(Long projectId, Boolean generic, List<ComponentType> types, String query, String sort) {
 
     //JPASQLQuery sqlQuery = new JPASQLQuery(entityManager, new PostgreSQLTemplates());
     JPAQuery jpaQuery = new JPAQuery(entityManager);
@@ -37,9 +39,31 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
       predicates.add(componentVersion.title.containsIgnoreCase(query));
     }
 
+    //BooleanExpression
+    //Expressions.booleanOperation(Ops.OR).or();
+
+    List<Predicate> projectPredicates = new ArrayList<>();
+
     if (projectId != null) {
-      predicates.add(componentVersion.component.project.id.eq(projectId));
+      projectPredicates.add(componentVersion.component.project.id.eq(projectId));
     }
+
+    if (generic != null) {
+      if (generic) {
+        projectPredicates.add(componentVersion.component.project.id.isNull());
+      } else {
+        projectPredicates.add(componentVersion.component.project.id.isNotNull());
+      }
+    }
+
+    if (!projectPredicates.isEmpty()) {
+      if (projectPredicates.size() == 1) {
+        predicates.addAll(projectPredicates);
+      } else {
+        predicates.add(Expressions.booleanOperation(Ops.OR, projectPredicates.toArray(new Predicate[]{})));
+      }
+    }
+
 
     if (!types.isEmpty()) {
       predicates.add(componentVersion.component.type.in(types));

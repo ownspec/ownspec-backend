@@ -80,9 +80,10 @@ public class ComponentVersionController {
       @RequestParam(value = "types", required = false, defaultValue = "false") List<ComponentType> types,
       @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
       @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
-      @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
+      @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints,
+      @RequestParam(value = "generic", required = false, defaultValue = "false") Boolean generic) {
 
-    return componentVersionRepository.findAll(projectId, types, query, null)
+    return componentVersionRepository.findAll(projectId, generic, types, query, null)
         .stream()
         .map(cv -> componentConverter.toComponentVersionDto(cv, statuses, references, usePoints))
         .collect(Collectors.toList());

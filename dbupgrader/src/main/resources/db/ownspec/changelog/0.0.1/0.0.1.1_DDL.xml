@@ -20,7 +20,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="NAME" type="VARCHAR2(64)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="HOURLY_PRICE" type="float8"/>
         </createTable>
@@ -473,7 +473,17 @@
             </column>
         </createTable>
 
+        <!-- CREATED_USER_ID is missing
+                <insert tableName="COMPONENT_CODE_COUNTER">
+                    <column name="ID" valueSequenceNext="MAIN_SEQUENCE"></column>
+                    <column name="COUNTER">0</column>
+                    <column name="COMPONENT_KEY">GEN</column>
+                    <column name="GENERIC">true</column>
+                    <column name="CREATED_DATE" valueComputed="true">CURRENT_TIMESTAMP</column>
+                    <column name="CREATED_USER_ID">0</column>
+                </insert>
 
+        -->
 
     </changeSet>
 
