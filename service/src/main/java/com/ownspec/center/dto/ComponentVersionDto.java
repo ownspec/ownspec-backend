@@ -72,7 +72,6 @@ public interface ComponentVersionDto {
   @Nullable
   Boolean getRequiredTest();
 
-  @Nullable
   List<EstimatedTimeDto> getEstimatedTimes();
 
   @Nullable
@@ -87,7 +86,6 @@ public interface ComponentVersionDto {
   @Nullable
   CoverageStatus getCoverageStatus();
 
-  @Nullable
   List<UserComponentDto> getComponentUsers();
 
   @Nullable

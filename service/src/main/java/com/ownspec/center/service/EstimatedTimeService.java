@@ -44,10 +44,8 @@ public class EstimatedTimeService {
     return estimatedTimeRepository.save(estimatedTime);
   }
 
-  public void addAndUpdateEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
-    if (estimatedTimeDtos != null) {
-      estimatedTimeDtos.forEach(e -> addOrUpdateEstimatedTime(target, e));
-    }
+  public void addOrUpdateEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
+    estimatedTimeDtos.forEach(e -> addOrUpdateEstimatedTime(target, e));
   }
 
 

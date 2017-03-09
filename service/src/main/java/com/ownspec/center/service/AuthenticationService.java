@@ -48,7 +48,8 @@ public class AuthenticationService {
   }
 
   public User getAuthenticatedUser() {
-    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication != null ? (User) authentication.getPrincipal() : null;
   }
 
   public VerificationToken getVerificationToken(String token) {

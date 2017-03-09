@@ -8,7 +8,6 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.user.UserComponentDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
@@ -126,7 +125,6 @@ public class ComponentService {
   private ComponentCodeCounterRepository componentCodeCounterRepository;
 
 
-
   public List<Component> findAll(Long projectId, ComponentType[] types, String[] tags, String query) {
     return null;
 /*
@@ -181,7 +179,7 @@ public class ComponentService {
     if (source.getProjectId() != null) {
       project = projectRepository.findOne(source.getProjectId());
       ccc = componentCodeCounterRepository.findOneAndLockById(project.getComponentCodeCounter().getId());
-    }else{
+    } else {
       ccc = componentCodeCounterRepository.findGenericAndLock();
     }
 
@@ -213,23 +211,14 @@ public class ComponentService {
     componentVersion.setCoverageStatus(source.getCoverageStatus());
     componentVersion.setRequirementType(source.getRequirementType());
 
+    estimatedTimeService.addOrUpdateEstimatedTimes(componentVersion, source.getEstimatedTimes());
 
-    List<EstimatedTimeDto> estimatedTimes = source.getEstimatedTimes();
-    if (estimatedTimes != null) {
-      for (EstimatedTimeDto estimatedTime : estimatedTimes) {
-        estimatedTimeService.addEstimatedTime(componentVersion, estimatedTime);
-      }
-    }
-
-    List<UserComponentDto> componentUsers = source.getComponentUsers();
-    if (componentUsers != null) {
-      for (UserComponentDto componentUser : componentUsers) {
-        UserComponent userComponent = new UserComponent();
-        Component c = componentRepository.findOne(componentUser.getComponent().getId());
-        userComponent.setComponent(c);
-        userComponent.setUser(userService.loadUserByUsername(componentUser.getUser().getUsername()));
-        userComponentRepository.save(userComponent);
-      }
+    for (UserComponentDto componentUser : source.getComponentUsers()) {
+      UserComponent userComponent = new UserComponent();
+      Component c = componentRepository.findOne(componentUser.getComponent().getId());
+      userComponent.setComponent(c);
+      userComponent.setUser(userService.loadUserByUsername(componentUser.getUser().getUsername()));
+      userComponentRepository.save(userComponent);
     }
 
     component = componentRepository.save(component);
@@ -261,7 +250,7 @@ public class ComponentService {
   }
 
 
-  public Tuple3<ComponentVersion, WorkflowInstance,WorkflowStatus> newWorkflowInstance(Long id) {
+  public Tuple3<ComponentVersion, WorkflowInstance, WorkflowStatus> newWorkflowInstance(Long id) {
     // Lock
     ComponentVersion componentVersion = requireNonNull(componentVersionRepository.findOneAndLock(id));
 
@@ -294,10 +283,8 @@ public class ComponentService {
       componentReferenceRepository.save(componentReference);
     }
 
-    return Tuple.tuple(componentVersion , workflowStatusPair.getLeft(), workflowStatusPair.getRight());
+    return Tuple.tuple(componentVersion, workflowStatusPair.getLeft(), workflowStatusPair.getRight());
   }
-
-
 
 
   public Pair<String, String> generateContent(ComponentVersion c) {
@@ -340,7 +327,6 @@ public class ComponentService {
     gitService.deleteAndCommit(component.getComponent().getVcsId(), component.getFilename(), authenticationService.getAuthenticatedUser(), "");
     componentRepository.delete(id);
   }
-
 
 
   public Resource diff(Long id, String fromRevision, String toRevision) {
@@ -454,7 +440,6 @@ public class ComponentService {
         .map(uc -> componentRepository.findOne(uc.getComponent().getId()))
         .collect(Collectors.toList());
   }
-
 
 
   public void updateReference(Long sourceComponentVersionId, Long refId, long targetComponentVersionId) {
