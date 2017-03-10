@@ -5,6 +5,7 @@ import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 
 import com.ownspec.center.dto.CommentDto;
 import com.ownspec.center.dto.ComponentDto;
+import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.service.CommentService;
@@ -13,14 +14,18 @@ import com.ownspec.center.service.component.ComponentConverter;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.component.ComponentTagService;
 import com.ownspec.center.util.RequestFilterMode;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +50,10 @@ public class ComponentController {
   @Autowired
   private ComponentTagService componentTagService;
 
-
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  public ComponentVersionDto create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
+    return componentConverter.toComponentVersionDto(componentService.create(source).getRight(), false, false, false);
+  }
 
   @RequestMapping
   public List<ComponentDto> findAll(

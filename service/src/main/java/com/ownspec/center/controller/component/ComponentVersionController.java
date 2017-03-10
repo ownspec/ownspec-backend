@@ -53,16 +53,10 @@ public class ComponentVersionController {
   private ComponentVersionService componentVersionService;
 
   @Autowired
-  private CommentService commentService;
-
-  @Autowired
   private ComponentConverter componentConverter;
 
   @Autowired
   private UploadService uploadService;
-
-  @Autowired
-  private ComponentTagService componentTagService;
 
   @Autowired
   private ComponentVersionRepository componentVersionRepository;
@@ -95,12 +89,6 @@ public class ComponentVersionController {
                                      @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints) {
 
     return componentConverter.toComponentVersionDto(componentVersionRepository.findOne(id), statuses, references, usePoints);
-  }
-
-  // TODO: revert this one into ComponentController, we create a Component not a component version
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  public ComponentVersionDto create(@RequestBody ComponentVersionDto source) throws IOException, GitAPIException {
-    return componentConverter.toComponentVersionDto(componentService.create(source).getRight(), false, false, false);
   }
 
   @PatchMapping(value = "/{id}")
