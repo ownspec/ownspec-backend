@@ -9,6 +9,7 @@ import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.ImmutableComponentVersionDto;
 import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
+import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.dto.WorkflowInstanceDto;
 import com.ownspec.center.dto.WorkflowStatusDto;
 import com.ownspec.center.dto.user.UserComponentDto;
@@ -17,6 +18,7 @@ import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.riskassessment.RiskAssessment;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.workflow.WorkflowInstance;
 import com.ownspec.center.model.workflow.WorkflowStatus;
@@ -26,6 +28,7 @@ import com.ownspec.center.repository.user.UserComponentRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.CommentService;
 import com.ownspec.center.service.EstimatedTimeService;
+import com.ownspec.center.service.RiskAssessmentService;
 import com.ownspec.center.service.workflow.WorkflowConfiguration;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +68,8 @@ public class ComponentConverter {
   @Autowired
   private WorkflowConfiguration workflowConfiguration;
 
+  @Autowired
+  private RiskAssessmentService riskAssessmentService;
 
 
   private CoverageStatus getGlobalCoverageStatus(List<ComponentReferenceDto> componentReferences) {
@@ -104,9 +109,6 @@ public class ComponentConverter {
   }
 
 
-
-
-
   public WorkflowInstanceDto convert(ComponentVersion component, WorkflowInstance workflowInstance, boolean statuses) {
 
     ImmutableWorkflowInstanceDto.Builder workflowInstanceBuilder = WorkflowInstanceDto.newBuilderFromWorkflowInstance(workflowInstance);
@@ -129,7 +131,7 @@ public class ComponentConverter {
 
   }
 
-  public ComponentVersionDto toComponentVersionDto(ComponentVersion cv, boolean statuses, boolean references, Boolean usePoints){
+  public ComponentVersionDto toComponentVersionDto(ComponentVersion cv, boolean statuses, boolean references, Boolean usePoints) {
     ImmutableComponentVersionDto.Builder builder = ComponentVersionDto.newBuilderFromComponent(cv);
 
     Component c = cv.getComponent();
@@ -149,7 +151,7 @@ public class ComponentConverter {
     builder.coverageStatus(cv.getCoverageStatus());
 
 
-    if (references || usePoints){
+    if (references || usePoints) {
       List<ComponentReference> list = componentReferenceRepository.findAllByTargetId(cv.getId());
       builder.componentUsePoints(convertReferences(list));
     }
@@ -175,11 +177,13 @@ public class ComponentConverter {
         .map(EstimatedTimeDto::createFromEstimatedTime)
         .collect(Collectors.toList()));
 
+    RiskAssessment riskAssessment = riskAssessmentService.findOne(cv);
+    if (riskAssessment != null) {
+      builder.riskAssessment(RiskAssessmentDto.createFromRiskAssessment(riskAssessment));
+    }
 
     return builder.build();
   }
-
-
 
 
 }

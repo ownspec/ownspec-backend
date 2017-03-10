@@ -27,7 +27,7 @@ public class EstimatedTimeService {
     return estimatedTimeRepository.findAllByComponentVersionId(componentVersionId);
   }
 
-  public EstimatedTime addOrUpdateEstimatedTime(ComponentVersion target, EstimatedTimeDto estimatedTimeDto) {
+  public EstimatedTime addOrUpdate(ComponentVersion target, EstimatedTimeDto estimatedTimeDto) {
     EstimatedTime estimatedTime = estimatedTimeRepository.findOneByComponentVersionIdAndUserCategoryId(target.getId(), estimatedTimeDto.getUserCategory().getId());
 
     if (estimatedTime != null) {
@@ -44,8 +44,8 @@ public class EstimatedTimeService {
     return estimatedTimeRepository.save(estimatedTime);
   }
 
-  public void addOrUpdateEstimatedTimes(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
-    estimatedTimeDtos.forEach(e -> addOrUpdateEstimatedTime(target, e));
+  public void addOrUpdate(ComponentVersion target, List<EstimatedTimeDto> estimatedTimeDtos) {
+    estimatedTimeDtos.forEach(e -> addOrUpdate(target, e));
   }
 
 

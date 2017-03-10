@@ -8,7 +8,7 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.user.UserComponentDto;
+import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
@@ -27,15 +27,13 @@ import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.repository.user.UserComponentRepository;
 import com.ownspec.center.repository.user.UserRepository;
-import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
+import com.ownspec.center.service.RiskAssessmentService;
 import com.ownspec.center.service.UploadService;
-import com.ownspec.center.service.UserService;
-import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.service.workflow.WorkflowService;
 import com.ownspec.center.util.AbstractMimeMessage;
@@ -63,7 +61,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ComponentService {
 
-
   @Autowired
   private GitService gitService;
 
@@ -73,19 +70,14 @@ public class ComponentService {
   @Autowired
   private ComponentVersionRepository componentVersionRepository;
 
-
   @Autowired
   private ComponentReferenceRepository componentReferenceRepository;
-
-  @Autowired
-  private WorkflowInstanceRepository workflowInstanceRepository;
 
   @Autowired
   private EstimatedTimeService estimatedTimeService;
 
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
-
 
   @Autowired
   private AuthenticationService authenticationService;
@@ -99,18 +91,11 @@ public class ComponentService {
   @Autowired
   private EmailService emailService;
 
-
   @Autowired
   private ContentConfiguration contentConfiguration;
 
   @Autowired
-  private CompositionService compositionService;
-
-  @Autowired
   private UserComponentRepository userComponentRepository;
-
-  @Autowired
-  private UserService userService;
 
   @Autowired
   private UploadService uploadService;
@@ -124,6 +109,8 @@ public class ComponentService {
   @Autowired
   private ComponentCodeCounterRepository componentCodeCounterRepository;
 
+  @Autowired
+  private RiskAssessmentService riskAssessmentService;
 
   public List<Component> findAll(Long projectId, ComponentType[] types, String[] tags, String query) {
     return null;
@@ -199,7 +186,6 @@ public class ComponentService {
     // Workflow Instance
     Pair<WorkflowInstance, WorkflowStatus> workflowStatusPair = workflowService.createNew(hash);
 
-
     // Component Version
     ComponentVersion componentVersion = new ComponentVersion();
     componentVersion.setComponent(component);
@@ -211,19 +197,19 @@ public class ComponentService {
     componentVersion.setCoverageStatus(source.getCoverageStatus());
     componentVersion.setRequirementType(source.getRequirementType());
 
-    estimatedTimeService.addOrUpdateEstimatedTimes(componentVersion, source.getEstimatedTimes());
-
-    for (UserComponentDto componentUser : source.getComponentUsers()) {
-      UserComponent userComponent = new UserComponent();
-      Component c = componentRepository.findOne(componentUser.getComponent().getId());
-      userComponent.setComponent(c);
-      userComponent.setUser(userService.loadUserByUsername(componentUser.getUser().getUsername()));
-      userComponentRepository.save(userComponent);
-    }
-
     component = componentRepository.save(component);
     componentVersion = componentVersionRepository.save(componentVersion);
 
+    // Estimated time
+    estimatedTimeService.addOrUpdate(componentVersion, source.getEstimatedTimes());
+
+    // Risk Assessment
+    RiskAssessmentDto riskAssessment = source.getRiskAssessment();
+    if (riskAssessment != null) {
+      riskAssessmentService.addOrUpdate(riskAssessment, componentVersion);
+    }
+
+    // Tag
     componentTagService.tagComponent(componentVersion, source.getTags());
 
     return Pair.of(component, componentVersion);

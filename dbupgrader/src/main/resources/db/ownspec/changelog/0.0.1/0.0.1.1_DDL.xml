@@ -474,6 +474,21 @@
         </createTable>
 
 
+        <!-- ******************************************************************************** -->
+        <!-- RISK_ASSESSMENT -->
+        <createTable tableName="RISK_ASSESSMENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="COMPONENT_VERSION_ID" type="bigint">
+                <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_RIS_ASS_CMP_VER_ID"/>
+            </column>
+            <column name="FREQUENCY_OF_USE" type="VARCHAR2(64)"/>
+            <column name="FAILURE_IMPACT_LEVEL" type="VARCHAR2(64)"/>
+            <column name="ACCEPTABLE_DEFECT_RATE" type="float8" defaultValueNumeric="70"/>
+        </createTable>
+
     </changeSet>
 
 

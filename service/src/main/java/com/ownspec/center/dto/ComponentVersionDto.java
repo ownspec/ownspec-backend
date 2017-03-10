@@ -102,6 +102,9 @@ public interface ComponentVersionDto {
 
   List<String> getTags();
 
+  @Nullable
+  RiskAssessmentDto getRiskAssessment();
+
   static ImmutableComponentVersionDto.Builder newBuilderFromComponent(ComponentVersion c) {
     return newComponentVersionDto()
         .id(c.getId())

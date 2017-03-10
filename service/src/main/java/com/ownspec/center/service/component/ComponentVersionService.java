@@ -6,27 +6,21 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.ownspec.center.dto.ComponentVersionDto;
+import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.WorkflowStatus;
-import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
-import com.ownspec.center.repository.component.ComponentRepository;
 import com.ownspec.center.repository.component.ComponentVersionRepository;
-import com.ownspec.center.repository.user.UserComponentRepository;
-import com.ownspec.center.repository.user.UserRepository;
-import com.ownspec.center.repository.workflow.WorkflowInstanceRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
-import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
+import com.ownspec.center.service.RiskAssessmentService;
 import com.ownspec.center.service.UploadService;
-import com.ownspec.center.service.UserService;
 import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
-import com.ownspec.center.service.workflow.WorkflowService;
 import com.ownspec.center.util.OsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
@@ -50,22 +44,14 @@ import java.util.List;
 @Slf4j
 public class ComponentVersionService {
 
-
   @Autowired
   private GitService gitService;
 
   @Autowired
-  private ComponentRepository componentRepository;
-
-  @Autowired
   private ComponentVersionRepository componentVersionRepository;
-
 
   @Autowired
   private ComponentReferenceRepository componentReferenceRepository;
-
-  @Autowired
-  private WorkflowInstanceRepository workflowInstanceRepository;
 
   @Autowired
   private EstimatedTimeService estimatedTimeService;
@@ -73,19 +59,8 @@ public class ComponentVersionService {
   @Autowired
   private WorkflowStatusRepository workflowStatusRepository;
 
-
   @Autowired
   private AuthenticationService authenticationService;
-
-  @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
-  private ProjectRepository projectRepository;
-
-  @Autowired
-  private EmailService emailService;
-
 
   @Autowired
   private ContentConfiguration contentConfiguration;
@@ -94,20 +69,13 @@ public class ComponentVersionService {
   private CompositionService compositionService;
 
   @Autowired
-  private UserComponentRepository userComponentRepository;
-
-  @Autowired
-  private UserService userService;
-
-  @Autowired
   private UploadService uploadService;
 
   @Autowired
   private ComponentTagService componentTagService;
 
   @Autowired
-  private WorkflowService workflowService;
-
+  private RiskAssessmentService riskAssessmentService;
 
   /**
    * Update component
@@ -123,21 +91,26 @@ public class ComponentVersionService {
     mergeWithNotNullProperties(source, componentVersion);
     componentTagService.tagComponent(componentVersion, source.getTags());
 
-    estimatedTimeService.addOrUpdateEstimatedTimes(componentVersion, source.getEstimatedTimes());
-
-    Resource resource = null;
+    // Content
+    Resource resource;
     if (source.getUploadedFileId() == null) {
       resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
     } else {
       resource = uploadService.findResource(source.getUploadedFileId()).get();
     }
-
-
     updateContent(componentVersion, resource);
+
+    // Estimated time
+    estimatedTimeService.addOrUpdate(componentVersion, source.getEstimatedTimes());
+
+    // Risk Assessment
+    RiskAssessmentDto riskAssessment = source.getRiskAssessment();
+    if (riskAssessment != null) {
+      riskAssessmentService.addOrUpdate(riskAssessment, componentVersion);
+    }
 
     return componentVersionRepository.save(componentVersion);
   }
-
 
   public ComponentVersion updateContent(Long id, byte[] b) {
     return updateContent(id, new ByteArrayResource(b));
@@ -179,7 +152,8 @@ public class ComponentVersionService {
 
     // Check if the transition is legit
     if (currentWorkflowStatus.getStatus().isEditable()) {
-      String hash = gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
+      String hash =
+          gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), resource, authenticationService.getAuthenticatedUser(), "");
       // Update content
       if (hash != null) {
         currentWorkflowStatus.updateGitReference(hash);
@@ -193,12 +167,10 @@ public class ComponentVersionService {
     return componentVersion;
   }
 
-
   public List<ComponentVersion> findAll(Long componentId) {
 
     return componentVersionRepository.findAllByComponentId(componentId, new Sort("version"));
   }
-
 
   public void updateToLatestTargetReference(long sourceComponentVersionId, long refId) {
     ComponentReference componentReference = componentReferenceRepository.findOne(refId);

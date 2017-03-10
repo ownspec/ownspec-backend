@@ -1,54 +1,49 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.riskassessment;
 
-import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.component.Component;
+import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.persistable.Persistable;
-import com.ownspec.center.model.user.UserCategory;
 import lombok.Data;
 
-import java.util.concurrent.TimeUnit;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
- * Created on 11/12/2016
+ * Created on 10/03/2017
  *
  * @author lyrold
  */
+
 @Data
 @Entity
-@Table(name = "ESTIMATED_TIME")
-public class EstimatedTime extends AbstractAuditable implements Persistable {
-
+@Table(name = "RISK_ASSESSMENT")
+public class RiskAssessment implements Persistable {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
   @Column(name = "ID")
   private Long id;
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @OneToOne
   @JoinColumn(name = "COMPONENT_VERSION_ID")
   private ComponentVersion componentVersion;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_CATEGORY_ID")
-  private UserCategory userCategory;
-
-  // TODO: to refactor and convert in a duration
-  @Column(name = "TIME")
-  private Double time;
-
-  // TODO: to refactor and convert in a duration
   @Enumerated(EnumType.STRING)
-  @Column(name = "TIME_UNIT")
-  private TimeUnit timeUnit;
+  @Column(name = "FREQUENCY_OF_USE")
+  private FrequencyOfUse frequencyOfUse;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "FAILURE_IMPACT_LEVEL")
+  private FailureImpactLevel failureImpactLevel;
+
+  @Column(name = "ACCEPTABLE_DEFECT_RATE")
+  private Double acceptableDefectRate; //tolerance
+
 }
