@@ -23,10 +23,13 @@ public interface RiskAssessmentDto {
   @Nullable
   Long getId();
 
+  @Nullable
   FrequencyOfUse getFrequencyOfUse();
 
+  @Nullable
   FailureImpactLevel getFailureImpactLevel();
 
+  @Nullable
   Double getAcceptableDefectRate();
 
 
