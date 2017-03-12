@@ -30,7 +30,7 @@ public interface RiskAssessmentDto {
   FailureImpactLevel getFailureImpactLevel();
 
   @Nullable
-  Double getAcceptableDefectRate();
+  Double getAcceptableFailureRate();
 
 
   static ImmutableRiskAssessmentDto createFromRiskAssessment(RiskAssessment source) {
@@ -38,7 +38,7 @@ public interface RiskAssessmentDto {
         .id(source.getId())
         .frequencyOfUse(source.getFrequencyOfUse())
         .failureImpactLevel(source.getFailureImpactLevel())
-        .acceptableDefectRate(source.getAcceptableDefectRate())
+        .acceptableFailureRate(source.getAcceptableFailureRate())
         .build();
   }
 

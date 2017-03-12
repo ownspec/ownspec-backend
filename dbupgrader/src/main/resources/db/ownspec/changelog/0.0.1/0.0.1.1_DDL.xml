@@ -486,7 +486,7 @@
             </column>
             <column name="FREQUENCY_OF_USE" type="VARCHAR2(64)"/>
             <column name="FAILURE_IMPACT_LEVEL" type="VARCHAR2(64)"/>
-            <column name="ACCEPTABLE_DEFECT_RATE" type="float8" defaultValueNumeric="70"/>
+            <column name="ACCEPTABLE_FAILURE_RATE" type="float8" defaultValueNumeric="70"/>
         </createTable>
 
     </changeSet>

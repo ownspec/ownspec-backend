@@ -30,7 +30,7 @@ public class RiskAssessmentService {
       riskAssessment.setComponentVersion(componentVersion);
       riskAssessment.setFailureImpactLevel(source.getFailureImpactLevel());
       riskAssessment.setFrequencyOfUse(source.getFrequencyOfUse());
-      riskAssessment.setAcceptableDefectRate(source.getAcceptableDefectRate());
+      riskAssessment.setAcceptableFailureRate(source.getAcceptableFailureRate());
     }
     riskAssessmentRepository.save(riskAssessment);
   }

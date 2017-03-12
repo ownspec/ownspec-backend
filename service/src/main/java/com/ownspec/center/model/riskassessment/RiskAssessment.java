@@ -43,7 +43,7 @@ public class RiskAssessment implements Persistable {
   @Column(name = "FAILURE_IMPACT_LEVEL")
   private FailureImpactLevel failureImpactLevel;
 
-  @Column(name = "ACCEPTABLE_DEFECT_RATE")
-  private Double acceptableDefectRate; //tolerance
+  @Column(name = "ACCEPTABLE_FAILURE_RATE")
+  private Double acceptableFailureRate;
 
 }
