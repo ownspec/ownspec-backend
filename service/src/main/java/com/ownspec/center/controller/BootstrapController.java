@@ -20,12 +20,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by nlabrot on 03/10/16.
  */
 @RestController("/api/bootstrap")
 public class BootstrapController {
+
+  private static final String[] LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque vel lorem quam. Etiam faucibus, enim in vehicula gravida, leo neque venenatis dui, vel consequat elit mi quis velit. Sed rhoncus sodales lacinia. Quisque fermentum fringilla ligula non porttitor. Cras tellus sapien, sodales eget laoreet et, interdum ac augue. Nunc molestie dui in turpis aliquet accumsan. Phasellus mollis lobortis nisl. Nullam pharetra placerat erat, quis euismod sem molestie ac. Mauris nec elit et mauris mattis tristique eget at metus. Maecenas blandit sagittis risus. Nunc at libero orci. Maecenas viverra est at eros tempus, at fringilla neque tempus.".split(" ");
 
   @Autowired
   protected ComponentService componentService;
@@ -72,7 +75,7 @@ public class BootstrapController {
 
     for (Integer index = 0; index < nbComponents; index++) {
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
-          .title(prefix + " COMPONENT " + index)
+          .title(generateTitle())
           .version("1")
           .type(ComponentType.COMPONENT)
           .content("test1")
@@ -89,7 +92,7 @@ public class BootstrapController {
     for (Integer index = 0; index < nbRequirements; index++) {
 
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
-          .title(prefix + " REQUIREMENT " + index)
+          .title(generateTitle())
           .version("1")
           .type(ComponentType.REQUIREMENT)
           .content("test1")
@@ -106,7 +109,7 @@ public class BootstrapController {
 
     for (Integer index = 0; index < nbDocuments; index++) {
       ComponentVersionDto componentDto = ImmutableComponentVersionDto.newComponentVersionDto()
-          .title(prefix + " DOCUMENT " + index)
+          .title(generateTitle())
           .version("1")
           .type(ComponentType.DOCUMENT)
           .content("test1")
@@ -119,5 +122,17 @@ public class BootstrapController {
       Component component = componentService.create(componentDto).getLeft();
     }
 
+  }
+
+
+  private String generateTitle() {
+
+
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < ThreadLocalRandom.current().nextInt(6, 16); i++) {
+      builder.append(LOREM[ThreadLocalRandom.current().nextInt(LOREM.length)]).append(" ");
+    }
+
+    return builder.toString().trim();
   }
 }

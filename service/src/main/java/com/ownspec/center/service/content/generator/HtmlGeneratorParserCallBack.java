@@ -1,6 +1,8 @@
 package com.ownspec.center.service.content.generator;
 
-import com.ownspec.center.model.component.Component;
+import static com.ownspec.center.service.content.HtmlContentSaver.DATA_EDITABLE;
+import static com.ownspec.center.service.content.HtmlContentSaver.DATA_LOADED;
+
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.WorkflowStatus;
@@ -63,6 +65,7 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
 
     Element nestedBody = parseNestedComponent(nestedComponent);
 
+
     // Create title tag
     if (!forComposition) {
       parserContext.getElement().appendChild(parserContext.getElement().ownerDocument().createElement("div").addClass("requirements-id").text(nestedComponent.getComponent().getCode()));
@@ -70,6 +73,10 @@ public class HtmlGeneratorParserCallBack implements ParserCallBack<Element> {
 
     //Create content tag
     Element nestedContent = parserContext.getElement().ownerDocument().createElement("div").addClass("requirements-content");
+
+    // Content is already loaded
+    parserContext.getElement().attr(DATA_LOADED, "true");
+    parserContext.getElement().attr(DATA_EDITABLE, Boolean.toString(workflowStatus.getStatus().isEditable()));
 
     nestedContent.attr("contenteditable", Boolean.toString(workflowStatus.getStatus().isEditable()));
 

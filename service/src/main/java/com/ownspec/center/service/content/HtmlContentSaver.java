@@ -22,6 +22,7 @@ import com.ownspec.center.service.content.parser.ParserCallBack;
 import com.ownspec.center.service.content.parser.ParserContext;
 import com.ownspec.center.service.workflow.WorkflowService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
@@ -33,11 +34,12 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -47,6 +49,10 @@ import java.util.UUID;
 public class HtmlContentSaver {
 
   public static final String DATA_REFERENCE_ID = "data-reference-id";
+
+  public static final String DATA_EDITABLE = "data-os-editable";
+
+  public static final String DATA_LOADED = "data-os-cv-loaded";
 
   public static final String DATA_COMPONENT_VERSION_ID = "data-os-cv-id";
   public static final String DATA_REQUIREMENT_SCM_REF = "data-requirement-scm-ref";
@@ -86,7 +92,7 @@ public class HtmlContentSaver {
 
   // Keep the insertion order, insertion order are reversed depth first
   // eg nested components A => B => C will be inserted C => B => A
-  private Map<String, ComponentContent> referencesByComponent = new LinkedHashMap<>();
+  private Map<String, ComponentContent> parsedComponents = new LinkedHashMap<>();
 
   private DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -105,10 +111,11 @@ public class HtmlContentSaver {
   private void extractReferences(ComponentVersion componentVersion, String content) {
     ComponentContent componentContent = new ComponentContent(componentVersion.getId().toString());
     componentContent.componentVersionId = componentVersion.getId();
+    componentContent.editable = true;
 
     graph.addVertex(componentContent.tempId);
 
-    HtmlComponentContentParser.parse(content , new SaveParseCallBack(componentContent));
+    HtmlComponentContentParser.parse(content, new SaveParseCallBack(componentContent));
   }
 
 
@@ -121,9 +128,9 @@ public class HtmlContentSaver {
       throw new ComponentCycleException(cycleDetector.findCycles());
     }
 
-    for (String tempId : referencesByComponent.keySet()) {
+    for (String tempId : parsedComponents.keySet()) {
 
-      ComponentContent componentContent = referencesByComponent.get(tempId);
+      ComponentContent componentContent = parsedComponents.get(tempId);
 
       ComponentVersion componentVersion;
 
@@ -135,7 +142,7 @@ public class HtmlContentSaver {
             .type(ComponentType.COMPONENT).build()).getRight();
 
         // Update the component status to draft
-        workflowService.updateStatus(componentVersion.getId() , Status.DRAFT , "draft");
+        workflowService.updateStatus(componentVersion.getId(), Status.DRAFT, "draft");
 
         componentContent.componentVersionId = componentVersion.getId();
 
@@ -155,7 +162,7 @@ public class HtmlContentSaver {
       componentContent.scmReference = workflowStatus.getLastGitReference();
 
 
-      if (!workflowStatus.getStatus().isEditable()) {
+      if (!workflowStatus.getStatus().isEditable() || !componentContent.editable) {
         LOG.info("Component [{}] is not editable", componentVersion);
         continue;
       }
@@ -169,8 +176,6 @@ public class HtmlContentSaver {
 */
 
 
-
-
       Long deletedRef = 0L;
 
       if (!componentContent.created) {
@@ -180,7 +185,7 @@ public class HtmlContentSaver {
 
       // Save the new references
       for (String refTempId : componentContent.referencedTarget) {
-        ComponentContent referenceComponentContent = referencesByComponent.get(refTempId);
+        ComponentContent referenceComponentContent = parsedComponents.get(refTempId);
 
         ComponentReference componentReference = new ComponentReference();
         componentReference.setSource(componentVersion);
@@ -208,7 +213,7 @@ public class HtmlContentSaver {
     }
   }
 
-  public Map<Long, List<Pair<Long, Long>>> getReferencesByComponent() {
+  public Map<Long, List<Pair<Long, Long>>> getParsedComponents() {
     return null;
   }
 
@@ -218,7 +223,8 @@ public class HtmlContentSaver {
     private Long componentVersionId;
     private String content;
     private String scmReference;
-    private List<String> referencedTarget = new ArrayList<>();
+    private boolean editable = false;
+    private Set<String> referencedTarget = new LinkedHashSet<>();
     private Map<String, Long> referencedTargetToReferenceId = new HashMap<>();
     private boolean created = false;
 
@@ -233,7 +239,6 @@ public class HtmlContentSaver {
   }
 
 
-
   class UpdateReferenceCallBack implements ParserCallBack {
 
     ComponentContent componentContent;
@@ -245,18 +250,16 @@ public class HtmlContentSaver {
 
     @Override
     public void parseReference(ParserContext parserContext) {
-      ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
-      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(parserContext.getNestedComponentId()).toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, refComponentContent.componentVersionId.toString());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, parserContext.getNestedComponentId());
     }
 
     @Override
     public void parseResource(ParserContext parserContext) {
-      ComponentContent refComponentContent = referencesByComponent.get(componentContent.referencedTarget.get(referenceIndex++));
-      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(refComponentContent.tempId).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(parserContext.getNestedComponentId()).toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, refComponentContent.componentVersionId.toString());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, parserContext.getNestedComponentId());
     }
 
     @Override
@@ -277,20 +280,38 @@ public class HtmlContentSaver {
 
       ComponentContent nestedComponent;
 
+
       if (!parserContext.getNestedComponentId().startsWith("_")) {
         nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
         nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
-        //nestedComponent.scmReference = parserContext.getNestedComponentId();
       } else {
+        // New component
         nestedComponent = new ComponentContent();
+        parserContext.getElement().attr(HtmlContentSaver.DATA_COMPONENT_VERSION_ID, nestedComponent.tempId);
       }
+      // Cycle detector
       graph.addVertex(nestedComponent.tempId);
       graph.addEdge(componentContent.tempId, nestedComponent.tempId);
 
+
       componentContent.referencedTarget.add(nestedComponent.tempId);
 
-      // extract reference from the nested reference content (second children, first children is the title)
-      parseComponent(parserContext.getElement().children().get(1), new SaveParseCallBack(nestedComponent));
+      Element contentElement = parserContext.getElement().children().get(1);
+
+      nestedComponent.editable = StringUtils.equals(contentElement.attr(DATA_EDITABLE), "true");
+
+      if (nestedComponent.editable) {
+        // If the component is editable it may have been modified
+        // extract reference from the nested reference content (second children, first children is the title)
+        parseComponent(contentElement, new SaveParseCallBack(nestedComponent));
+      } else {
+        // Otherwise no need to parse the component, but add it to the parsedComponent map
+        // But only if not already added
+        if (!parsedComponents.containsKey(nestedComponent.tempId)) {
+          parsedComponents.put(nestedComponent.tempId, nestedComponent);
+        }
+      }
+
       // remove all the childrens to keep only the reference
       parserContext.getElement().empty();
     }
@@ -300,10 +321,7 @@ public class HtmlContentSaver {
     public void parseResource(ParserContext parserContext) {
       ComponentContent nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
       nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
-      //nestedComponent.scmReference = nestedScmReference;
-
       componentContent.referencedTarget.add(nestedComponent.tempId);
-
       parseComponent(parserContext.getElement(), new SaveParseCallBack(nestedComponent));
     }
 
@@ -311,7 +329,8 @@ public class HtmlContentSaver {
     @Override
     public ComponentContent endComponent(Element parent) {
       componentContent.content = parent.html();
-      referencesByComponent.put(componentContent.tempId, componentContent);
+      // The parsedComponents may already contains the component whish should not be editable
+      parsedComponents.put(componentContent.tempId, componentContent);
       return componentContent;
     }
   }
