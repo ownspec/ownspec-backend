@@ -8,8 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author lyrold
  */
-public interface VerificationTokenRepository extends JpaRepository<VerificationToken,Long> {
+public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
 
   VerificationToken findOneByToken(String token);
+
+  VerificationToken findOneByUserId(Long id);
 
 }

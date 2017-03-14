@@ -1,10 +1,14 @@
 package com.ownspec.center.controller;
 
+import static java.util.Objects.requireNonNull;
+
 import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.VerificationToken;
 import com.ownspec.center.service.AuthenticationService;
+import com.ownspec.center.service.EmailService;
 import com.ownspec.center.service.UserService;
+import com.ownspec.center.util.AbstractMimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URL;
 import java.time.Instant;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +53,9 @@ public class AuthenticationController {
 
   @Autowired
   private PasswordEncoder encoder;
+
+  @Autowired
+  private EmailService emailService;
 
   @PostMapping("/login")
   @ResponseBody
@@ -81,7 +90,7 @@ public class AuthenticationController {
     response.addCookie(cookie);
   }
 
-  @PostMapping("/registrationConfirmation/{token}")
+  @PostMapping("/registration/confirmation/{token}")
   @ResponseBody
   public ResponseEntity confirmRegistration(@PathVariable("token") String token, @RequestBody String password, HttpServletResponse response) {
 
@@ -109,4 +118,47 @@ public class AuthenticationController {
     return ResponseEntity.ok("Registration successfully completed");
   }
 
+  @PostMapping("/registration/confirmation/resend/{userId}")
+  @ResponseBody
+  public ResponseEntity resendRegistrationConfirmationEmail(@PathVariable("userId") Long userId,
+                                                            HttpServletRequest request,
+                                                            HttpServletResponse response) throws Exception {
+    //Check if users exists
+    User user = userService.findOne(userId);
+    if (user == null) {
+      response.setStatus(HttpStatus.SC_NOT_FOUND);
+      return ResponseEntity.badRequest().body("No user found with id [" + userId + "]");
+    }
+
+    // Check if token exists for user
+    VerificationToken verificationToken = authenticationService.getVerificationToken(user);
+    if (verificationToken == null) {
+      response.setStatus(HttpStatus.SC_NOT_FOUND);
+      return ResponseEntity.badRequest().body("No verification token found for user with id [" + userId + "]");
+    }
+    //todo check token's expiry date
+    URL requestURL = new URL(request.getRequestURL().toString());
+    AbstractMimeMessage message = userService.buildConfirmRegistrationMessage(user, verificationToken.getToken(), requestURL);
+    emailService.send(message);
+
+    return ResponseEntity.ok("Registration confirmation email successfully sent");
+  }
+
+
+  @PostMapping(value = "/user/{id}/password")
+  @ResponseBody
+  public ResponseEntity sendChangePasswordEmail(@PathVariable("id") Long id, HttpServletRequest request) throws Exception {
+    URL requestURL = new URL(request.getRequestURL().toString());
+    userService.sendChangePasswordEmail(id, requestURL);
+    return ResponseEntity.ok().build();
+  }
+
+  @PatchMapping(value = "/user/{id}/password")
+  @ResponseBody
+  public ResponseEntity changePassword(@PathVariable("id") Long id,
+                                       @RequestBody String password) throws Exception {
+    User user = requireNonNull(userService.findOne(id));
+    user.setPassword(encoder.encode(password));
+    return ResponseEntity.ok(UserDto.fromUser(userService.update(user)));
+  }
 }

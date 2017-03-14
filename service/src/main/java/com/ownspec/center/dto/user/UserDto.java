@@ -91,13 +91,11 @@ public interface UserDto {
         .accountNonExpired(user.isAccountNonExpired())
         .accountNonLocked(user.isAccountNonLocked())
         .credentialsNonExpired(user.isCredentialsNonExpired())
-        .empoweredSecret(user.isEmpoweredSecret());
+        .empoweredSecret(user.isEmpoweredSecret())
+        .category(UserCategoryDto.fromUserCategory(user.getCategory()));
 
     if (user.getPreference() != null) {
       builder.userPreference(user.getPreference());
-    }
-    if (user.getCategory() != null) {
-      builder.category(UserCategoryDto.fromUserCategory(user.getCategory()));
     }
     if (user.getGroup() != null) {
       builder.group(user.getGroup());

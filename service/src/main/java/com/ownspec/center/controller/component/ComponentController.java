@@ -134,8 +134,8 @@ public class ComponentController {
   }
 
 
-  @RequestMapping(value = "/{id}/delete", method = RequestMethod.DELETE)
-  public ResponseEntity delete(@PathVariable("id") Long id) {
+  @RequestMapping(value = "/{id}/disable", method = RequestMethod.DELETE)
+  public ResponseEntity disable(@PathVariable("id") Long id) {
     componentService.remove(id);
     return ok().build();
   }

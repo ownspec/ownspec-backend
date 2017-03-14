@@ -37,5 +37,7 @@ public class UserCategoryService {
     }
   }
 
-
+  public UserCategory findOne(Long id) {
+    return userCategoryRepository.findOne(id);
+  }
 }

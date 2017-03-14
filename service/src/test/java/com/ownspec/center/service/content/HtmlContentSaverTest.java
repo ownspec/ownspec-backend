@@ -31,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple3;
-import org.jooq.lambda.tuple.Tuple3;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
@@ -267,7 +266,7 @@ public class HtmlContentSaverTest {
     verify(gitService).updateAndCommit(eq(component1.v1.getComponent().getVcsId()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_1.html"), r)), any(), any());
     // Component 1: update git ref
     verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
-    // Component 1: delete reference
+    // Component 1: disable reference
     verify(componentReferenceRepository).deleteBySourceId(component1.v1.getId());
 
     // Component 1: One saved references 1 => 2
@@ -293,7 +292,7 @@ public class HtmlContentSaverTest {
     verify(gitService).updateAndCommit(eq(component3.v1.getComponent().getVcsId()), eq("filePath3"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_3.html"), r)), any(), any());
     // Component 3: update git ref
     verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 3L && "hash3".equals(w.getGitReference())));
-    // Component 3: delete reference
+    // Component 3: disable reference
     verify(componentReferenceRepository).deleteBySourceId(component3.v1.getId());
 
     Mockito.verifyNoMoreInteractions(componentReferenceRepository, gitService);

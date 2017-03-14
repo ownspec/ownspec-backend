@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +36,6 @@ public class UserController {
 
   @Autowired
   private UserService userService;
-
 
   @RequestMapping
   @ResponseBody
@@ -72,27 +72,17 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping(value = "/{id}")
+  @PatchMapping(value = "/{id}")
   @ResponseBody
-  public ResponseEntity update(@PathVariable("id") Long id, @RequestBody UserDto source) {
-    userService.update(source, id);
-    return ResponseEntity.ok().build();
+  public UserDto update(@PathVariable("id") Long id, @RequestBody UserDto source) {
+    return UserDto.fromUser(userService.update(source, id));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping(value = "/{id}")
   @ResponseBody
-  public ResponseEntity delete(@PathVariable("id") Long id) {
-    userService.delete(id);
+  public ResponseEntity disable(@PathVariable("id") Long id) {
+    userService.disable(id);
     return ResponseEntity.ok().build();
   }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping(value = "/{id}/resetPassword")
-  @ResponseBody
-  public ResponseEntity resetPassword(@PathVariable("id") Long id) {
-    userService.resetPassword(id);
-    return ResponseEntity.ok().build();
-  }
-
 }
