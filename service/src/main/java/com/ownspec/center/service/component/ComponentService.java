@@ -175,7 +175,8 @@ public class ComponentService {
     component.setProject(project);
     component.setType(source.getType());
     component.setVcsId(UUID.randomUUID().toString());
-    component.setCode(ccc.getKey() + "-" + ccc.incrementAndGet());
+    component.setCodeNumber(ccc.incrementAndGet());
+    component.setCode(ccc.getKey() + "-" + component.getCodeNumber());
 
     ccc = componentCodeCounterRepository.save(ccc);
 

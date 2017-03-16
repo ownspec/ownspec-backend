@@ -223,6 +223,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="CODE" type="VARCHAR2(64)"/>
+            <column name="CODE_NUMBER" type="bigint"/>
             <column name="PROJECT_ID" type="bigint">
                 <constraints nullable="true" references="PROJECT(ID)" foreignKeyName="FK_CMP_PROJECT_ID"/>
             </column>

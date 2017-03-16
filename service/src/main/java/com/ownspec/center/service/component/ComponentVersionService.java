@@ -19,6 +19,7 @@ import com.ownspec.center.service.EstimatedTimeService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.RiskAssessmentService;
 import com.ownspec.center.service.UploadService;
+import com.ownspec.center.service.UserService;
 import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.OsUtils;
@@ -77,6 +78,10 @@ public class ComponentVersionService {
   @Autowired
   private RiskAssessmentService riskAssessmentService;
 
+  @Autowired
+  private UserService userService;
+
+
   /**
    * Update component
    * The component is locked to ensure concurrent modification
@@ -108,6 +113,11 @@ public class ComponentVersionService {
     if (riskAssessment != null) {
       riskAssessmentService.addOrUpdate(riskAssessment, componentVersion);
     }
+
+    if (source.getAssignedTo() != null) {
+      componentVersion.setAssignedTo(userService.loadUserByUsername(source.getAssignedTo().getUsername()));
+    }
+
 
     return componentVersionRepository.save(componentVersion);
   }

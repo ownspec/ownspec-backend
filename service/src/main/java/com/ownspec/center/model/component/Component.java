@@ -12,7 +12,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -35,8 +34,13 @@ public class Component extends AbstractAuditable implements Auditable<User>, Per
   @Column(name = "ID")
   protected Long id;
 
+  // Ease sorting
   @JoinColumn(name = "CODE")
   protected String code;
+
+  @JoinColumn(name = "CODE_NUMBER")
+  protected long codeNumber;
+
 
   // Project which owns this component, if any
   @ManyToOne

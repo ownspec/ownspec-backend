@@ -69,13 +69,18 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
       predicates.add(componentVersion.component.type.in(types));
     }
 
+
+
     /*if (StringUtils.isNotBlank(sort)) {
       Arrays.stream(sort.split(",")).map(s -> {
         String[] sortItem = s.split(":");
         if (sortItem.length > 0){
+
         }
       });
     }*/
+
+    jpaQuery.orderBy(componentVersion.component.codeNumber.asc());
 
     if (predicates.size() > 0) {
       jpaQuery.where(predicates.toArray(new Predicate[]{}));

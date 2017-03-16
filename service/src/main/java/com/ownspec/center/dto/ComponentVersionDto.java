@@ -38,6 +38,9 @@ public interface ComponentVersionDto {
   @Nullable
   String getCode();
 
+  @Nullable
+  Long getCodeNumber();
+
   String getTitle();
 
   ComponentType getType();
@@ -113,6 +116,8 @@ public interface ComponentVersionDto {
         .projectId(c.getComponent().getProject() != null ? c.getComponent().getProject().getId() : null)
         .title(c.getTitle())
         .type(c.getComponent().getType())
+        .code(c.getComponent().getCode())
+        .codeNumber(c.getComponent().getCodeNumber())
         .createdDate(c.getCreatedDate())
         .createdUser(UserDto.fromUser(c.getCreatedUser()))
         .lastModifiedDate(c.getLastModifiedDate())
