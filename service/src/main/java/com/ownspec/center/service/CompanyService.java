@@ -1,8 +1,8 @@
 package com.ownspec.center.service;
 
 import com.ownspec.center.dto.user.UserDto;
-import com.ownspec.center.model.Company;
-import com.ownspec.center.repository.CompanyRepository;
+import com.ownspec.center.model.company.Company;
+import com.ownspec.center.repository.company.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

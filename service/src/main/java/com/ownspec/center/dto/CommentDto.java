@@ -1,14 +1,13 @@
 package com.ownspec.center.dto;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-import com.ownspec.center.dto.user.UserDto;
-import org.immutables.value.Value;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.Comment;
+import com.ownspec.center.dto.user.UserDto;
+import com.ownspec.center.model.component.Comment;
+import org.immutables.value.Value;
+
+import java.time.Instant;
+import javax.annotation.Nullable;
 
 /**
  * Created by nlabrot on 16/10/16.

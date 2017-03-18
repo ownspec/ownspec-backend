@@ -1,16 +1,10 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.component;
 
+import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.persistable.Persistable;
-import com.ownspec.center.model.user.User;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

@@ -1,6 +1,6 @@
 package com.ownspec.center.controller.component;
 
-import com.ownspec.center.dto.ComponentVersionDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.service.CommentService;

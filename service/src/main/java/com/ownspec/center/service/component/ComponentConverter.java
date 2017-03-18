@@ -1,19 +1,19 @@
 package com.ownspec.center.service.component;
 
-import static com.ownspec.center.dto.ImmutableComponentReferenceDto.newComponentReferenceDto;
-import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.dto.component.ImmutableComponentReferenceDto.newComponentReferenceDto;
+import static com.ownspec.center.dto.workflow.WorkflowStatusDto.newBuilderFromWorkflowStatus;
 
 import com.ownspec.center.dto.ChangeDto;
-import com.ownspec.center.dto.ComponentReferenceDto;
-import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.EstimatedTimeDto;
-import com.ownspec.center.dto.ImmutableComponentVersionDto;
-import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.RiskAssessmentDto;
-import com.ownspec.center.dto.WorkflowInstanceDto;
-import com.ownspec.center.dto.WorkflowStatusDto;
+import com.ownspec.center.dto.component.ComponentReferenceDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.dto.user.UserComponentDto;
 import com.ownspec.center.dto.user.UserDto;
+import com.ownspec.center.dto.workflow.ImmutableWorkflowInstanceDto;
+import com.ownspec.center.dto.workflow.WorkflowInstanceDto;
+import com.ownspec.center.dto.workflow.WorkflowStatusDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentVersion;

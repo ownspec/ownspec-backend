@@ -1,4 +1,4 @@
-package com.ownspec.center.dto;
+package com.ownspec.center.dto.workflow;
 
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

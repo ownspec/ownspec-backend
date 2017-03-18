@@ -1,15 +1,15 @@
 package com.ownspec.center.service.workflow;
 
 import static com.ownspec.center.dto.ImmutableChangeDto.newChangeDto;
-import static com.ownspec.center.dto.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
-import static com.ownspec.center.dto.WorkflowStatusDto.newBuilderFromWorkflowStatus;
+import static com.ownspec.center.dto.workflow.WorkflowInstanceDto.newBuilderFromWorkflowInstance;
+import static com.ownspec.center.dto.workflow.WorkflowStatusDto.newBuilderFromWorkflowStatus;
 
 import com.google.common.collect.Lists;
 import com.ownspec.center.dto.ChangeDto;
-import com.ownspec.center.dto.ImmutableWorkflowInstanceDto;
 import com.ownspec.center.dto.user.UserDto;
-import com.ownspec.center.dto.WorkflowInstanceDto;
-import com.ownspec.center.dto.WorkflowStatusDto;
+import com.ownspec.center.dto.workflow.ImmutableWorkflowInstanceDto;
+import com.ownspec.center.dto.workflow.WorkflowInstanceDto;
+import com.ownspec.center.dto.workflow.WorkflowStatusDto;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.WorkflowInstance;

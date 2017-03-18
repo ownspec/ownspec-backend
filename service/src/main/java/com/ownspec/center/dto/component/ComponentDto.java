@@ -1,6 +1,6 @@
-package com.ownspec.center.dto;
+package com.ownspec.center.dto.component;
 
-import static com.ownspec.center.dto.ImmutableComponentDto.newComponentDto;
+import static com.ownspec.center.dto.component.ImmutableComponentDto.newComponentDto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

@@ -28,9 +28,12 @@ public class RiskAssessmentService {
     } else {
       riskAssessment = new RiskAssessment();
       riskAssessment.setComponentVersion(componentVersion);
-      riskAssessment.setFailureImpactLevel(source.getFailureImpactLevel());
+      riskAssessment.setRiskDescription(source.getRiskDescription());
       riskAssessment.setFrequencyOfUse(source.getFrequencyOfUse());
-      riskAssessment.setAcceptableFailureRate(source.getAcceptableFailureRate());
+      riskAssessment.setFailureProbability(source.getFailureProbability());
+      riskAssessment.setFailureImpactLevel(source.getFailureImpactLevel());
+      riskAssessment.setFailureImpactType(source.getFailureImpactType());
+      riskAssessment.setFailureProcedure(source.getFailureProcedure());
     }
     riskAssessmentRepository.save(riskAssessment);
   }

@@ -107,19 +107,83 @@
         </createTable>
 
         <!-- ******************************************************************************** -->
-        <!-- COMPANY -->
-        <createTable tableName="COMPANY">
+        <!-- DETAILS -->
+        <createTable tableName="DETAILS">
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="NAME" type="VARCHAR2(64)"/>
             <column name="ADDRESS" type="VARCHAR2(128)"/>
-            <column name="PHONE" type="VARCHAR2(64)"/>
-            <column name="FAX" type="VARCHAR2(64)"/>
-            <column name="CONTACT_EMAIL" type="VARCHAR2(64)"/>
+            <column name="POSTAL_CODE" type="VARCHAR2(16)"/>
+            <column name="COUNTRY" type="VARCHAR2(32)"/>
+
+            <column name="PHONE" type="VARCHAR2(32)"/>
+            <column name="FAX" type="VARCHAR2(32)"/>
+            <column name="EMAIL" type="VARCHAR2(64)"/>
             <column name="WEBSITE" type="VARCHAR2(64)"/>
+
+            <column name="GITHUB" type="VARCHAR2(64)"/>
+            <column name="LINKEDIN" type="VARCHAR2(64)"/>
+            <column name="TWITTER" type="VARCHAR2(64)"/>
+            <column name="FACEBOOK" type="VARCHAR2(64)"/>
+            <column name="GOOGLE" type="VARCHAR2(64)"/>
+
+            <column name="BILLING_CURRENCY" type="VARCHAR2(3)"/>
+            <column name="IS_DEFAULT" type="boolean" defaultValueNumeric="0"/>
+
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPANY -->
+        <createTable tableName="COMPANY">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
             <column name="REGISTRATION_NUMBER" type="VARCHAR2(64)"/>
             <column name="HOST" type="boolean" defaultValueNumeric="0"/>
+            <column name="LOGO_URL" type="VARCHAR2(64)"/>
+            <column name="BUSINESS_INDUSTRY" type="VARCHAR2(16)"/>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- CLIENT -->
+        <createTable tableName="CLIENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DETAILS_ID" type="bigint">
+                <constraints references="DETAILS(ID)" nullable="false" foreignKeyName="FK_CLIENT_DETAILS_ID"/>
+            </column>
+            <column name="BUSINESS_INDUSTRY" type="VARCHAR2(16)"/>
+
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPANY_DETAILS -->
+        <createTable tableName="COMPANY_DETAILS">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="COMPANY_ID" type="bigint">
+                <constraints references="COMPANY(ID)" nullable="false" foreignKeyName="FK_COMPANY_DETAILS_COMPANY_ID"/>
+            </column>
+            <column name="DETAILS_ID" type="bigint">
+                <constraints references="DETAILS(ID)" nullable="false" foreignKeyName="FK_COMPANY_DETAILS_DETAILS_ID"/>
+            </column>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- COMPANY_CLIENT -->
+        <createTable tableName="COMPANY_CLIENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CLIENT_ID" type="bigint">
+                <constraints references="CLIENT(ID)" nullable="false" foreignKeyName="FK_COMPANY_CLIENT_CLIENT_ID"/>
+            </column>
+            <column name="COMPANY_ID" type="bigint">
+                <constraints references="COMPANY(ID)" nullable="false" foreignKeyName="FK_COMPANY_CLIENT_COMPANY_ID"/>
+            </column>
         </createTable>
 
         <!-- ******************************************************************************** -->
@@ -138,6 +202,21 @@
                 <constraints references="OSUSER(ID)" nullable="false" foreignKeyName="FK_OSUSER_COMPANY_USER_ID"/>
             </column>
             <column name="IS_LEGAL_REPRESENTATIVE" type="boolean" defaultValueNumeric="1"/>
+        </createTable>
+
+        <!-- ******************************************************************************** -->
+        <!-- USER_CLIENT -->
+        <createTable tableName="USER_CLIENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CLIENT_ID" type="bigint">
+                <constraints references="CLIENT(ID)" nullable="false" foreignKeyName="FK_OSUSER_CLIENT_CLIENT_ID"/>
+            </column>
+            <column name="USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" nullable="false" foreignKeyName="FK_OSUSER_CLIENT_USER_ID"/>
+            </column>
+            <column name="IS_ACCOUNT_MANAGER" type="boolean" defaultValueNumeric="1"/>
         </createTable>
 
 
@@ -485,9 +564,12 @@
             <column name="COMPONENT_VERSION_ID" type="bigint">
                 <constraints nullable="false" references="COMPONENT_VERSION(ID)" foreignKeyName="FK_RIS_ASS_CMP_VER_ID"/>
             </column>
+            <column name="RISK_DESCRIPTION" type="VARCHAR2(256)"/>
             <column name="FREQUENCY_OF_USE" type="VARCHAR2(64)"/>
-            <column name="FAILURE_IMPACT_LEVEL" type="VARCHAR2(64)"/>
-            <column name="ACCEPTABLE_FAILURE_RATE" type="float8" defaultValueNumeric="70"/>
+            <column name="FAILURE_PROBABILITY" type="VARCHAR2(16)"/>
+            <column name="FAILURE_IMPACT_LEVEL" type="VARCHAR2(16)"/>
+            <column name="FAILURE_IMPACT_TYPE" type="VARCHAR2(16)"/>
+            <column name="FAILURE_PROCEDURE" type="VARCHAR2(256)"/>
         </createTable>
 
     </changeSet>

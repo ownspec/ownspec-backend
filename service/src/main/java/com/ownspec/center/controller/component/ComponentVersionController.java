@@ -1,7 +1,7 @@
 package com.ownspec.center.controller.component;
 
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.WorkflowStatusDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.workflow.WorkflowStatusDto;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.Status;

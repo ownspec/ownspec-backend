@@ -4,8 +4,8 @@ import static com.ownspec.center.util.RequestFilterMode.FAVORITES_ONLY;
 import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 
 import com.ownspec.center.dto.CommentDto;
-import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ComponentVersionDto;
+import com.ownspec.center.dto.component.ComponentDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.service.CommentService;

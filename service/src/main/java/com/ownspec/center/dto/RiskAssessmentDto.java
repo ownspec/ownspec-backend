@@ -2,8 +2,9 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.ownspec.center.model.riskassessment.FailureImpactLevel;
+import com.ownspec.center.model.riskassessment.FailureImpactType;
 import com.ownspec.center.model.riskassessment.FrequencyOfUse;
+import com.ownspec.center.model.riskassessment.Level;
 import com.ownspec.center.model.riskassessment.RiskAssessment;
 import org.immutables.value.Value;
 
@@ -24,21 +25,32 @@ public interface RiskAssessmentDto {
   Long getId();
 
   @Nullable
+  String getRiskDescription();
+
+  @Nullable
   FrequencyOfUse getFrequencyOfUse();
 
   @Nullable
-  FailureImpactLevel getFailureImpactLevel();
+  Level getFailureProbability();
 
   @Nullable
-  Double getAcceptableFailureRate();
+  Level getFailureImpactLevel();
 
+  @Nullable
+  FailureImpactType getFailureImpactType();
+
+  @Nullable
+  String getFailureProcedure();
 
   static ImmutableRiskAssessmentDto createFromRiskAssessment(RiskAssessment source) {
     return ImmutableRiskAssessmentDto.newRiskAssessmentDto()
         .id(source.getId())
+        .riskDescription(source.getRiskDescription())
         .frequencyOfUse(source.getFrequencyOfUse())
+        .failureProbability(source.getFailureProbability())
         .failureImpactLevel(source.getFailureImpactLevel())
-        .acceptableFailureRate(source.getAcceptableFailureRate())
+        .failureImpactType(source.getFailureImpactType())
+        .failureProcedure(source.getFailureProcedure())
         .build();
   }
 

@@ -1,15 +1,11 @@
 package com.ownspec.center.repository;
 
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.ImmutableComponentVersionDto;
+import com.ownspec.center.AbstractTest;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.ComponentVersion;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
-import com.ownspec.center.model.component.Component;
 
 /**
  * Created by nlabrot on 26/09/16.

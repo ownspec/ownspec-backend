@@ -1,16 +1,16 @@
-package com.ownspec.center.dto;
-
-import javax.annotation.Nullable;
-
-import java.time.Instant;
-import java.util.List;
-
-import com.ownspec.center.dto.user.UserDto;
-import org.immutables.value.Value;
+package com.ownspec.center.dto.workflow;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.ChangeDto;
+import com.ownspec.center.dto.StatusDto;
+import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.workflow.WorkflowStatus;
+import org.immutables.value.Value;
+
+import java.time.Instant;
+import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Created by nlabrot on 27/09/16.

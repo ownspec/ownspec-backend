@@ -1,7 +1,7 @@
 package com.ownspec.center.controller.tag;
 
-import com.ownspec.center.dto.ComponentDto;
 import com.ownspec.center.dto.TagDto;
+import com.ownspec.center.dto.component.ComponentDto;
 import com.ownspec.center.repository.tag.ComponentTagRepository;
 import com.ownspec.center.repository.tag.TagRepository;
 import com.ownspec.center.service.component.ComponentService;

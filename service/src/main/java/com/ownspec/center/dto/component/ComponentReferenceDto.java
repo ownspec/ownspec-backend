@@ -1,7 +1,8 @@
-package com.ownspec.center.dto;
+package com.ownspec.center.dto.component;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.AuditableDto;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

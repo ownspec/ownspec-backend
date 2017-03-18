@@ -1,11 +1,11 @@
 package com.ownspec.center.dto;
 
-import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.component.DistributionLevel;
 import com.ownspec.center.model.component.RequirementType;
-import com.ownspec.center.model.riskassessment.FailureImpactLevel;
 import com.ownspec.center.model.riskassessment.FrequencyOfUse;
+import com.ownspec.center.model.riskassessment.Level;
 import com.ownspec.center.model.workflow.Status;
 import org.immutables.value.Value;
 
@@ -30,7 +30,7 @@ public interface ApplicationDto {
 
   FrequencyOfUse[] getRiskAssessmentFrequenciesOfUser();
 
-  FailureImpactLevel[] getFailureImpactLevels();
+  Level[] getFailureImpactLevels();
 
 
   static ApplicationDto toApplicationDto() {
@@ -41,7 +41,7 @@ public interface ApplicationDto {
         .requirementTypes(RequirementType.values())
         .coverageStatuses(CoverageStatus.values())
         .riskAssessmentFrequenciesOfUser(FrequencyOfUse.values())
-        .failureImpactLevels(FailureImpactLevel.values())
+        .failureImpactLevels(Level.values())
         .build();
   }
 

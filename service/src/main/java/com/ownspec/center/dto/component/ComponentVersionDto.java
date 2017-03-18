@@ -1,15 +1,18 @@
-package com.ownspec.center.dto;
+package com.ownspec.center.dto.component;
 
-import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVersionDto;
+import static com.ownspec.center.dto.component.ImmutableComponentVersionDto.newComponentVersionDto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.EstimatedTimeDto;
+import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.dto.user.UserComponentDto;
 import com.ownspec.center.dto.user.UserDto;
-import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.dto.workflow.WorkflowInstanceDto;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.component.DistributionLevel;
 import com.ownspec.center.model.component.RequirementType;
 import org.immutables.value.Value;
 

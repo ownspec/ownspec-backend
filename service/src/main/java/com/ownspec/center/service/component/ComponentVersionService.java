@@ -5,8 +5,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
-import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.RiskAssessmentDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;

@@ -1,6 +1,6 @@
-package com.ownspec.center.repository;
+package com.ownspec.center.repository.company;
 
-import com.ownspec.center.model.Company;
+import com.ownspec.center.model.company.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

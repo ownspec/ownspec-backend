@@ -1,21 +1,21 @@
 package com.ownspec.center.service.component;
 
-import static com.ownspec.center.model.DistributionLevel.PUBLIC;
 import static com.ownspec.center.model.component.ComponentType.RESOURCE;
+import static com.ownspec.center.model.component.DistributionLevel.PUBLIC;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
-import com.ownspec.center.dto.ComponentVersionDto;
 import com.ownspec.center.dto.RiskAssessmentDto;
-import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
+import com.ownspec.center.model.component.DistributionLevel;
 import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.model.workflow.WorkflowInstance;

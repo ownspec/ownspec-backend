@@ -1,9 +1,13 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.company;
 
+import com.ownspec.center.model.Business;
+import com.ownspec.center.model.MainSequenceConstants;
 import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -25,14 +29,17 @@ public class Company {
   @Column(name = "ID")
   private Long id;
 
-  @Column(name = "NAME") private String name;
-  @Column(name = "ADDRESS") private String address;
-  @Column(name = "PHONE") private String phone;
-  @Column(name = "FAX") private String fax;
-  @Column(name = "CONTACT_EMAIL") private String contactEmail;
-  @Column(name = "WEBSITE") private String website;
-  @Column(name = "REGISTRATION_NUMBER") private String registrationNumber;
-  @Column(name = "HOST") private boolean host;
+  @Column(name = "REGISTRATION_NUMBER")
+  private String registrationNumber;
 
-  //todo add company's billing currency
+  @Column(name = "HOST")
+  private boolean host;
+
+  @Column(name = "LOGO_URL")
+  private String logoUrl;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "BUSINESS_INDUSTRY")
+  private Business.Industry businessIndustry;
+
 }

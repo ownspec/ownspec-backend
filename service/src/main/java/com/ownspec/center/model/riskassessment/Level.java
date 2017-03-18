@@ -5,8 +5,9 @@ package com.ownspec.center.model.riskassessment;
  *
  * @author lyrold
  */
-public enum FailureImpactLevel {
+public enum Level {
   LOW,
   MEDIUM,
-  EXTREME
+  HIGH,
+  VERY_HIGH
 }

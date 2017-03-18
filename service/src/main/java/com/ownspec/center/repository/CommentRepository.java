@@ -1,10 +1,10 @@
 package com.ownspec.center.repository;
 
-import java.util.List;
-
-import com.ownspec.center.model.Comment;
+import com.ownspec.center.model.component.Comment;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 /**
  * Created by lyrold on 27/09/2016.

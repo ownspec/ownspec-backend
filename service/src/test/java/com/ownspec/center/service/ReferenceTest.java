@@ -3,8 +3,8 @@ package com.ownspec.center.service;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.ImmutableComponentVersionDto;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;

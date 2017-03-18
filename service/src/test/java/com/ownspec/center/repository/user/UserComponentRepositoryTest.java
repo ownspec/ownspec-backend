@@ -1,17 +1,12 @@
 package com.ownspec.center.repository.user;
 
 import com.ownspec.center.AbstractTest;
-import com.ownspec.center.dto.ComponentDto;
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.EstimatedTimeDto;
-import com.ownspec.center.dto.ImmutableComponentDto;
-import com.ownspec.center.dto.ImmutableComponentVersionDto;
-import com.ownspec.center.dto.ImmutableEstimatedTimeDto;
-import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
-import com.ownspec.center.model.user.UserCategory;
+import com.ownspec.center.model.component.DistributionLevel;
 import com.ownspec.center.model.user.UserComponent;
 import com.ownspec.center.repository.component.ComponentRepository;
 import org.junit.Assert;

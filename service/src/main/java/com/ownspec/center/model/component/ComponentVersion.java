@@ -1,6 +1,5 @@
 package com.ownspec.center.model.component;
 
-import com.ownspec.center.model.DistributionLevel;
 import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.audit.AbstractAuditable;
 import com.ownspec.center.model.audit.Auditable;

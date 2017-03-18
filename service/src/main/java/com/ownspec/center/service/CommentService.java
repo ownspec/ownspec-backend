@@ -2,7 +2,7 @@ package com.ownspec.center.service;
 
 import static java.util.Objects.requireNonNull;
 
-import com.ownspec.center.model.Comment;
+import com.ownspec.center.model.component.Comment;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.repository.CommentRepository;
 import com.ownspec.center.repository.component.ComponentRepository;

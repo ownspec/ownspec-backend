@@ -1,13 +1,13 @@
 package com.ownspec.center.controller;
 
-import com.ownspec.center.dto.ComponentVersionDto;
-import com.ownspec.center.dto.ImmutableComponentVersionDto;
-import com.ownspec.center.model.DistributionLevel;
+import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.Component;
 import com.ownspec.center.model.component.ComponentCodeCounter;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.CoverageStatus;
+import com.ownspec.center.model.component.DistributionLevel;
 import com.ownspec.center.model.component.RequirementType;
 import com.ownspec.center.repository.ComponentCodeCounterRepository;
 import com.ownspec.center.repository.ProjectRepository;

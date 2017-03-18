@@ -1,10 +1,11 @@
-package com.ownspec.center.model.user;
+package com.ownspec.center.model;
 
-import com.ownspec.center.model.MainSequenceConstants;
-import com.ownspec.center.model.company.Company;
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,26 +14,26 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Created on 12/02/2017
+ * Created on 18/03/2017
  *
  * @author lyrold
  */
 @Data
 @Entity
-@Table(name = "USER_COMPANY")
-public class UserCompany {
+@Table(name = "CLIENT")
+public class Client {
+
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
+  @Column(name = "ID")
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "COMPANY_ID")
-  private Company company;
+  @JoinColumn(name = "DETAILS_ID")
+  private Details details;
 
-  @ManyToOne
-  @JoinColumn(name = "USER_ID")
-  private User user;
-
-  private boolean isLegalRepresentative;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "BUSINESS_INDUSTRY")
+  private Business.Industry businessIndustry;
 
 }

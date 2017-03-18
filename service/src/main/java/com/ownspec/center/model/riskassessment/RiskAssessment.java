@@ -35,15 +35,26 @@ public class RiskAssessment implements Persistable {
   @JoinColumn(name = "COMPONENT_VERSION_ID")
   private ComponentVersion componentVersion;
 
+  @Column(name = "RISK_DESCRIPTION")
+  private String riskDescription;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "FREQUENCY_OF_USE")
   private FrequencyOfUse frequencyOfUse;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "FAILURE_IMPACT_LEVEL")
-  private FailureImpactLevel failureImpactLevel;
+  @Column(name = "FAILURE_PROBABILITY")
+  private Level failureProbability;
 
-  @Column(name = "ACCEPTABLE_FAILURE_RATE")
-  private Double acceptableFailureRate;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "FAILURE_IMPACT_LEVEL")
+  private Level failureImpactLevel;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "FAILURE_IMPACT_TYPE")
+  private FailureImpactType failureImpactType;
+
+  @Column(name = "FAILURE_PROCEDURE")
+  private String failureProcedure;
 
 }

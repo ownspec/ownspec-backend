@@ -1,4 +1,4 @@
-package com.ownspec.center.model;
+package com.ownspec.center.model.component;
 
 /**
  * com.ownspec.center.model

@@ -1,6 +1,6 @@
 package com.ownspec.center.repository;
 
-import com.ownspec.center.model.EstimatedTime;
+import com.ownspec.center.model.component.EstimatedTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.ownspec.center.service.content;
 
-import static com.ownspec.center.dto.ImmutableComponentVersionDto.newComponentVersionDto;
+import static com.ownspec.center.dto.component.ImmutableComponentVersionDto.newComponentVersionDto;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.ownspec.center.model.component.ComponentReference;
