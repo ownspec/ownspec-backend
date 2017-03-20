@@ -1,30 +1,7 @@
 package com.ownspec.center.controller.component;
 
-import static org.springframework.http.ResponseEntity.ok;
-
-import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.component.ComponentType;
-import com.ownspec.center.model.workflow.WorkflowInstance;
-import com.ownspec.center.service.UploadService;
-import com.ownspec.center.service.component.ComponentConverter;
-import com.ownspec.center.service.component.ComponentService;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 /**
  * Created by nlabrot on 19/12/16.
@@ -61,7 +38,7 @@ public class ComponentContentController {
 
   @GetMapping(value = "/{id}/content")
   public Resource getContent(@PathVariable("id") Long id) throws GitAPIException, UnsupportedEncodingException {
-    Component component = componentService.findOne(id);
+    Component component = componentService.findOneToDto(id);
     return componentService.getHeadRawContent(component);
   }
 
@@ -69,7 +46,7 @@ public class ComponentContentController {
   @RequestMapping("/{componentId}/versions/{workflowInstanceId}/content")
   public Resource getContentForVersion(@PathVariable("componentId") Long componentId, @PathVariable("workflowInstanceId") Long workflowInstanceId) throws GitAPIException, UnsupportedEncodingException {
     WorkflowInstance workflowInstance = componentService.findByComponentIdAndWorkflowId(componentId, workflowInstanceId);
-    Component component = componentService.findOne(componentId);
+    Component component = componentService.findOneToDto(componentId);
 
     if (component.getType() != ComponentType.RESOURCE) {
       return new ByteArrayResource(componentService.generateContent(component, workflowInstance).getLeft().getBytes(StandardCharsets.UTF_8));

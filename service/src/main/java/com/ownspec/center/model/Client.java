@@ -3,6 +3,7 @@ package com.ownspec.center.model;
 import lombok.Data;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -36,4 +37,9 @@ public class Client {
   @Column(name = "BUSINESS_INDUSTRY")
   private Business.Industry businessIndustry;
 
+  @Column(name = "LOGO_URL")
+  private String logoUrl;
+
+  @Embedded
+  private Social social;
 }

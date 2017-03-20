@@ -91,7 +91,7 @@ public class ComponentController {
                           @RequestParam(value = "workflow", required = false, defaultValue = "false") Boolean workflow,
                           @RequestParam(value = "comments", required = false, defaultValue = "false") Boolean comments,
                           @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references) {
-    Component c = componentService.findOne(id);
+    Component c = componentService.findOneToDto(id);
 
     return componentConverter.toDto(c, content, workflow, comments, references);
   }

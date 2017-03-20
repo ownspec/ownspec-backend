@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -59,7 +60,7 @@ public class UserService implements UserDetailsService {
   }
 
   public User findOne(Long id) {
-    return userRepository.findOne(id);
+    return Objects.requireNonNull(userRepository.findOne(id));
   }
 
   public void create(UserDto source, URL requestUrl) throws Exception {

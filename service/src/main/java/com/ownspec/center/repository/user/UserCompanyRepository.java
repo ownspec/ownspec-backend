@@ -10,4 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface UserCompanyRepository extends JpaRepository<UserCompany, Long> {
 
+  UserCompany findOneByUserId(Long id);
+
+  void deleteByUserId(Long id);
 }

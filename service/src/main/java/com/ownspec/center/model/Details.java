@@ -34,12 +34,6 @@ public class Details {
   @Column(name = "EMAIL") private String email;
   @Column(name = "WEBSITE") private String website;
 
-  @Column(name = "GITHUB") private String github;
-  @Column(name = "LINKEDIN") private String linkedin;
-  @Column(name = "TWITTER") private String twitter;
-  @Column(name = "FACEBOOK") private String facebook;
-  @Column(name = "GOOGLE") private String google;
-
   @Column(name = "BILLING_CURRENCY") private String billingCurrency; //todo Use http://fixer.io/ to get all the currencies with exchange rates
   @Column(name = "IS_DEFAULT") private boolean isDefault;
 

@@ -122,12 +122,6 @@
             <column name="EMAIL" type="VARCHAR2(64)"/>
             <column name="WEBSITE" type="VARCHAR2(64)"/>
 
-            <column name="GITHUB" type="VARCHAR2(64)"/>
-            <column name="LINKEDIN" type="VARCHAR2(64)"/>
-            <column name="TWITTER" type="VARCHAR2(64)"/>
-            <column name="FACEBOOK" type="VARCHAR2(64)"/>
-            <column name="GOOGLE" type="VARCHAR2(64)"/>
-
             <column name="BILLING_CURRENCY" type="VARCHAR2(3)"/>
             <column name="IS_DEFAULT" type="boolean" defaultValueNumeric="0"/>
 
@@ -143,6 +137,21 @@
             <column name="HOST" type="boolean" defaultValueNumeric="0"/>
             <column name="LOGO_URL" type="VARCHAR2(64)"/>
             <column name="BUSINESS_INDUSTRY" type="VARCHAR2(16)"/>
+
+            <column name="GITHUB" type="VARCHAR2(64)"/>
+            <column name="LINKEDIN" type="VARCHAR2(64)"/>
+            <column name="TWITTER" type="VARCHAR2(64)"/>
+            <column name="FACEBOOK" type="VARCHAR2(64)"/>
+            <column name="GOOGLE" type="VARCHAR2(64)"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_OSUSER_MOD_USR_ID"/>
+            </column>
         </createTable>
 
         <!-- ******************************************************************************** -->
@@ -155,6 +164,13 @@
                 <constraints references="DETAILS(ID)" nullable="false" foreignKeyName="FK_CLIENT_DETAILS_ID"/>
             </column>
             <column name="BUSINESS_INDUSTRY" type="VARCHAR2(16)"/>
+            <column name="LOGO_URL" type="VARCHAR2(64)"/>
+
+            <column name="GITHUB" type="VARCHAR2(64)"/>
+            <column name="LINKEDIN" type="VARCHAR2(64)"/>
+            <column name="TWITTER" type="VARCHAR2(64)"/>
+            <column name="FACEBOOK" type="VARCHAR2(64)"/>
+            <column name="GOOGLE" type="VARCHAR2(64)"/>
 
         </createTable>
 
