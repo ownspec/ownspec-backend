@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author lyrold
  */
-public interface CompanyRepository extends JpaRepository<Company,Long>{
+public interface CompanyRepository extends JpaRepository<Company, Long> {
 
+  Company findOneByName(String name);
 }

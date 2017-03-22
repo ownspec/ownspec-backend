@@ -112,7 +112,6 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="NAME" type="VARCHAR2(64)"/>
             <column name="ADDRESS" type="VARCHAR2(128)"/>
             <column name="POSTAL_CODE" type="VARCHAR2(16)"/>
             <column name="COUNTRY" type="VARCHAR2(32)"/>
@@ -133,6 +132,10 @@
             <column name="ID" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="NAME" type="VARCHAR2(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
             <column name="REGISTRATION_NUMBER" type="VARCHAR2(64)"/>
             <column name="HOST" type="boolean" defaultValueNumeric="0"/>
             <column name="LOGO_URL" type="VARCHAR2(64)"/>

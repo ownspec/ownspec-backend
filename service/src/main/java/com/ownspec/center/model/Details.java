@@ -24,7 +24,6 @@ public class Details {
   @Column(name = "ID")
   private Long id;
 
-  @Column(name = "NAME") private String name;
   @Column(name = "ADDRESS") private String address;
   @Column(name = "POSTAL_CODE") private String zipCode;
   @Column(name = "COUNTRY") private String country;

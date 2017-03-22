@@ -28,6 +28,9 @@ public interface CompanyDto {
   Long getId();
 
   @Nullable
+  String getName();
+
+  @Nullable
   String getRegistrationNumber();
 
   @Nullable
@@ -72,6 +75,7 @@ public interface CompanyDto {
         .lastModifiedUser(UserDto.fromUser(source.getLastModifiedUser()))
         .lastModifiedDate(source.getLastModifiedDate())
 
+        .name(source.getName())
         .registrationNumber(source.getRegistrationNumber())
         .host(source.isHost())
         .logoUrl(source.getLogoUrl())

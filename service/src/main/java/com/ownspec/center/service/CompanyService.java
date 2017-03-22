@@ -75,6 +75,7 @@ public class CompanyService {
 
   public CompanyDto create(CompanyDto source) {
     Company company = new Company();
+    company.setName(source.getName());
     company.setHost(source.getHost());
     company.setBusinessIndustry(source.getBusinessIndustry());
     company.setLogoUrl(source.getLogoUrl());
