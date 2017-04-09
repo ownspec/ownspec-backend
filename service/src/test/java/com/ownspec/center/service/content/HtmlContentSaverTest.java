@@ -26,6 +26,7 @@ import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
 import com.ownspec.center.service.AuthenticationService;
 import com.ownspec.center.service.GitService;
 import com.ownspec.center.service.component.ComponentService;
+import com.ownspec.center.service.component.ComponentVersionService;
 import com.ownspec.center.service.workflow.WorkflowService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -78,6 +79,9 @@ public class HtmlContentSaverTest {
   private ComponentService componentService;
 
   @Mock
+  private ComponentVersionService componentVersionService;
+
+  @Mock
   private AuthenticationService authenticationService;
 
   @Mock
@@ -98,15 +102,14 @@ public class HtmlContentSaverTest {
 
     Tuple3<ComponentVersion, WorkflowInstance, WorkflowStatus> component = createComponent(0L, 0L, 0L, "filePath");
 
-
     initMock(component.v1, component.v2, component.v3, "foo", true);
 
     htmlContentSaver.save(component.v1, readFileToString(new File("src/test/resources/reference/no/no_reference.html"), UTF_8));
 
     // update and commit must be called
-    verify(gitService).updateAndCommit(eq(component.v1.getComponent().getVcsId()), eq("filePath"), argThat(r -> htmlEquals(new ClassPathResource("reference/no/no_reference_expected.html"), r)), any(), any());
-
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> "foo".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(w -> w.getId() == 0l),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/no/no_reference_expected.html"), r)));
 
     // No saved references
     verify(componentReferenceRepository).deleteBySourceId(eq(component.v1.getId()));
@@ -137,10 +140,13 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/one/one_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(eq(component1.v1.getComponent().getVcsId()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_1.html"), r)), any(), any());
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component1.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_1.html"), r)));
+
 
     // Component 1: update git reference
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
+    //verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
 
     // One saved references
     verify(componentReferenceRepository).save(argThat((ComponentReference r) ->
@@ -149,9 +155,9 @@ public class HtmlContentSaverTest {
     ));
 
     // Component 2: commit
-    verify(gitService).updateAndCommit(eq(component2.v1.getComponent().getVcsId()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_2.html"), r)), any(), any());
-    // Component 2: update git reference
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 2L && "hash2".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component2.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/one/one_reference_expected_2.html"), r)));
   }
 
 
@@ -178,9 +184,10 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/resource/one_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(eq(component1.v1.getComponent().getVcsId()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/resource/one_reference_expected_1.html"), r)), any(), any());
-    // Component 1: update reference
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component1.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/resource/one_reference_expected_1.html"), r)));
+
 
     // One saved references
     verify(componentReferenceRepository).save(argThat((ComponentReference r) ->
@@ -189,7 +196,6 @@ public class HtmlContentSaverTest {
     ));
 
     verify(workflowStatusRepository).findLatestWorkflowStatusByComponentVersionId(component1.v1.getId());
-    verify(workflowStatusRepository).save(argThat((WorkflowStatus w) -> w.getId() == component1.v3.getId() && "hash1".equals(w.getLastGitReference())));
 
     // No more interaction, the resource is not updated
     verifyNoMoreInteractions(gitService, workflowStatusRepository);
@@ -219,9 +225,10 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create/create_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(eq(component1.v1.getComponent().getVcsId()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_1.html"), r)), any(), any());
-    // Component 1: update workflow
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component1.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_1.html"), r)));
+
 
     // Component 1: One saved references
     verify(componentReferenceRepository).save(argThat((ComponentReference r) ->
@@ -232,9 +239,11 @@ public class HtmlContentSaverTest {
     // Component 2: create
     verify(componentService).create(any());
     // Component 2: commit
-    verify(gitService).updateAndCommit(eq(component2.v1.getComponent().getVcsId()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_2.html"), r)), any(), any());
-    // Component 2: update git ref
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 2L && "hash2".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component2.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/create/create_reference_expected_2.html"), r)));
+
+
     // Component : update workflow to draft
     verify(workflowService).updateStatus(component2.v1.getId() , Status.DRAFT , "draft");
   }
@@ -263,9 +272,9 @@ public class HtmlContentSaverTest {
     htmlContentSaver.save(component1.v1, readFileToString(new File("src/test/resources/reference/create-nested/create_reference.html"), UTF_8));
 
     // Component 1: commit
-    verify(gitService).updateAndCommit(eq(component1.v1.getComponent().getVcsId()), eq("filePath1"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_1.html"), r)), any(), any());
-    // Component 1: update git ref
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 1L && "hash1".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component1.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_1.html"), r)));
     // Component 1: disable reference
     verify(componentReferenceRepository).deleteBySourceId(component1.v1.getId());
 
@@ -278,9 +287,10 @@ public class HtmlContentSaverTest {
     // Component 2: create
     verify(componentService).create(any());
     // Component 2: commit
-    verify(gitService).updateAndCommit(eq(component2.v1.getComponent().getVcsId()), eq("filePath2"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_2.html"), r)), any(), any());
-    // Component 2: update git ref
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 2L && "hash2".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component2.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_2.html"), r)));
+
 
     // Component 2: One saved references 2 => 3
     verify(componentReferenceRepository).save(argThat((ComponentReference r) ->
@@ -289,9 +299,11 @@ public class HtmlContentSaverTest {
     ));
 
     // Component 3: commit
-    verify(gitService).updateAndCommit(eq(component3.v1.getComponent().getVcsId()), eq("filePath3"), argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_3.html"), r)), any(), any());
-    // Component 3: update git ref
-    verify(componentVersionRepository).save(argThat((ComponentVersion w) -> w.getId() == 3L && "hash3".equals(w.getGitReference())));
+    verify(componentVersionService).updateRawContent(
+        argThat(cv -> cv.getId() == component3.v1.getId()),
+        argThat(r -> htmlEquals(new ClassPathResource("reference/create-nested/create_reference_expected_3.html"), r)));
+
+
     // Component 3: disable reference
     verify(componentReferenceRepository).deleteBySourceId(component3.v1.getId());
 

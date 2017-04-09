@@ -6,11 +6,8 @@ import com.ownspec.center.model.persistable.Persistable;
 import com.ownspec.center.model.user.UserCategory;
 import lombok.Data;
 
-import java.util.concurrent.TimeUnit;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,11 +40,11 @@ public class EstimatedTime extends AbstractAuditable implements Persistable {
   private UserCategory userCategory;
 
   // TODO: to refactor and convert in a duration
-  @Column(name = "TIME")
-  private Double time;
+  @Column(name = "DURATION")
+  private String duration;
 
   // TODO: to refactor and convert in a duration
-  @Enumerated(EnumType.STRING)
-  @Column(name = "TIME_UNIT")
-  private TimeUnit timeUnit;
+  @Column(name = "DURATION_IN_MS")
+  private Long durationInMs;
+
 }

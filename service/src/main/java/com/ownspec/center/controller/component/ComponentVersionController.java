@@ -6,6 +6,7 @@ import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.workflow.Status;
 import com.ownspec.center.model.workflow.WorkflowStatus;
+import com.ownspec.center.repository.component.AnotherComponentVersionRepository;
 import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +64,9 @@ public class ComponentVersionController {
   @Autowired
   private WorkflowService workflowService;
 
+  @Autowired
+  private AnotherComponentVersionRepository anotherComponentVersionRepository;
+
 
   @GetMapping
   public List<ComponentVersionDto> findAllVersion(
@@ -69,16 +74,29 @@ public class ComponentVersionController {
       @RequestParam(value = "projectId", required = false) Long projectId,
       @RequestParam(value = "q", required = false) String query,
       @RequestParam(value = "sort", required = false) String sort,
-      @RequestParam(value = "types", required = false, defaultValue = "false") List<ComponentType> types,
+      @RequestParam(value = "types", required = false) Optional<List<ComponentType>> types,
       @RequestParam(value = "statuses", required = false, defaultValue = "false") Boolean statuses,
       @RequestParam(value = "references", required = false, defaultValue = "false") Boolean references,
       @RequestParam(value = "usePoints", required = false, defaultValue = "false") Boolean usePoints,
       @RequestParam(value = "generic", required = false, defaultValue = "false") Boolean generic) {
 
-    return componentVersionRepository.findAll(projectId, generic, types, query, null)
+    ComponentVersionSearchBean searchBean = ImmutableComponentVersionSearchBean.newComponentVersionSearchBean()
+        .projectId(projectId)
+        .isGeneric(generic)
+        .componentTypes(types.orElse(Collections.emptyList()))
+        .query(query)
+        .build();
+
+
+    return anotherComponentVersionRepository.findAll(searchBean)
+        .collect(Collectors.toList());
+
+/*
+    return componentVersionRepository.findAll(projectId, generic, types.orElse(Collections.emptyList()), query, null,null,null)
         .stream()
         .map(cv -> componentConverter.toComponentVersionDto(cv, statuses, references, usePoints))
         .collect(Collectors.toList());
+*/
   }
 
   @GetMapping("{id}")
@@ -138,6 +156,11 @@ public class ComponentVersionController {
 
   }
 
+  @GetMapping(value = "/{id}/estimated-times")
+  public ComponentVersionDto getEstimatedTimes(@PathVariable("id") Long cvId) {
+    return componentVersionService.resolveReferencesHierarchicaly(cvId);
+  }
+
 
   // TODO: refactor the url, purpose: be consistent between content, resolved-content and compose, use mediatype instead
   @GetMapping(value = "/{id}/compose")
@@ -163,5 +186,6 @@ public class ComponentVersionController {
 
     }
   }
+
 
 }

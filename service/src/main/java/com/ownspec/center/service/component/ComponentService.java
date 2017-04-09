@@ -202,7 +202,7 @@ public class ComponentService {
     componentVersion = componentVersionRepository.save(componentVersion);
 
     // Estimated time
-    estimatedTimeService.addOrUpdate(componentVersion, source.getEstimatedTimes());
+    estimatedTimeService.persistEstimations(componentVersion, source.getEstimatedTimes());
 
     // Risk Assessment
     RiskAssessmentDto riskAssessment = source.getRiskAssessment();

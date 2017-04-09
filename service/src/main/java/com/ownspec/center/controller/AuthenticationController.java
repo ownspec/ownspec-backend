@@ -76,6 +76,7 @@ public class AuthenticationController {
       response.addCookie(newCookie);
       response.setStatus(200);
     } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
       response.setStatus(400);
     }
   }

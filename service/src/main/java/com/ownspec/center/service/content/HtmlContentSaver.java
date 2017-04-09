@@ -34,12 +34,10 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -92,9 +90,12 @@ public class HtmlContentSaver {
 
   // Keep the insertion order, insertion order are reversed depth first
   // eg nested components A => B => C will be inserted C => B => A
-  private Map<String, ComponentContent> parsedComponents = new LinkedHashMap<>();
+  //private Map<String, ComponentVersionContent> parsedComponents = new LinkedHashMap<>();
 
   private DirectedGraph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+  private ComponentVersionContent root;
+
+  private List<ComponentVersionContent> componentVersionContents = new ArrayList<>();
 
 
   public void save(ComponentVersion c, byte[] contentAsByteArray) {
@@ -109,13 +110,15 @@ public class HtmlContentSaver {
 
 
   private void extractReferences(ComponentVersion componentVersion, String content) {
-    ComponentContent componentContent = new ComponentContent(componentVersion.getId().toString());
-    componentContent.componentVersionId = componentVersion.getId();
-    componentContent.editable = true;
+    root = new ComponentVersionContent(componentVersion.getId().toString());
+    root.componentVersionId = componentVersion.getId();
+    root.editable = true;
 
-    graph.addVertex(componentContent.tempId);
+    graph.addVertex(root.tempCvId);
 
-    HtmlComponentContentParser.parse(content, new SaveParseCallBack(componentContent));
+    componentVersionContents.add(root);
+
+    HtmlComponentContentParser.parse(content, new SaveParseCallBack(root));
   }
 
 
@@ -128,13 +131,17 @@ public class HtmlContentSaver {
       throw new ComponentCycleException(cycleDetector.findCycles());
     }
 
-    for (String tempId : parsedComponents.keySet()) {
+    // Iterate over the children hierarchy
 
-      ComponentContent componentContent = parsedComponents.get(tempId);
+
+    for (int i = componentVersionContents.size() - 1; i >= 0; i--) {
+
+
+      ComponentVersionContent componentContent = componentVersionContents.get(i);
 
       ComponentVersion componentVersion;
 
-      if (componentContent.componentVersionId == null) {
+      if (componentContent.created) {
         // Create the component
         componentVersion = componentService.create(newComponentVersionDto()
             .title("TBD")
@@ -184,16 +191,17 @@ public class HtmlContentSaver {
       }
 
       // Save the new references
-      for (String refTempId : componentContent.referencedTarget) {
-        ComponentContent referenceComponentContent = parsedComponents.get(refTempId);
+      for (ComponentVersionContent referenceComponentContent : componentContent.childrens.values()) {
+        //ComponentVersionContent referenceComponentContent = parsedComponents.get(refTempId);
 
         ComponentReference componentReference = new ComponentReference();
         componentReference.setSource(componentVersion);
         componentReference.setTarget(componentVersionRepository.findOne(referenceComponentContent.componentVersionId));
         componentReference = componentReferenceRepository.save(componentReference);
 
+        referenceComponentContent.componentReferenceId = componentReference.getId();
         // Store the reference id
-        componentContent.referencedTargetToReferenceId.put(refTempId, componentReference.getId());
+        //componentContent.referencedTargetToReferenceId.put(refTempId, componentReference.getId());
       }
 
       // Update the reference with the reference id
@@ -204,12 +212,12 @@ public class HtmlContentSaver {
       componentVersionService.updateRawContent(componentVersion, new ByteArrayResource(componentContent.content.getBytes(UTF_8)));
 
       // Update content
-      String hash = gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
+      /*String hash = gitService.updateAndCommit(componentVersion.getComponent().getVcsId(), componentVersion.getFilename(), new ByteArrayResource(componentContent.content.getBytes(UTF_8)),
           authenticationService.getAuthenticatedUser(), "");
       if (hash == null) {
         // No modification continue
         continue;
-      }
+      }*/
     }
   }
 
@@ -218,48 +226,54 @@ public class HtmlContentSaver {
   }
 
 
-  private static class ComponentContent {
-    private String tempId;
+  private static class ComponentVersionContent {
+    private String tempRefId;
+    private String tempCvId;
     private Long componentVersionId;
+    private Long componentReferenceId;
     private String content;
     private String scmReference;
-    private boolean editable = false;
-    private Set<String> referencedTarget = new LinkedHashSet<>();
-    private Map<String, Long> referencedTargetToReferenceId = new HashMap<>();
+    private boolean editable = true;
+
+    private Map<String, ComponentVersionContent> childrens = new HashMap<>();
+
     private boolean created = false;
 
-    public ComponentContent(String tempId) {
-      this.tempId = tempId;
+
+    public ComponentVersionContent(String cvId) {
+      tempCvId = cvId;
+      componentVersionId = Long.valueOf(cvId);
+      tempRefId = UUID.randomUUID().toString();
     }
 
-    public ComponentContent() {
-      tempId = UUID.randomUUID().toString();
+    public ComponentVersionContent() {
       created = true;
+      tempRefId = UUID.randomUUID().toString();
+      tempCvId = UUID.randomUUID().toString();
     }
   }
 
 
   class UpdateReferenceCallBack implements ParserCallBack {
 
-    ComponentContent componentContent;
-    int referenceIndex = 0;
+    ComponentVersionContent componentContent;
 
-    public UpdateReferenceCallBack(ComponentContent componentContent) {
+    public UpdateReferenceCallBack(ComponentVersionContent componentContent) {
       this.componentContent = componentContent;
     }
 
     @Override
     public void parseReference(ParserContext parserContext) {
-      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(parserContext.getNestedComponentId()).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.childrens.get(parserContext.getNestedReferenceId()).componentReferenceId.toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, parserContext.getNestedComponentId());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, componentContent.childrens.get(parserContext.getNestedReferenceId()).componentVersionId.toString());
     }
 
     @Override
     public void parseResource(ParserContext parserContext) {
-      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.referencedTargetToReferenceId.get(parserContext.getNestedComponentId()).toString());
+      parserContext.getElement().attr(DATA_REFERENCE_ID, componentContent.childrens.get(parserContext.getNestedReferenceId()).componentReferenceId.toString());
       // TODO: remove attr once https://github.com/jhy/jsoup/issues/799 is released
-      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, parserContext.getNestedComponentId());
+      parserContext.getElement().attr(DATA_COMPONENT_VERSION_ID, componentContent.childrens.get(parserContext.getNestedReferenceId()).componentVersionId.toString());
     }
 
     @Override
@@ -269,47 +283,47 @@ public class HtmlContentSaver {
   }
 
   class SaveParseCallBack implements ParserCallBack {
-    ComponentContent componentContent;
+    ComponentVersionContent owner;
 
-    public SaveParseCallBack(ComponentContent componentContent) {
-      this.componentContent = componentContent;
+    public SaveParseCallBack(ComponentVersionContent componentContent) {
+      this.owner = componentContent;
     }
 
     @Override
     public void parseReference(ParserContext parserContext) {
 
-      ComponentContent nestedComponent;
+      ComponentVersionContent nestedComponent;
 
 
       if (!parserContext.getNestedComponentId().startsWith("_")) {
-        nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
-        nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
+        nestedComponent = new ComponentVersionContent(parserContext.getNestedComponentId());
+        parserContext.getElement().attr(HtmlContentSaver.DATA_REFERENCE_ID, nestedComponent.tempRefId);
       } else {
         // New component
-        nestedComponent = new ComponentContent();
-        parserContext.getElement().attr(HtmlContentSaver.DATA_COMPONENT_VERSION_ID, nestedComponent.tempId);
+        nestedComponent = new ComponentVersionContent();
+        parserContext.getElement().attr(HtmlContentSaver.DATA_COMPONENT_VERSION_ID, nestedComponent.tempCvId);
+        parserContext.getElement().attr(HtmlContentSaver.DATA_REFERENCE_ID, nestedComponent.tempRefId);
       }
+
       // Cycle detector
-      graph.addVertex(nestedComponent.tempId);
-      graph.addEdge(componentContent.tempId, nestedComponent.tempId);
+      graph.addVertex(nestedComponent.tempCvId);
+      graph.addEdge(owner.tempCvId, nestedComponent.tempCvId);
 
+      owner.childrens.put(nestedComponent.tempRefId, nestedComponent);
 
-      componentContent.referencedTarget.add(nestedComponent.tempId);
+      componentVersionContents.add(nestedComponent);
+
 
       Element contentElement = parserContext.getElement().children().get(1);
+      nestedComponent.editable =
+          StringUtils.isBlank(contentElement.attr(DATA_EDITABLE)) ||
+              StringUtils.equals(contentElement.attr(DATA_EDITABLE), "true");
 
-      nestedComponent.editable = StringUtils.equals(contentElement.attr(DATA_EDITABLE), "true");
 
       if (nestedComponent.editable) {
         // If the component is editable it may have been modified
         // extract reference from the nested reference content (second children, first children is the title)
         parseComponent(contentElement, new SaveParseCallBack(nestedComponent));
-      } else {
-        // Otherwise no need to parse the component, but add it to the parsedComponent map
-        // But only if not already added
-        if (!parsedComponents.containsKey(nestedComponent.tempId)) {
-          parsedComponents.put(nestedComponent.tempId, nestedComponent);
-        }
       }
 
       // remove all the childrens to keep only the reference
@@ -319,19 +333,21 @@ public class HtmlContentSaver {
 
     @Override
     public void parseResource(ParserContext parserContext) {
-      ComponentContent nestedComponent = new ComponentContent(parserContext.getNestedComponentId());
-      nestedComponent.componentVersionId = Long.valueOf(parserContext.getNestedComponentId());
-      componentContent.referencedTarget.add(nestedComponent.tempId);
+      ComponentVersionContent nestedComponent = new ComponentVersionContent(parserContext.getNestedComponentId());
+      parserContext.getElement().attr(HtmlContentSaver.DATA_REFERENCE_ID, nestedComponent.tempRefId);
+      //owner.referencedTarget.add(nestedComponent.tempId);
+
+      owner.childrens.put(nestedComponent.tempRefId, nestedComponent);
+      componentVersionContents.add(nestedComponent);
+
       parseComponent(parserContext.getElement(), new SaveParseCallBack(nestedComponent));
     }
 
 
     @Override
-    public ComponentContent endComponent(Element parent) {
-      componentContent.content = parent.html();
-      // The parsedComponents may already contains the component whish should not be editable
-      parsedComponents.put(componentContent.tempId, componentContent);
-      return componentContent;
+    public ComponentVersionContent endComponent(Element parent) {
+      owner.content = parent.html();
+      return owner;
     }
   }
 

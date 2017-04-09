@@ -558,10 +558,10 @@
             <column name="USER_CATEGORY_ID" type="bigint">
                 <constraints nullable="false" references="USER_CATEGORY(ID)" foreignKeyName="FK_EST_TIME_USER_CAT_ID"/>
             </column>
-            <column name="TIME" type="float8" defaultValueNumeric="0"/>
-            <column name="TIME_UNIT" type="VARCHAR2(16)">
-                <constraints nullable="false"/>
-            </column>
+
+            <column name="DURATION" type="VARCHAR2(64)"/>
+            <column name="DURATION_IN_MS" type="bigint" defaultValueNumeric="0"/>
+
             <column name="CREATED_DATE" type="TIMESTAMP"/>
             <column name="CREATED_USER_ID" type="bigint">
                 <constraints references="OSUSER(ID)" foreignKeyName="FK_EST_TIME_CR_USR_ID"/>

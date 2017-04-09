@@ -4,6 +4,8 @@ import static com.ownspec.center.model.component.QComponentVersion.componentVers
 
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
+import com.ownspec.center.model.user.User;
+import com.ownspec.center.model.workflow.Status;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
@@ -23,8 +25,82 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
   @PersistenceContext
   private EntityManager entityManager;
 
+
   @Override
-  public List<ComponentVersion> findAll(Long projectId, Boolean generic, List<ComponentType> types, String query, String sort) {
+  public List<User> findAllAssignee(Long projectId, Boolean generic, List<ComponentType> types, String query, String sort) {
+
+    //JPASQLQuery sqlQuery = new JPASQLQuery(entityManager, new PostgreSQLTemplates());
+    JPAQuery jpaQuery = new JPAQuery(entityManager);
+
+    jpaQuery.from(componentVersion)
+        .innerJoin(componentVersion.component)
+        .leftJoin(componentVersion.component.project);
+
+
+    List<Predicate> predicates = new ArrayList<>();
+
+    if (StringUtils.isNotBlank(query)) {
+      predicates.add(componentVersion.assignedTo.fullName.containsIgnoreCase(query));
+    }
+
+    //BooleanExpression
+    //Expressions.booleanOperation(Ops.OR).or();
+
+    List<Predicate> projectPredicates = new ArrayList<>();
+
+    if (projectId != null) {
+      projectPredicates.add(componentVersion.component.project.id.eq(projectId));
+    }
+
+    if (generic != null) {
+      if (generic) {
+        projectPredicates.add(componentVersion.component.project.id.isNull());
+      } else {
+        projectPredicates.add(componentVersion.component.project.id.isNotNull());
+      }
+    }
+
+    if (!projectPredicates.isEmpty()) {
+      if (projectPredicates.size() == 1) {
+        predicates.addAll(projectPredicates);
+      } else {
+        predicates.add(Expressions.booleanOperation(Ops.OR, projectPredicates.toArray(new Predicate[]{})));
+      }
+    }
+
+
+    if (!types.isEmpty()) {
+      predicates.add(componentVersion.component.type.in(types));
+    }
+
+
+
+    /*if (StringUtils.isNotBlank(sort)) {
+      Arrays.stream(sort.split(",")).map(s -> {
+        String[] sortItem = s.split(":");
+        if (sortItem.length > 0){
+
+        }
+      });
+    }*/
+
+    //jpaQuery.orderBy(componentVersion.component.codeNumber.asc());
+
+    if (predicates.size() > 0) {
+      jpaQuery.where(predicates.toArray(new Predicate[]{}));
+    }
+    jpaQuery.distinct();
+
+    return jpaQuery.select(componentVersion.assignedTo).fetch();
+  }
+
+
+  @Override
+  public List<ComponentVersion> findAll(Long projectId, Boolean generic, List<ComponentType> types,
+                                        String query,
+                                        Status status,
+                                        User assignee,
+                                        String sort) {
 
     //JPASQLQuery sqlQuery = new JPASQLQuery(entityManager, new PostgreSQLTemplates());
     JPAQuery jpaQuery = new JPAQuery(entityManager);

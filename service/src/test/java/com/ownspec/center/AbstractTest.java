@@ -24,7 +24,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +35,10 @@ import javax.persistence.PersistenceContext;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = OsCenterApplication.class)
 @AutoConfigureMockMvc
+/*
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
     "classpath:/sql/truncate.sql", "classpath:/sql/load.sql"})
+*/
 public abstract class AbstractTest {
 
   @Value("${composition.outputDirectory}")

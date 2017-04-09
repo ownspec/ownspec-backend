@@ -21,6 +21,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "COMPANY_DETAILS")
+// TODO: if a the relation company<=> detail is one/one, this entity is not necessary
 public class CompanyDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)

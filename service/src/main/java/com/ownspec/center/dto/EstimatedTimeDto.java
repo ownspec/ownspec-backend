@@ -8,7 +8,6 @@ import com.ownspec.center.model.user.UserCategory;
 import org.immutables.value.Value;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /**
@@ -27,9 +26,10 @@ public interface EstimatedTimeDto {
 
   UserCategory getUserCategory();
 
-  Double getTime();
+  String getDuration();
 
-  TimeUnit getTimeUnit();
+  @Nullable
+  Long getDurationInMs();
 
   @Nullable
   Instant getCreatedDate();
@@ -52,8 +52,8 @@ public interface EstimatedTimeDto {
         .lastModifiedUser(UserDto.fromUser(source.getLastModifiedUser()))
         .lastModifiedDate(source.getLastModifiedDate())
         .userCategory(source.getUserCategory())
-        .time(source.getTime())
-        .timeUnit(source.getTimeUnit())
+        .duration(source.getDuration())
+        .durationInMs(source.getDurationInMs())
         .build();
   }
 }

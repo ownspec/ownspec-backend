@@ -132,6 +132,10 @@ public class ComponentConverter {
   }
 
   public ComponentVersionDto toComponentVersionDto(ComponentVersion cv, boolean statuses, boolean references, Boolean usePoints) {
+    return toComponentVersionDtoBuilder(cv, statuses, references, usePoints).build();
+  }
+
+  public ImmutableComponentVersionDto.Builder toComponentVersionDtoBuilder(ComponentVersion cv, boolean statuses, boolean references, Boolean usePoints) {
     ImmutableComponentVersionDto.Builder builder = ComponentVersionDto.newBuilderFromComponent(cv);
 
     Component c = cv.getComponent();
@@ -182,7 +186,7 @@ public class ComponentConverter {
       builder.riskAssessment(RiskAssessmentDto.createFromRiskAssessment(riskAssessment));
     }
 
-    return builder.build();
+    return builder;
   }
 
 

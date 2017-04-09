@@ -94,6 +94,52 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>3.8.6</version>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>9.4.1212.jre7</version>
+                    </dependency>
+                </dependencies>
+
+                <configuration>
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <url>${datasource.url}</url>
+                        <user>${datasource.username}</user>
+                        <password>${datasource.password}</password>
+
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.util.postgres.PostgresDatabase</name>
+                            <inputSchema>public</inputSchema>
+                        </database>
+                        <target>
+                            <packageName>com.ownspec.center.model</packageName>
+                            <directory>target/generated-sources/jooq</directory>
+                        </target>
+                        <generate>
+                            <daos>true</daos>
+                        </generate>
+                    </generator>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     

@@ -1,12 +1,12 @@
 package com.ownspec.center.service.component;
 
+import static com.ownspec.center.dto.component.ImmutableComponentReferenceDto.newComponentReferenceDto;
 import static com.ownspec.center.util.OsUtils.mergeWithNotNullProperties;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 
 import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.dto.component.ComponentVersionDto;
+import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by lyrold on 19/09/2016.
@@ -97,16 +98,19 @@ public class ComponentVersionService {
     componentTagService.tagComponent(componentVersion, source.getTags());
 
     // Content
-    Resource resource;
+    Resource resource = null;
     if (source.getUploadedFileId() == null) {
-      resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
+      //resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
     } else {
       resource = uploadService.findResource(source.getUploadedFileId()).get();
     }
-    updateContent(componentVersion, resource);
+
+    if (resource != null) {
+      updateContent(componentVersion, resource);
+    }
 
     // Estimated time
-    estimatedTimeService.addOrUpdate(componentVersion, source.getEstimatedTimes());
+    estimatedTimeService.persistEstimations(componentVersion, source.getEstimatedTimes());
 
     // Risk Assessment
     RiskAssessmentDto riskAssessment = source.getRiskAssessment();
@@ -209,5 +213,29 @@ public class ComponentVersionService {
     return compositionService.flyingHtmlToPdf(compo);
   }
 
+  @Autowired
+  private ComponentConverter componentConverter;
+
+
+  public ComponentVersionDto resolveReferencesHierarchicaly(Long cvId) {
+    ComponentVersion root = componentVersionRepository.findOne(cvId);
+
+    ImmutableComponentVersionDto.Builder componentVersionDto = componentConverter.toComponentVersionDtoBuilder(root, false, false, false);
+
+    componentVersionDto.componentReferences(
+        componentConverter.convertReferences(componentReferenceRepository.findAllBySourceId(root.getId())).stream()
+            .map(r -> newComponentReferenceDto().from(r)
+                .target(resolveReferencesHierarchicaly(r.getTarget().getId()))
+                .build())
+            .collect(Collectors.toList()));
+
+    return componentVersionDto.build();
+  }
 
 }
+
+
+
+
+
+
