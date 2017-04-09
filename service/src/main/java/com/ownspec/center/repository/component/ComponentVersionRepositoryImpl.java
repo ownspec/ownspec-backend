@@ -48,12 +48,8 @@ public class ComponentVersionRepositoryImpl implements ComponentVersionRepositor
       projectPredicates.add(componentVersion.component.project.id.eq(projectId));
     }
 
-    if (generic != null) {
-      if (generic) {
+    if (generic != null && generic) {
         projectPredicates.add(componentVersion.component.project.id.isNull());
-      } else {
-        projectPredicates.add(componentVersion.component.project.id.isNotNull());
-      }
     }
 
     if (!projectPredicates.isEmpty()) {
