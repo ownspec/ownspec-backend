@@ -147,7 +147,7 @@ public class ComponentService {
     Resource resource = null;
 
     if (source.getUploadedFileId() == null) {
-      resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
+      resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "").getBytes(UTF_8));
     } else {
       resource = uploadService.findResource(source.getUploadedFileId()).get();
     }
