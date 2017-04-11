@@ -12,13 +12,17 @@ import com.ownspec.center.service.UploadService;
 import com.ownspec.center.service.component.ComponentConverter;
 import com.ownspec.center.service.component.ComponentService;
 import com.ownspec.center.service.component.ComponentVersionService;
+import com.ownspec.center.service.estimation.EstimatedTimeReport;
 import com.ownspec.center.service.workflow.WorkflowService;
+import net.sf.jasperreports.engine.JRException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +70,9 @@ public class ComponentVersionController {
 
   @Autowired
   private AnotherComponentVersionRepository anotherComponentVersionRepository;
+
+  @Autowired
+  private EstimatedTimeReport estimatedTimeReport;
 
 
   @GetMapping
@@ -157,8 +164,16 @@ public class ComponentVersionController {
   }
 
   @GetMapping(value = "/{id}/estimated-times")
-  public ComponentVersionDto getEstimatedTimes(@PathVariable("id") Long cvId) {
-    return componentVersionService.resolveReferencesHierarchicaly(cvId);
+  public ResponseEntity getEstimatedTimes(@PathVariable("id") Long cvId, @RequestParam(value = "output", required = false) String mode) throws IOException, JRException {
+    ComponentVersionDto componentVersionDto = componentVersionService.resolveReferencesHierarchicaly(cvId);
+
+    if (StringUtils.isBlank(mode)) {
+      return ResponseEntity.ok(componentVersionDto);
+    } else {
+      return ResponseEntity.ok()
+          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"report.xls\"")
+          .contentType(MediaType.APPLICATION_OCTET_STREAM).body(estimatedTimeReport.generateReport(componentVersionDto));
+    }
   }
 
 

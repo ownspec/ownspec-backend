@@ -69,10 +69,8 @@ public interface ComponentVersionDto {
   @Nullable
   WorkflowInstanceDto getWorkflowInstance();
 
-  @Nullable
   List<ComponentReferenceDto> getComponentReferences();
 
-  @Nullable
   List<ComponentReferenceDto> getComponentUsePoints();
 
   @Nullable
