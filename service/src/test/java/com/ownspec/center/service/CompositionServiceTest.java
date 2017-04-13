@@ -1,25 +1,15 @@
 package com.ownspec.center.service;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import com.google.common.collect.ImmutableMap;
 import com.ownspec.center.AbstractTest;
-import com.ownspec.center.model.component.Component;
-import com.ownspec.center.model.user.User;
 import com.ownspec.center.service.composition.CompositionService;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by lyrold on 09/10/2016.
@@ -51,11 +41,6 @@ public class CompositionServiceTest extends AbstractTest {
 
   @Test
   public void compose_fromFile() throws IOException {
-    Resource template = new ClassPathResource("templates/template.ftl");
-    File savedComponentAsTemplateDir = new File("target/savedComponentAsTemplate");
-    FileUtils.forceMkdir(savedComponentAsTemplateDir);
-    File destFile = new File(savedComponentAsTemplateDir, "foo.html");
-    FileUtils.copyFile(template.getFile(), destFile);
 
     Map<String, Object> model = new HashMap<>();
     model.put("firstname", "Lyrold");
@@ -63,11 +48,7 @@ public class CompositionServiceTest extends AbstractTest {
     model.put("phone", "+33 000 000 000");
     model.put("email", "lyrold@ownspec.com");
 
-    String outputFilename = destFile.getAbsolutePath().replaceFirst("\\.html", "-composed.html");
-    String outputContent = FileUtils.readLines(
-        compositionService.compose(destFile, model, outputFilename), "UTF-8")
-        .stream()
-        .collect(Collectors.joining("\n"));
+    String outputContent = compositionService.compose("template.ftl", model);
 
     String expected = "<p>--</p>\n" +
         "<p><strong>Lyrold Careto</strong></p>\n" +
@@ -75,7 +56,6 @@ public class CompositionServiceTest extends AbstractTest {
         "<p>E-Mail :&nbsp;<a href=\"mailto:lyrold@ownspec.com\" target=\"_blank\">lyrold@ownspec.com</a></p>";
 
     Assert.assertEquals(expected, outputContent);
-
   }
 
 
@@ -83,7 +63,22 @@ public class CompositionServiceTest extends AbstractTest {
   @Test
   public void testPdf() throws Exception {
 
+    // Build verification url
+    String verificationUrl = "dddd";
+    // Compose email body
+    String content = compositionService.compose(
+        "email/confirm_registration_content",
+        ImmutableMap.of("verificationUrl", verificationUrl));
 
+    String emailBody = compositionService.compose(
+        "email/abstract_notification",
+        ImmutableMap.builder()
+            .put("foobar", "confirm_registration_content.ftl")
+            .put("firstName", "first name")
+            .put("content", content)
+            .put("verificationUrl", verificationUrl).build()
+    );
 
+    System.out.println("ok");
   }
 }

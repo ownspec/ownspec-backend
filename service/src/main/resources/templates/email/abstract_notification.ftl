@@ -9,7 +9,9 @@
     <p>Hello ${firstName},</p>
 </header>
 
-<div class="container">${content}</div>
+<div class="container">
+<#include contentTmpl>
+</div>
 
 <footer>This is an automatically generated email, please do not reply to this message.</footer>
 </body>

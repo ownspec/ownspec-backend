@@ -7,10 +7,13 @@ import static java.util.Objects.requireNonNull;
 import com.ownspec.center.dto.RiskAssessmentDto;
 import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
+import com.ownspec.center.model.Project;
 import com.ownspec.center.model.component.ComponentReference;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.component.ComponentVersion;
+import com.ownspec.center.model.user.User;
 import com.ownspec.center.model.workflow.WorkflowStatus;
+import com.ownspec.center.notification.AssignationChangeEvent;
 import com.ownspec.center.repository.component.ComponentReferenceRepository;
 import com.ownspec.center.repository.component.ComponentVersionRepository;
 import com.ownspec.center.repository.workflow.WorkflowStatusRepository;
@@ -24,8 +27,10 @@ import com.ownspec.center.service.composition.CompositionService;
 import com.ownspec.center.service.content.ContentConfiguration;
 import com.ownspec.center.util.OsUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -36,6 +41,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -82,6 +88,8 @@ public class ComponentVersionService {
   @Autowired
   private UserService userService;
 
+  @Autowired
+  private ApplicationEventPublisher publisher;
 
   /**
    * Update component
@@ -98,14 +106,9 @@ public class ComponentVersionService {
     componentTagService.tagComponent(componentVersion, source.getTags());
 
     // Content
-    Resource resource = null;
-    if (source.getUploadedFileId() == null) {
-      //resource = new ByteArrayResource(defaultIfEmpty(source.getContent(), "test").getBytes(UTF_8));
-    } else {
-      resource = uploadService.findResource(source.getUploadedFileId()).get();
-    }
 
-    if (resource != null) {
+    if (source.getUploadedFileId() != null) {
+      Resource resource = uploadService.findResource(source.getUploadedFileId()).get();
       updateContent(componentVersion, resource);
     }
 
@@ -119,7 +122,18 @@ public class ComponentVersionService {
     }
 
     if (source.getAssignedTo() != null) {
-      componentVersion.setAssignedTo(userService.loadUserByUsername(source.getAssignedTo().getUsername()));
+
+      Optional<User> oldAssignee = Optional.ofNullable(componentVersion.getAssignedTo());
+
+      User newAssignee = userService.loadUserByUsername(source.getAssignedTo().getUsername());
+
+      if (!StringUtils.equals(source.getAssignedTo().getUsername(), oldAssignee.map(User::getUsername).orElse(null))) {
+        // Notification
+        publisher.publishEvent(new AssignationChangeEvent(oldAssignee.map(User::getId).orElse(null), newAssignee.getId(),
+            Optional.ofNullable(componentVersion.getComponent().getProject()).map(Project::getId).orElse(null), componentVersionId));
+      }
+
+      componentVersion.setAssignedTo(newAssignee);
     }
 
 
@@ -232,6 +246,11 @@ public class ComponentVersionService {
     return componentVersionDto.build();
   }
 
+  public ComponentVersion findOne(long componentVersionId) {
+    return componentVersionRepository.findOne(componentVersionId);
+
+
+  }
 }
 
 

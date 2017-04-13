@@ -3,8 +3,6 @@ package com.ownspec.center.service.composition;
 import com.ownspec.center.exception.CompositionException;
 import com.ownspec.center.service.FreeMarkerService;
 import freemarker.template.Template;
-import org.apache.commons.codec.CharEncoding;
-import org.apache.commons.io.FileUtils;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.PrettyXmlSerializer;
@@ -24,11 +22,9 @@ import org.xml.sax.InputSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,41 +47,38 @@ public class CompositionService {
   private FreeMarkerService freeMarkerService;
 
   @PostConstruct
-  public void init(){
+  public void init() {
     File outputDir = new File(outputDirectory);
-    if(!outputDir.exists()){
+    if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
   }
 
   public String compose(String templateName, Map model) {
-    try {
-      File outputFile = File.createTempFile("tmp-", ".html", new File(outputDirectory));
-      File composedFile = compose(templateName, model, outputFile.getAbsolutePath());
-      return FileUtils.readFileToString(composedFile, CharEncoding.UTF_8);
-    } catch (IOException e) {
-      throw new CompositionException(e);
-    }
-  }
 
-  public File compose(String templateName, Map model, String outputFilePath) {
-    File outputFile = new File(outputFilePath);
-    try (Writer writer = new FileWriter(outputFile)) {
+    StringWriter writer = new StringWriter();
+
+    try {
+/*
       Template template = freeMarkerService.getConfiguration().getTemplate(
           templateName.split("\\.").length == 2 && templateName.matches(".*\\.*$") ?
           templateName :
           templateName + defaultTemplateExtension
+*/
+
+      Template template = freeMarkerService.getConfiguration().getTemplate(
+          templateName.endsWith(defaultTemplateExtension) ?
+              templateName :
+              templateName + defaultTemplateExtension
+
       );
       template.process(model, writer);
     } catch (Exception e) {
       throw new CompositionException(e);
     }
-    return outputFile;
+    return writer.toString();
   }
 
-  public File compose(File source, Map model, String outputFilePath) {
-    return compose(source.getName(), model, outputFilePath);
-  }
 
   public Resource flyingHtmlToPdf(Path path) {
     try {

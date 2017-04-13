@@ -1,4 +1,4 @@
-package com.ownspec.center.service;
+package com.ownspec.center.service.component;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

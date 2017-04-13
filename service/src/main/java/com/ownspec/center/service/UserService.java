@@ -60,10 +60,11 @@ public class UserService implements UserDetailsService {
   }
 
   public User findOne(Long id) {
-    return Objects.requireNonNull(userRepository.findOne(id));
+    // a find does not throw an exception, a get can
+    return userRepository.findOne(Objects.requireNonNull(id));
   }
 
-  public void create(UserDto source, URL requestUrl) throws Exception {
+  public User create(UserDto source, URL requestUrl) throws Exception {
     String username = source.getUsername();
     LOG.info("Start create new user with username [{}]", username);
     if (null != userRepository.findByUsername(username)) {
@@ -95,8 +96,10 @@ public class UserService implements UserDetailsService {
     emailService.send(message);
 
     LOG.info("Save user and token to repositories");
-    userRepository.save(user);
+    user = userRepository.save(user);
     verificationTokenRepository.save(verificationToken);
+
+    return user;
   }
 
   private VerificationToken buildVerificationToken(User user) {
@@ -145,22 +148,21 @@ public class UserService implements UserDetailsService {
   public AbstractMimeMessage buildChangePasswordMessage(User user, URL requestUrl) {
     // Build verification url
     String changePasswordUrl = requestUrl.getProtocol() + "://" +
-                               requestUrl.getHost() + ":" +
-                               requestUrl.getPort() +
-                               "/auth/change-password/user/" + user.getId();
+        requestUrl.getHost() + ":" +
+        requestUrl.getPort() +
+        "/auth/change-password/user/" + user.getId();
 
     // Compose email body
     LOG.info("Change password - compose email body");
-    String content = compositionService.compose(
-        "email/change_password.ftl",
-        ImmutableMap.of("changePasswordUrl", changePasswordUrl));
 
     String emailBody = compositionService.compose(
         "email/abstract_notification",
-        ImmutableMap.of(
-            "firstName", user.getFirstName(),
-            "content", content
-        ));
+        ImmutableMap.builder()
+            .put("contentTmpl", "change_password.ftl")
+            .put("firstName", user.getFirstName())
+            .put("changePasswordUrl", changePasswordUrl)
+            .build()
+    );
     return AbstractMimeMessage.builder()
         .addRecipient(user.getEmail())
         .subject("Ownspec - Change Password") //todo to be internationalized
@@ -170,21 +172,18 @@ public class UserService implements UserDetailsService {
   public AbstractMimeMessage buildConfirmRegistrationMessage(User user, String verificationToken, URL requestUrl) {
     // Build verification url
     String verificationUrl = requestUrl.getProtocol() + "://" +
-                             requestUrl.getHost() + ":" +
-                             requestUrl.getPort() +
-                             "/auth/registration/confirmation/" + verificationToken;
-    // Compose email body
-    LOG.info("Compose email body");
-    String content = compositionService.compose(
-        "email/confirm_registration_content",
-        ImmutableMap.of("verificationUrl", verificationUrl));
+        requestUrl.getHost() + ":" +
+        requestUrl.getPort() +
+        "/auth/registration/confirmation/" + verificationToken;
 
-    String emailBody = compositionService.compose(
-        "email/abstract_notification",
-        ImmutableMap.of(
-            "firstName", user.getFirstName(),
-            "content", content
-        ));
+    // Compose email body
+    String emailBody = compositionService.compose("email/abstract_notification",
+        ImmutableMap.builder()
+            .put("contentTmpl", "confirm_registration_content.ftl")
+            .put("firstName", user.getFirstName())
+            .put("verificationUrl", verificationUrl)
+            .build()
+    );
     return AbstractMimeMessage.builder()
         .addRecipient(user.getEmail())
         .subject("Ownspec - Account registration") //todo to be internationalized
