@@ -30,9 +30,9 @@ public class ComponentTagService {
   private ComponentVersionRepository componentVersionRepository;
 
 
-  public void tagsComponentVersion(long id, List<String> label) {
-    ComponentVersion component = componentVersionRepository.findOne(id);
-    label.forEach(l -> tagComponent(component , l));
+  public void tagsComponentVersion(long id, List<String> labels) {
+    ComponentVersion componentVersion = componentVersionRepository.findOne(id);
+    tagComponent(componentVersion, labels);
   }
 
 
@@ -41,20 +41,22 @@ public class ComponentTagService {
     tagComponent(component , label);
   }
 
-  public void tagComponent(ComponentVersion component, List<String> label) {
-    label.forEach(l -> tagComponent(component , l));
+  public void tagComponent(ComponentVersion componentVersion, List<String> label) {
+    componentTagRepository.deleteByComponentVersionId(componentVersion.getId());
+
+    label.forEach(l -> tagComponent(componentVersion, l));
   }
 
-  public void tagComponent(ComponentVersion component, String label) {
+  public void tagComponent(ComponentVersion componentVersion, String label) {
 
     Tag tag = tagService.createTagIfNotExist(label);
 
-    ComponentTag componentTag = componentTagRepository.findOneByComponentVersionIdAndTagId(component.getId(), tag.getId());
+    ComponentTag componentTag = componentTagRepository.findOneByComponentVersionIdAndTagId(componentVersion.getId(), tag.getId());
 
     // TODO: handle concurrent creation
     if (componentTag == null) {
       componentTag = new ComponentTag();
-      componentTag.setComponentVersion(component);
+      componentTag.setComponentVersion(componentVersion);
       componentTag.setTag(tag);
       componentTagRepository.save(componentTag);
     }
