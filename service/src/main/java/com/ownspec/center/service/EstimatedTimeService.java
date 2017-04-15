@@ -42,7 +42,7 @@ public class EstimatedTimeService {
 
     estimatedTime.setUserCategory(estimatedTimeDto.getUserCategory());
     estimatedTime.setDuration(estimatedTimeDto.getDuration());
-    estimatedTime.setDurationInMs(DurationUtils.getDurationSeconds(estimatedTimeDto.getDuration(), 8 * 60 * 60l, 5 * 8 * 60 * 60l, DateUtils.Duration.MINUTE, Locale.getDefault()));
+    estimatedTime.setDurationInMs(DurationUtils.getDurationInMs(estimatedTimeDto.getDuration(), 8 * 60 * 60l, 5 * 8 * 60 * 60l, DateUtils.Duration.MINUTE, Locale.getDefault()));
     estimatedTime.setComponentVersion(target);
 
     PeriodFormatter formatter = new PeriodFormatterBuilder()

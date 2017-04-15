@@ -14,7 +14,7 @@ public class TestDuration {
   @Test
   public void name() throws Exception {
 
-    long durationSeconds = DurationUtils.getDurationSeconds("2d", 1, 1, DateUtils.Duration.DAY, Locale.getDefault());
+    long durationSeconds = DurationUtils.getDurationInMs("2d", 1, 1, DateUtils.Duration.DAY, Locale.getDefault());
 
     System.out.println(durationSeconds);
 

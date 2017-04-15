@@ -22,12 +22,12 @@ public class DurationUtils {
   public DurationUtils() {
   }
 
-  public static long getDurationSeconds(String durationStr, long secondsPerDay, long secondsPerWeek, Duration defaultUnit, Locale locale) {
+  public static long getDurationInMs(String durationStr, long secondsPerDay, long secondsPerWeek, Duration defaultUnit, Locale locale) {
     Map durationTokens = getDurationTokens();
-    return getDurationSeconds(durationStr, secondsPerDay, secondsPerWeek, defaultUnit, locale, durationTokens);
+    return getDurationInMs(durationStr, secondsPerDay, secondsPerWeek, defaultUnit, locale, durationTokens);
   }
 
-  public static long getDurationSeconds(String durationStr, long secondsPerDay, long secondsPerWeek, Duration defaultUnit, Locale locale, Map<String, Duration> tokens) throws InvalidDurationException {
+  public static long getDurationInMs(String durationStr, long secondsPerDay, long secondsPerWeek, Duration defaultUnit, Locale locale, Map<String, Duration> tokens) throws InvalidDurationException {
     if (StringUtils.isBlank(durationStr)) {
       return 0L;
     } else {
@@ -67,7 +67,7 @@ public class DurationUtils {
       if (m.regionStart() != durationStr.length()) {
         throw new InvalidDurationException("Invalid characters in duration: " + durationStr);
       } else {
-        return seconds;
+        return seconds * 1000;
       }
     }
   }
