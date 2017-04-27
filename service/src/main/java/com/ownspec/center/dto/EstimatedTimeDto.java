@@ -2,9 +2,9 @@ package com.ownspec.center.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.ownspec.center.dto.user.UserCategoryDto;
 import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.component.EstimatedTime;
-import com.ownspec.center.model.user.UserCategory;
 import org.immutables.value.Value;
 
 import java.time.Instant;
@@ -24,7 +24,7 @@ public interface EstimatedTimeDto {
   @Nullable
   Long getId();
 
-  UserCategory getUserCategory();
+  UserCategoryDto getUserCategory();
 
   String getDuration();
 
@@ -51,7 +51,7 @@ public interface EstimatedTimeDto {
         .createdUser(UserDto.fromUser(source.getCreatedUser()))
         .lastModifiedUser(UserDto.fromUser(source.getLastModifiedUser()))
         .lastModifiedDate(source.getLastModifiedDate())
-        .userCategory(source.getUserCategory())
+        .userCategory(UserCategoryDto.fromUserCategory(source.getUserCategory()))
         .duration(source.getDuration())
         .durationInMs(source.getDurationInMs())
         .build();

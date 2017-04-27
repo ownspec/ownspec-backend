@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-04-26T17:43:24 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_A4" pageWidth="1024" pageHeight="842" columnWidth="984" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5cf3a854-e72f-4222-bb30-62ec01a8001f">
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+    <property name="com.jaspersoft.studio.unit." value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    <field name="estimatedTimesPerCategory" class="java.util.List"/>
+    <field name="componentVersion" class="com.ownspec.center.dto.component.ComponentVersionDto"/>
+    <field name="totalEstimatedTime" class="com.ownspec.center.service.estimation.EstimateWithPrice"/>
+    <field name="childrenEstimatedTimesPerCategory" class="java.util.List"/>
+    <field name="totalEstimatedTimesPerCategory" class="java.util.List"/>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band height="50" splitType="Stretch">
+            <staticText>
+                <reportElement x="152" y="0" width="250" height="30" uuid="ad884125-956e-448c-b822-64115cf082ce"/>
+                <textElement>
+                    <font size="19"/>
+                </textElement>
+                <text><![CDATA[Estimation report]]></text>
+            </staticText>
+            <image>
+                <reportElement x="1" y="0" width="149" height="50" uuid="aada1793-ae01-4202-be71-1408376ab1fd"/>
+                <imageExpression><![CDATA["225x50_gris-e1490103345871.png"]]></imageExpression>
+            </image>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="16" splitType="Stretch">
+            <staticText>
+                <reportElement x="0" y="0" width="80" height="15" uuid="b4ae1952-3d6e-4614-bdab-75a66e7a18e1"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Code]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="80" y="0" width="399" height="15" uuid="fb81221d-c0fa-4f3e-8ceb-2b0a72f97680"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Title]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="479" y="0" width="97" height="16" uuid="c5938d9e-1ee4-4fe2-84e7-bc67ce6aac74"/>
+                <textElement textAlignment="Left">
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Estimated]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="576" y="0" width="98" height="16" uuid="65ab371a-8a35-4984-a854-664d06d4487b"/>
+                <textElement textAlignment="Left">
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Price]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="15" splitType="Stretch">
+            <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+            <textField>
+                <reportElement x="0" y="0" width="80" height="15" uuid="e2a67155-5b81-4377-89c1-f92f2c2aefb7"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{componentVersion}.getCode()]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="80" y="0" width="399" height="15" uuid="9d5fc6a6-e6f7-41e5-96fa-56d004032d42"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{componentVersion}.getTitle()]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="479" y="0" width="98" height="15" uuid="2c396007-49c5-4d97-a751-8e52930681ed"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[com.ownspec.center.service.estimation.EstimatedTimeReportHelper.computeDurationInDays($F{totalEstimatedTime}.getEstimateInMs())]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="577" y="0" width="100" height="15" uuid="e35d1106-388e-40c3-b9bb-f4ba1d3d2e1c"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{totalEstimatedTime}.getPrice()]]></textFieldExpression>
+            </textField>
+        </band>
+        <band height="40">
+            <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+            <printWhenExpression><![CDATA[$F{estimatedTimesPerCategory}.size() > 0 || $F{childrenEstimatedTimesPerCategory}.size() > 0 || $F{totalEstimatedTimesPerCategory}.size() > 0]]></printWhenExpression>
+            <subreport>
+                <reportElement x="80" y="20" width="298" height="20" uuid="1e962c7a-5f41-48cd-b60b-8d42423676c6">
+                    <printWhenExpression><![CDATA[$F{estimatedTimesPerCategory}.size() > 0]]></printWhenExpression>
+                </reportElement>
+                <dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{estimatedTimesPerCategory})]]></dataSourceExpression>
+                <subreportExpression><![CDATA["detail.jasper"]]></subreportExpression>
+            </subreport>
+            <staticText>
+                <reportElement x="80" y="0" width="78" height="20" uuid="2cbdfe50-ac45-4827-a293-72f992bda557"/>
+                <text><![CDATA[Owns]]></text>
+            </staticText>
+            <subreport>
+                <reportElement x="381" y="20" width="299" height="20" uuid="46fe55b8-0c94-47b3-86ed-d03d07e3eebe">
+                    <printWhenExpression><![CDATA[$F{childrenEstimatedTimesPerCategory}.size() > 0]]></printWhenExpression>
+                </reportElement>
+                <dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{childrenEstimatedTimesPerCategory})]]></dataSourceExpression>
+                <subreportExpression><![CDATA["detail.jasper"]]></subreportExpression>
+            </subreport>
+            <subreport>
+                <reportElement x="680" y="20" width="300" height="20" uuid="033f859b-15ef-4c18-9503-3b45caeeba7c">
+                    <printWhenExpression><![CDATA[$F{totalEstimatedTimesPerCategory}.size() > 0]]></printWhenExpression>
+                </reportElement>
+                <dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{totalEstimatedTimesPerCategory})]]></dataSourceExpression>
+                <subreportExpression><![CDATA["detail.jasper"]]></subreportExpression>
+            </subreport>
+            <staticText>
+                <reportElement x="381" y="0" width="78" height="20" uuid="3b2209e0-7bd7-41dd-9137-0e2f18e4a4fc"/>
+                <text><![CDATA[Children]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="680" y="0" width="78" height="20" uuid="47e3b9fb-38a5-4700-b9b3-e70ec695b53a"/>
+                <text><![CDATA[Total]]></text>
+            </staticText>
+        </band>
+    </detail>
+</jasperReport>

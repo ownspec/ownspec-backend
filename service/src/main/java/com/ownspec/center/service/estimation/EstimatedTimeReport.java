@@ -3,9 +3,7 @@ package com.ownspec.center.service.estimation;
 import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.dto.component.ComponentReferenceDto;
 import com.ownspec.center.dto.component.ComponentVersionDto;
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -13,14 +11,12 @@ import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +28,12 @@ import java.util.Map;
 @Component
 public class EstimatedTimeReport {
 
+
+  private final String reportBasePath;
+
+  public EstimatedTimeReport(@Value("${report.basePath}") String reportBasePath) {
+    this.reportBasePath = reportBasePath;
+  }
 
   public static class Estimation {
     private double estimation;
@@ -61,40 +63,24 @@ public class EstimatedTimeReport {
     }
   }
 
-  public ByteArrayResource generateReport(ComponentVersionDto componentVersionDto) throws JRException, IOException {
+  public List<EstimatedComponentVersion> generateReport(ComponentVersionDto componentVersionDto) throws JRException, IOException {
+    List<EstimatedComponentVersion> flat = new LinkedList<>();
 
+    constructTree(componentVersionDto, 1, flat);
 
-    List<Estimation> flat = new LinkedList<>();
+    return flat;
+  }
 
-    flat.add(new Estimation(componentVersionDto, 0));
+  public ByteArrayResource generateExcelReport(ComponentVersionDto componentVersionDto) throws JRException, IOException {
+    List<EstimatedComponentVersion> flat = new LinkedList<>();
 
-    for (int i = 0; i < flat.size(); i++) {
-      Estimation current = flat.get(i);
+    constructTree(componentVersionDto, 1, flat);
 
-      for (ComponentReferenceDto referenceDto : current.componentVersionDto.getComponentReferences()) {
-        flat.add(i + 1, new Estimation(referenceDto.getTarget(), current.level + 1));
-      }
-    }
+    JRBeanCollectionDataSource beanColDataSource = new JRBeanCollectionDataSource(flat);
 
-    Path tempFile = Files.createTempFile("jasper", "b");
+    Map parameters = new HashMap();
 
-    JRBeanCollectionDataSource beanColDataSource;
-    Map parameters;
-
-
-    try (OutputStream outputStream = Files.newOutputStream(tempFile)) {
-
-      JasperCompileManager.getInstance(DefaultJasperReportsContext.getInstance())
-          .compileToStream(new ClassPathResource("report.jrxml").getInputStream(), outputStream);
-    }
-
-
-    beanColDataSource = new JRBeanCollectionDataSource(flat);
-
-    parameters = new HashMap();
-
-    JasperPrint jasperPrint = JasperFillManager.fillReport(tempFile.toString(),
-        parameters, beanColDataSource);
+    JasperPrint jasperPrint = JasperFillManager.fillReport(new File(reportBasePath, "estimation.jasper").toString(), parameters, beanColDataSource);
 
     JRXlsExporter exporter = new JRXlsExporter();
     exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
@@ -102,9 +88,22 @@ public class EstimatedTimeReport {
     ByteArrayOutputStream result = new ByteArrayOutputStream();
 
     exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(result));
-
     exporter.exportReport();
 
     return new ByteArrayResource(result.toByteArray());
+
+  }
+
+  private EstimatedComponentVersion constructTree(ComponentVersionDto cv, int level, List<EstimatedComponentVersion> flat) {
+    EstimatedComponentVersion current = new EstimatedComponentVersion(0, cv);
+    current.addEstimates(cv.getEstimatedTimes());
+    flat.add(current);
+
+    for (ComponentReferenceDto referenceDto : current.getComponentVersion().getComponentReferences()) {
+      EstimatedComponentVersion child = constructTree(referenceDto.getTarget(), level + 1, flat);
+      current.addChildrenEstimates(child.getEstimatedTimesPerCategory());
+    }
+
+    return current;
   }
 }

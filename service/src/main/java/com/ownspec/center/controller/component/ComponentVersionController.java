@@ -168,11 +168,11 @@ public class ComponentVersionController {
     ComponentVersionDto componentVersionDto = componentVersionService.resolveReferencesHierarchicaly(cvId);
 
     if (StringUtils.isBlank(mode)) {
-      return ResponseEntity.ok(componentVersionDto);
+      return ResponseEntity.ok(estimatedTimeReport.generateReport(componentVersionDto));
     } else {
       return ResponseEntity.ok()
           .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"report.xls\"")
-          .contentType(MediaType.APPLICATION_OCTET_STREAM).body(estimatedTimeReport.generateReport(componentVersionDto));
+          .contentType(MediaType.APPLICATION_OCTET_STREAM).body(estimatedTimeReport.generateExcelReport(componentVersionDto));
     }
   }
 

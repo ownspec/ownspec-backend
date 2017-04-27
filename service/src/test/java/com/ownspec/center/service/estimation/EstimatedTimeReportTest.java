@@ -41,7 +41,7 @@ public class EstimatedTimeReportTest extends AbstractTest {
     );
 
 
-    ByteArrayResource resource = estimatedTimeReport.generateReport(builder.build());
+    ByteArrayResource resource = estimatedTimeReport.generateExcelReport(builder.build());
 
     Files.write(Paths.get("target/foo.xls"), IOUtils.toByteArray(resource.getInputStream()));
 

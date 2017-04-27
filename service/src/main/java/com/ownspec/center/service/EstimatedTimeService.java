@@ -3,13 +3,11 @@ package com.ownspec.center.service;
 import com.ownspec.center.dto.EstimatedTimeDto;
 import com.ownspec.center.model.component.ComponentVersion;
 import com.ownspec.center.model.component.EstimatedTime;
+import com.ownspec.center.model.user.UserCategory;
 import com.ownspec.center.repository.EstimatedTimeRepository;
 import com.ownspec.center.util.DateUtils;
 import com.ownspec.center.util.DurationUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.Period;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,18 +38,10 @@ public class EstimatedTimeService {
       estimatedTime = new EstimatedTime();
     }
 
-    estimatedTime.setUserCategory(estimatedTimeDto.getUserCategory());
+    estimatedTime.setUserCategory(UserCategory.createFromDto(estimatedTimeDto.getUserCategory()));
     estimatedTime.setDuration(estimatedTimeDto.getDuration());
     estimatedTime.setDurationInMs(DurationUtils.getDurationInMs(estimatedTimeDto.getDuration(), 8 * 60 * 60l, 5 * 8 * 60 * 60l, DateUtils.Duration.MINUTE, Locale.getDefault()));
     estimatedTime.setComponentVersion(target);
-
-    PeriodFormatter formatter = new PeriodFormatterBuilder()
-        .appendDays().appendSuffix("d ")
-        .appendHours().appendSuffix("h ")
-        .appendMinutes().appendSuffix("min")
-        .toFormatter();
-
-    Period p = formatter.parsePeriod("2d 5h 30min");
 
 
     return estimatedTimeRepository.save(estimatedTime);

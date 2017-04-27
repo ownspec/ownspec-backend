@@ -1,5 +1,6 @@
 package com.ownspec.center.model.user;
 
+import com.ownspec.center.dto.user.UserCategoryDto;
 import com.ownspec.center.model.MainSequenceConstants;
 import lombok.Data;
 
@@ -28,4 +29,13 @@ public class UserCategory {
   @Column(name = "HOURLY_PRICE")
   private Double hourlyPrice;
 
+
+  public static UserCategory createFromDto(UserCategoryDto userCategoryDto) {
+    UserCategory userCategory = new UserCategory();
+    userCategory.setId(userCategoryDto.getId());
+    userCategory.setName(userCategoryDto.getName());
+    userCategory.setHourlyPrice(userCategoryDto.getHourlyPrice());
+    return userCategory;
+
+  }
 }
