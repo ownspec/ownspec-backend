@@ -1,9 +1,7 @@
-package com.ownspec.center.model.component;
+package com.ownspec.center.model.qa;
 
 import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.Project;
-import com.ownspec.center.model.audit.AbstractAuditable;
-import com.ownspec.center.model.persistable.Persistable;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -16,21 +14,19 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
- * Created by lyrold on 23/08/2016.
+ * Created by nlabrot on 28/04/17.
  */
 @Data
 @Entity
-@Table(name = "COMPONENT")
-// TODO: to refactor and split a COMPONENT into COMPONENT and COMPONENT_VERSION
-public class Component extends AbstractAuditable implements Persistable {
+@Table(name = "QA_COMPONENT")
+public class QaComponent {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
   @Column(name = "ID")
-  protected Long id;
+  private Long id;
 
   // Ease sorting
   @JoinColumn(name = "CODE")
@@ -45,17 +41,10 @@ public class Component extends AbstractAuditable implements Persistable {
   @JoinColumn(name = "PROJECT_ID")
   protected Project project;
 
+
   @Enumerated(EnumType.STRING)
   @Column(name = "TYPE")
-  protected ComponentType type;
-
-  @Column(name = "VCS_ID")
-  protected String vcsId;
-
-  @Transient
-  public boolean isRequirement() {
-    return ComponentType.REQUIREMENT == type;
-  }
+  protected QaComponentType type;
 
   @Override
   public String toString() {

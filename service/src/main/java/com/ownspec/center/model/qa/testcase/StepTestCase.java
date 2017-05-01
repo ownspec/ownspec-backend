@@ -1,4 +1,4 @@
-package com.ownspec.center.model.component;
+package com.ownspec.center.model.qa.testcase;
 
 import com.ownspec.center.model.MainSequenceConstants;
 import com.ownspec.center.model.audit.AbstractAuditable;
@@ -15,22 +15,26 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Created by lyrold on 27/09/2016.
+ * Created by nlabrot on 28/04/17.
  */
 @Data
 @Entity
-@Table(name = "COMMENT")
-public class Comment extends AbstractAuditable implements Persistable {
+@Table(name = "QA_STEP_TEST_CASE")
+public class StepTestCase extends AbstractAuditable implements Persistable {
+
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
   @Column(name = "ID")
   private Long id;
 
-  @Column(name = "VALUE")
-  private String value;
+  // Sibling step order
+  private int order;
 
   @ManyToOne
-  @JoinColumn(name = "COMPONENT_ID")
-  private Component component;
+  @JoinColumn(name = "TEST_CASE_ID")
+  private TestCaseVersionDefinition testCase;
+
+  @Column(name = "TITLE")
+  protected String title;
 
 }
