@@ -6,7 +6,6 @@ import static com.ownspec.center.util.RequestFilterMode.LAST_VISITED_ONLY;
 import com.ownspec.center.dto.ProjectDto;
 import com.ownspec.center.dto.user.UserDto;
 import com.ownspec.center.model.Project;
-import com.ownspec.center.model.user.UserProject;
 import com.ownspec.center.repository.ProjectRepository;
 import com.ownspec.center.repository.user.UserProjectRepository;
 import com.ownspec.center.service.ProjectService;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,7 +53,7 @@ public class ProjectController {
 
   @PostMapping
   public ResponseEntity create(@RequestBody ProjectDto projectDto) {
-    projectService.createProject(projectDto);
+    projectService.create(projectDto);
     // TODO: return created with a valid URI
     return ResponseEntity.ok("Project successfully created");
   }
@@ -71,6 +69,7 @@ public class ProjectController {
   public ResponseEntity delete(@PathVariable("id") Long id) {
     Project project = projectRepository.findOne(id);
     if (project != null) {
+      userProjectRepository.deleteAllByProjectId(id);
       projectRepository.delete(id);
       return ResponseEntity.ok("Project successfully removed");
     } else {

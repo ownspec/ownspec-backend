@@ -46,7 +46,7 @@ public class ProjectService {
   @Autowired
   private UserService userService;
 
-  public Project createProject(@RequestBody ProjectDto projectDto){
+  public Project create(@RequestBody ProjectDto projectDto) {
 
     ComponentCodeCounter ccc = new ComponentCodeCounter();
     ccc.setKey(projectDto.getKey());
@@ -58,16 +58,23 @@ public class ProjectService {
     project.setDescription(projectDto.getDescription());
     project.setComponentCodeCounter(ccc);
 
-    if (projectDto.getManager() != null) {
-      project.setManager(userService.loadUserByUsername(projectDto.getManager().getUsername()));
+    UserDto manager = projectDto.getManager();
+    if (manager != null) {
+      project.setManager(userService.loadUserByUsername(manager.getUsername()));
+      project = projectRepository.save(project);
+
+      // Add manager in projectUsers
+      UserProject userProject = new UserProject();
+      userProject.setUser(userService.loadUserByUsername(manager.getUsername()));
+      userProject.setProject(project);
+      userProjectRepository.save(userProject);
+    } else {
+      project = projectRepository.save(project);
     }
-    project = projectRepository.save(project);
-
-
 
     List<UserDto> projectUsers = projectDto.getProjectUsers();
     if (projectUsers != null) {
-      for (UserDto user: projectUsers) {
+      for (UserDto user : projectUsers) {
         UserProject userProject = new UserProject();
         userProject.setUser(userService.loadUserByUsername(user.getUsername()));
         userProject.setProject(project);
@@ -168,7 +175,6 @@ public class ProjectService {
     }
   }
 
-
   private void addUserToProject(Long projectId, String username) {
     User user = userService.loadUserByUsername(username);
     UserProject foundUP = userProjectRepository.findOneByUserIdAndProjectId(user.getId(), projectId);
@@ -184,7 +190,6 @@ public class ProjectService {
       LOG.info("User [{}] already exists in project with id [{}]", username, projectId);
     }
   }
-
 
   public ResponseEntity removeUserFromProject(Long projectId, String username) {
     LOG.info("Remove user [{}] from project where projectId=[{}] and username=[{}]", username, projectId);

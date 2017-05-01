@@ -143,7 +143,7 @@ public class ComponentService {
 
   public Pair<Component, ComponentVersion> create(ComponentVersionDto source) {
     // TODO: 27/09/16 handle case if transaction fails
-
+    //TODO: Remove created file if transaction fails
     Resource resource = null;
 
     if (source.getUploadedFileId() == null) {

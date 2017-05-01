@@ -94,16 +94,8 @@ public class ComponentVersionController {
         .query(query)
         .build();
 
-
     return anotherComponentVersionRepository.findAll(searchBean)
         .collect(Collectors.toList());
-
-/*
-    return componentVersionRepository.findAll(projectId, generic, types.orElse(Collections.emptyList()), query, null,null,null)
-        .stream()
-        .map(cv -> componentConverter.toComponentVersionDto(cv, statuses, references, usePoints))
-        .collect(Collectors.toList());
-*/
   }
 
   @GetMapping("{id}")

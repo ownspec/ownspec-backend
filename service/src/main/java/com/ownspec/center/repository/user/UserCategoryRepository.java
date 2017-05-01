@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author lyrold
  */
-public interface UserCategoryRepository extends JpaRepository<UserCategory,Long>{
+public interface UserCategoryRepository extends JpaRepository<UserCategory, Long> {
 
-
+  UserCategory findByName(String name);
 }
