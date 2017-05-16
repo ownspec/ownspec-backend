@@ -1,5 +1,6 @@
 package com.ownspec.center.controller.component;
 
+import com.ownspec.center.dto.PaginatedResult;
 import com.ownspec.center.dto.component.ComponentVersionDto;
 import com.ownspec.center.dto.workflow.WorkflowStatusDto;
 import com.ownspec.center.model.component.ComponentType;
@@ -41,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by lyrold on 20/09/2016.
@@ -76,7 +76,7 @@ public class ComponentVersionController {
 
 
   @GetMapping
-  public List<ComponentVersionDto> findAllVersion(
+  public PaginatedResult<ComponentVersionDto> findAllVersion(
 
       @RequestParam(value = "projectId", required = false) Long projectId,
       @RequestParam(value = "q", required = false) String query,
@@ -94,8 +94,7 @@ public class ComponentVersionController {
         .query(query)
         .build();
 
-    return anotherComponentVersionRepository.findAll(searchBean)
-        .collect(Collectors.toList());
+    return anotherComponentVersionRepository.findAll(searchBean, 0, 100);
   }
 
   @GetMapping("{id}")

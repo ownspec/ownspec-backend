@@ -21,7 +21,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "QA_CAMPAIGN_VERSION_NODE_EXEC")
-public class CampaignVersionNodeExecution {
+public class CampaignVersionExecutionNode {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = MainSequenceConstants.SEQUENCE_GENERATOR_NAME)
@@ -35,8 +35,8 @@ public class CampaignVersionNodeExecution {
 
   // the associated CampaignVersionNodeDefinition
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "QA_CAMPAIGN_VERSION_NODE_ID")
-  private CampaignVersionNodeDefinition campaignVersionNodeDefinition;
+  @JoinColumn(name = "QA_CAMPAIGN_VERSION_DEF_NODE_ID")
+  private CampaignVersionDefinitionNode campaignVersionDefinitionNode;
 
   // the associated TestCaseVersionExecution
   @ManyToOne(fetch = FetchType.LAZY)

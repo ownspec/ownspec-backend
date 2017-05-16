@@ -30,8 +30,8 @@ public class CampaignVersionExecution {
   private Long id;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "QA_CAMPAIGN_VERSION_ID")
-  private CampaignVersionDefinition campaignVersion;
+  @JoinColumn(name = "QA_CAMPAIGN_VERSION_DEF")
+  private CampaignVersionDefinition campaignVersionDefinition;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "WORKFLOW_INSTANCE_ID")

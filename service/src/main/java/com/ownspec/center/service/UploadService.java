@@ -39,14 +39,17 @@ public class UploadService {
   }
 
   public Optional<Resource> findResource(String id) {
+    return findFile(id).map(p -> new FileSystemResource(p.toFile()));
+  }
+
+  public Optional<Path> findFile(String id) {
     Path path = Paths.get(System.getProperty("java.io.tmpdir"), id);
 
     if (Files.exists(path)){
-      return Optional.of(new FileSystemResource(path.toFile()));
+      return Optional.of(path);
     }else{
       return Optional.empty();
     }
-
   }
 
 

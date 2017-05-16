@@ -8,8 +8,9 @@ import static com.ownspec.center.model.tables.ComponentVersion.COMPONENT_VERSION
 import static com.ownspec.center.model.tables.WorkflowStatus.WORKFLOW_STATUS;
 
 import com.ownspec.center.controller.component.ComponentVersionSearchBean;
+import com.ownspec.center.dto.ImmutablePaginatedResult;
+import com.ownspec.center.dto.PaginatedResult;
 import com.ownspec.center.dto.component.ComponentVersionDto;
-import com.ownspec.center.dto.component.ImmutableComponentVersionDto;
 import com.ownspec.center.model.component.ComponentType;
 import com.ownspec.center.model.tables.Osuser;
 import com.ownspec.center.model.tables.WorkflowStatus;
@@ -30,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
  * Created by nlabrot on 22/03/17.
@@ -40,6 +41,7 @@ import java.util.stream.Stream;
 public class AnotherComponentVersionRepository {
 
   private final Configuration configuration;
+  private final DSLContext dslContext;
 
   @Autowired
   private AnotherConverter anotherConverter;
@@ -48,6 +50,7 @@ public class AnotherComponentVersionRepository {
   @Autowired
   public AnotherComponentVersionRepository(DSLContext dslContext) {
     this.configuration = dslContext.configuration();
+    this.dslContext = dslContext;
   }
 
   /**
@@ -55,7 +58,7 @@ public class AnotherComponentVersionRepository {
    *
    * @return
    */
-  public Stream<ComponentVersionDto> findAll(ComponentVersionSearchBean searchBean) {
+  public PaginatedResult<ComponentVersionDto> findAll(ComponentVersionSearchBean searchBean, long offset, long size) {
 
     DSLContext create = DSL.using(configuration);
 
@@ -139,18 +142,26 @@ public class AnotherComponentVersionRepository {
       });
     }*/
 
-
     if (predicates.size() > 0) {
       sql.where(predicates);
     }
 
+
+    int count = dslContext.fetchCount(sql);
+
+    sql.offset((int) offset);
+    sql.limit((int) size);
+
     Result<Record> records = sql.fetch();
 
-    return records.stream().map(r -> {
-      ImmutableComponentVersionDto.Builder cvBuilder = anotherConverter.convert(r.into(COMPONENT), r.into(COMPONENT_VERSION), r.into(cvCreated), r.into(cvUpdated), r.into(cvAssignee));
-      cvBuilder.workflowInstance(anotherConverter.convert(r.into(WORKFLOW_INSTANCE), r.into(lastStatusSubQuery)).build());
-      return cvBuilder.build();
-    });
+    return ImmutablePaginatedResult.<ComponentVersionDto>newPaginatedResult()
+        .offset(offset)
+        .size(size)
+        .total(count)
+        .result(records.stream().map(r -> anotherConverter.convert(r.into(COMPONENT), r.into(COMPONENT_VERSION), r.into(cvCreated), r.into(cvUpdated), r.into(cvAssignee))
+            .workflowInstance(anotherConverter.convert(r.into(WORKFLOW_INSTANCE), r.into(lastStatusSubQuery)).build())
+            .build()).collect(Collectors.toList()))
+        .build();
   }
 
 

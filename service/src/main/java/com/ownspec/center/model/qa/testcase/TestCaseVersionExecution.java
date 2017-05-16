@@ -33,11 +33,9 @@ public class TestCaseVersionExecution extends AbstractAuditable implements Persi
 
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "QA_TEST_CASE_VERSION_ID")
+  @JoinColumn(name = "QA_TEST_CASE_VERSION_DEF_ID")
   private TestCaseVersionDefinition testCaseVersionDefinition;
 
-  @Column(name = "TITLE")
-  protected String title;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "WORKFLOW_INSTANCE_ID")

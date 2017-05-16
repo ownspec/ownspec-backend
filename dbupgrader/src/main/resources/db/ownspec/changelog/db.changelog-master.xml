@@ -5,6 +5,8 @@
 
     <!-- 0.0.1 -->
     <include file="0.0.1/0.0.1.1_DDL.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/0.0.1.2_Init.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/0.0.1.3_QA_DDL.xml" relativeToChangelogFile="true"/>
 
 
 </databaseChangeLog>

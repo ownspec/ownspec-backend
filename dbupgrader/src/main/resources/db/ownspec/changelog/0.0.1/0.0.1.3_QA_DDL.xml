@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE databaseChangeLog  []>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+
+    <!-- QA -->
+    <changeSet id="0.1.0.3_QA_DDL" author="nla">
+        <createTable tableName="QA_COMPONENT">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CODE" type="VARCHAR2(64)"/>
+            <column name="CODE_NUMBER" type="bigint"/>
+            <column name="PROJECT_ID" type="bigint">
+                <constraints nullable="true" references="PROJECT(ID)" foreignKeyName="FK_CMP_PROJECT_ID"/>
+            </column>
+            <column name="TYPE" type="VARCHAR2(64)"/>
+
+            <column name="CREATED_DATE" type="TIMESTAMP"/>
+            <column name="CREATED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_CR_USR_ID"/>
+            </column>
+            <column name="LAST_MODIFIED_DATE" type="TIMESTAMP"/>
+            <column name="LAST_MODIFIED_USER_ID" type="bigint">
+                <constraints references="OSUSER(ID)" foreignKeyName="FK_CMP_MOD_USR_ID"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="QA_COMPONENT" columnNames="CODE,PROJECT_ID"/>
+
+
+        <!-- Test Case Version Definition -->
+        <createTable tableName="QA_TEST_CASE_VERSION_DEF">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="QA_COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="QA_COMPONENT(ID)" foreignKeyName="FK_QA_T_C_VER_DEF_QA_CMP"/>
+            </column>
+
+            <column name="TITLE" type="VARCHAR2(256)"/>
+
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="QA_TEST_CASE_VERSION_DEF" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_QA_T_C_VER_DEF_WFW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+
+        <!-- Test Case Version Execution -->
+        <createTable tableName="QA_TEST_CASE_VERSION_EXEC">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="QA_TEST_CASE_VERSION_DEF_ID" type="bigint">
+                <constraints nullable="false" references="QA_TEST_CASE_VERSION_DEF(ID)" foreignKeyName="FK_QA_T_C_VER_EXEC_DEF"/>
+            </column>
+
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="QA_TEST_CASE_VERSION_EXEC" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_QA_T_C_VER_EXEC_WFW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+        <!-- Step Test Case -->
+        <createTable tableName="QA_STEP_TEST_CASE">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="ORDER" type="bigint"/>
+
+            <column name="QA_TEST_CASE_VERSION_DEF_ID" type="bigint">
+                <constraints nullable="false" references="QA_TEST_CASE_VERSION_DEF(ID)" foreignKeyName="FK_QA_STEP_T_C_DEF"/>
+            </column>
+
+            <column name="TITLE" type="VARCHAR2(256)"/>
+        </createTable>
+
+
+        <!-- Campaign Version Definition -->
+        <createTable tableName="QA_CAMPAIGN_VERSION_DEF">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="QA_COMPONENT_ID" type="bigint">
+                <constraints nullable="false" references="QA_COMPONENT(ID)" foreignKeyName="FK_QA_CAMP_V_DEF_QA_CMP_ID"/>
+            </column>
+
+            <column name="TITLE" type="VARCHAR2(256)"/>
+
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="QA_CAMPAIGN_VERSION_DEF" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_QA_CAMP_V_DEF_WFW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+
+        <createTable tableName="QA_CAMPAIGN_VERSION_DEF_NODE">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="ORDER" type="bigint"/>
+
+            <column name="QA_CAMPAIGN_VERSION_DEF_ID" type="bigint">
+                <constraints nullable="true" references="QA_CAMPAIGN_VERSION_DEF(ID)" foreignKeyName="FK_QA_CAMP_V_DEF_NODE_DEF"/>
+            </column>
+
+            <column name="PARENT_ID" type="bigint">
+                <constraints nullable="true" references="QA_CAMPAIGN_VERSION_DEF_NODE(ID)" foreignKeyName="FK_QA_CAMP_V_DEF_NODE_PARENT"/>
+            </column>
+
+            <column name="QA_TEST_CASE_VERSION_DEF_ID" type="bigint">
+                <constraints nullable="true" references="QA_TEST_CASE_VERSION_DEF(ID)" foreignKeyName="FK_QA_CAMP_V_DEF_NODE_TC"/>
+            </column>
+
+            <column name="TITLE" type="VARCHAR2(256)"/>
+        </createTable>
+
+
+        <createTable tableName="QA_CAMPAIGN_VERSION_EXEC">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="QA_CAMPAIGN_VERSION_DEF" type="bigint">
+                <constraints nullable="false" references="QA_CAMPAIGN_VERSION_DEF(ID)" foreignKeyName="FK_QA_CAMP_V_EXEC_DEF"/>
+            </column>
+
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="QA_CAMPAIGN_VERSION_EXEC" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_QA_CAMP_V_EXEC_WFW_INST_ID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+
+        <createTable tableName="QA_CAMPAIGN_VERSION_EXEC_NODE">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="QA_CAMPAIGN_VERSION_EXEC_ID" type="bigint">
+                <constraints nullable="false" references="QA_CAMPAIGN_VERSION_EXEC(ID)" foreignKeyName="FK_QA_CAMP_V_EXEC_NODE_EXEC"/>
+            </column>
+
+            <column name="QA_CAMPAIGN_VERSION_DEF_NODE_ID" type="bigint">
+                <constraints nullable="false" references="QA_CAMPAIGN_VERSION_DEF_NODE(ID)" foreignKeyName="FK_QA_CAMP_V_EXEC_NODE_ND_DEF"/>
+            </column>
+
+            <column name="QA_TEST_CASE_VERSION_EXEC_ID" type="bigint">
+                <constraints nullable="true" references="QA_TEST_CASE_VERSION_EXEC(ID)" foreignKeyName="FK_QA_CAMP_V_EXEC_NODE_TC_EXE"/>
+            </column>
+
+            <column name="WORKFLOW_INSTANCE_ID" type="bigint"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="QA_CAMPAIGN_VERSION_EXEC_NODE" baseColumnNames="WORKFLOW_INSTANCE_ID"
+                                 constraintName="FK_QA_CAMP_VER_EXEC_ND_WINSTID" referencedTableName="WORKFLOW_INSTANCE" referencedColumnNames="ID"/>
+
+
+    </changeSet>
+
+</databaseChangeLog>
