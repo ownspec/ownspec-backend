@@ -144,7 +144,7 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>findbugs</artifactId>
-      <version>3.0.0</version>
+      <version>3.0.1</version>
     </dependency>
 
     <dependency>
@@ -234,7 +234,7 @@
     <dependency>
       <groupId>org.outerj.daisy</groupId>
       <artifactId>daisydiff</artifactId>
-      <version>1.2-NX4-SNAPSHOT</version>
+      <version>1.2-NX4</version>
     </dependency>
 
     <dependency>
