@@ -11,6 +11,9 @@
 
     <artifactId>dbupgrader</artifactId>
 
+    <properties>
+        <ownspec.service>ownspec-dbupgrader</ownspec.service>
+    </properties>
 
     <build>
         <plugins>
@@ -35,8 +38,82 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+        </dependency>
 
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>packaging</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>appassembler-maven-plugin</artifactId>
+                        <version>1.10</version>
+                        <executions>
+                            <execution>
+                                <id>generate-console</id>
+                                <goals>
+                                    <goal>assemble</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <assembleDirectory>${project.build.directory}/console</assembleDirectory>
+                                    <repositoryLayout>flat</repositoryLayout>
+                                    <repositoryName>lib</repositoryName>
+                                    <useWildcardClassPath>true</useWildcardClassPath>
+                                    <extraJvmArguments>-Djava.security.egd=file:///dev/urandom</extraJvmArguments>
+                                    <programs>
+                                        <program>
+                                            <mainClass>liquibase.integration.commandline.Main</mainClass>
+                                            <id>liquibase</id>
+                                            <platforms>
+                                                <platform>windows</platform>
+                                                <platform>unix</platform>
+                                            </platforms>
+                                        </program>
+                                    </programs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${project.build.directory}/rpm/usr/share/${ownspec.service}"/>
+                                        <mkdir dir="${project.build.directory}/rpm/etc/${ownspec.service}"/>
+
+                                        <copy todir="${project.build.directory}/rpm/usr/share/${ownspec.service}">
+                                            <fileset dir="${project.build.directory}/console"/>
+                                        </copy>
+
+                                        <copy file="${project.basedir}/src/main/liquibase/liquibase.properties"
+                                              tofile="${project.build.directory}/rpm/etc/${ownspec.service}/liquibase.properties.template"/>
+
+                                        <zip destfile="${project.build.directory}/${ownspec.service}-console.zip"
+                                             basedir="${project.build.directory}/console/"/>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

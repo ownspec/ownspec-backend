@@ -37,7 +37,7 @@ public class ComponentServiceImporter {
 
     String content = new String(byteArrayOutputStream.toByteArray(), UTF_8);
 
-    return new ByteArrayResource(Jsoup.parse(content).body().html().getBytes(UTF_8));
+    return new ByteArrayResource(Jsoup.parse(content).body().attr("class", "cke_editable").html().getBytes(UTF_8));
   }
 
 }

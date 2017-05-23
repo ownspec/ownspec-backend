@@ -1,8 +1,5 @@
 package com.ownspec.center.service.component.importer;
 
-/**
- * Created by nlabrot on 16/05/17.
- */
 
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -33,7 +30,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.microsoft.WordExtractor;
 import org.apache.tika.parser.microsoft.WordExtractor.TagAndStyle;
 import org.apache.tika.parser.microsoft.ooxml.AbstractOOXMLExtractor;
-import org.apache.tika.parser.microsoft.ooxml.XWPFListManager;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
@@ -46,6 +42,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.namespace.QName;
@@ -73,7 +70,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
   protected void buildXHTML(XHTMLContentHandler xhtml)
       throws SAXException, XmlException, IOException {
     XWPFHeaderFooterPolicy hfPolicy = document.getHeaderFooterPolicy();
-    XWPFListManager listManager = new XWPFListManager(document);
+    OsXWPFListManager listManager = new OsXWPFListManager(document);
     // headers
     if (hfPolicy != null) {
       extractHeaders(xhtml, hfPolicy, listManager);
@@ -88,13 +85,85 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     }
   }
 
-  private void extractIBodyText(IBody bodyElement, XWPFListManager listManager,
+
+  private ArrayDeque<ListContext> lists = new ArrayDeque<>();
+
+  private static class ListContext {
+    int abstractNumberingId = -1;
+    int lastNumIlvl = -1;
+    String format;
+    String tag;
+
+    public ListContext(int abstractNumberingId, int lastNumIlvl, String format, String tag) {
+      this.abstractNumberingId = abstractNumberingId;
+      this.lastNumIlvl = lastNumIlvl;
+      this.format = format;
+      this.tag = tag;
+    }
+  }
+
+
+  private void extractIBodyText(IBody bodyElement, OsXWPFListManager listManager,
                                 XHTMLContentHandler xhtml)
       throws SAXException, XmlException, IOException {
     for (IBodyElement element : bodyElement.getBodyElements()) {
       if (element instanceof XWPFParagraph) {
+
         XWPFParagraph paragraph = (XWPFParagraph) element;
+
+        if (listManager.isList(paragraph)) {
+          // List, get the list style id, list format and level
+
+          String number = String.valueOf(listManager.getNumber(paragraph));
+
+          int numIlvl = paragraph.getNumIlvl().intValue();
+          Integer abstractNumberingId = listManager.getAbstractNumberingId(paragraph);
+          String format = listManager.getNumberingType(paragraph);
+          String tag = "bullet".equals(format) ? "ul" : "ol";
+          ListContext currentContext = new ListContext(abstractNumberingId, numIlvl, format, tag);
+
+          int currentLevel = lists.size() - 1;
+
+          if (currentLevel == numIlvl) {
+            // Same level, get the last list parameter
+            reuseOrCreate(xhtml, abstractNumberingId, format, currentContext, lists.peek(), number);
+
+          } else if (currentLevel < numIlvl) {
+            // new level is greater
+            // in case level jump is greater than 1, fill the gap
+            while (currentLevel + 1 < numIlvl) {
+              // fill with ul
+              xhtml.startElement("ul", "start", number);
+              lists.push(new ListContext(Integer.MAX_VALUE, lists.size(), "bullet", "ul"));
+              currentLevel++;
+            }
+            // then open the new one
+            lists.push(currentContext);
+            xhtml.startElement(currentContext.tag, "start", number);
+
+
+          } else {
+            // new level is lower
+            // in case level jump is lower than 1, close the gap
+            while (currentLevel > numIlvl) {
+              xhtml.endElement(lists.pop().tag);
+              currentLevel--;
+            }
+            // Then reuseOrCreate the prevContext with the current one
+            reuseOrCreate(xhtml, abstractNumberingId, format, currentContext, lists.peek(), number);
+          }
+
+
+        } else {
+          // close the list tag
+          while (!lists.isEmpty()) {
+            xhtml.endElement(lists.pop().tag);
+          }
+        }
+
         extractParagraph(paragraph, listManager, xhtml);
+
+
       }
       if (element instanceof XWPFTable) {
         XWPFTable table = (XWPFTable) element;
@@ -107,6 +176,36 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     }
   }
 
+  /**
+   * If the prevContext is equals to the current do nothing
+   * If the prevContent and the current have a bullet format do nothing
+   * Else, close the prevContext and open the current one
+   *
+   * @param xhtml
+   * @param abstractNumberingId
+   * @param format
+   * @param currentContext
+   * @param prevContext
+   * @param number
+   * @throws SAXException
+   */
+  private void reuseOrCreate(XHTMLContentHandler xhtml, Integer abstractNumberingId, String format, ListContext currentContext, ListContext prevContext, String number) throws SAXException {
+    // Compare the list parameter with the current
+    if (prevContext.abstractNumberingId == abstractNumberingId) {
+      // Same list, do nothing
+    } else {
+      // If the format is the same and is bullet do nothing else close the previous list
+      if (prevContext.format.equals(format) && "bullet".equals(format)) {
+        // Same list, do nothing
+      } else {
+        // Close the previous list, then open the new one
+        xhtml.endElement(lists.pop().tag);
+        lists.push(currentContext);
+        xhtml.startElement(currentContext.tag, "start", number);
+      }
+    }
+  }
+
   private void extractSDT(XWPFSDT element, XHTMLContentHandler xhtml) throws SAXException,
       XmlException, IOException {
     ISDTContent content = element.getContent();
@@ -116,12 +215,16 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     xhtml.endElement(tag);
   }
 
-  private void extractParagraph(XWPFParagraph paragraph, XWPFListManager listManager,
+  private void extractParagraph(XWPFParagraph paragraph, OsXWPFListManager listManager,
                                 XHTMLContentHandler xhtml)
       throws SAXException, XmlException, IOException {
     // If this paragraph is actually a whole new section, then
     //  it could have its own headers and footers
     // Check and handle if so
+
+    System.out.println(listManager.getAbstractNumberingId(paragraph) + " " + listManager.getNumberingType(paragraph));
+
+
     XWPFHeaderFooterPolicy headerFooterPolicy = null;
     if (paragraph.getCTP().getPPr() != null) {
       CTSectPr ctSectPr = paragraph.getCTP().getPPr().getSectPr();
@@ -135,15 +238,16 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     // Is this a paragraph, or a heading?
     String tag = "p";
     String styleClass = null;
-    if (paragraph.getStyleID() != null) {
-      XWPFStyle style = styles.getStyle(
-          paragraph.getStyleID()
-      );
+
+
+    //if (listManager.getNumberingType(paragraph))
+    if (listManager.isList(paragraph)) {
+      tag = "li";
+    } else if (paragraph.getStyleID() != null) {
+      XWPFStyle style = styles.getStyle(paragraph.getStyleID());
 
       if (style != null && style.getName() != null) {
-        TagAndStyle tas = WordExtractor.buildParagraphTagAndStyle(
-            style.getName(), paragraph.getPartType() == BodyType.TABLECELL
-        );
+        TagAndStyle tas = WordExtractor.buildParagraphTagAndStyle(style.getName(), paragraph.getPartType() == BodyType.TABLECELL);
         tag = tas.getTag();
         styleClass = tas.getStyleClass();
       }
@@ -155,7 +259,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
       xhtml.startElement(tag, "class", styleClass);
     }
 
-    writeParagraphNumber(paragraph, listManager, xhtml);
+    //writeParagraphNumber(paragraph, listManager, xhtml);
     // Output placeholder for any embedded docs:
 
     // TODO: replace w/ XPath/XQuery:
@@ -279,11 +383,13 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
   }
 
   private void writeParagraphNumber(XWPFParagraph paragraph,
-                                    XWPFListManager listManager,
+                                    OsXWPFListManager listManager,
                                     XHTMLContentHandler xhtml) throws SAXException {
     if (paragraph.getNumIlvl() == null) {
       return;
     }
+
+
     String number = listManager.getFormattedNumber(paragraph);
     if (number != null) {
       xhtml.characters(number);
@@ -357,7 +463,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     xhtml.characters(run.getContent().getText());
   }
 
-  private void extractTable(XWPFTable table, XWPFListManager listManager,
+  private void extractTable(XWPFTable table, OsXWPFListManager listManager,
                             XHTMLContentHandler xhtml)
       throws SAXException, XmlException, IOException {
     xhtml.startElement("table");
@@ -381,7 +487,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
 
   private void extractFooters(
       XHTMLContentHandler xhtml, XWPFHeaderFooterPolicy hfPolicy,
-      XWPFListManager listManager)
+      OsXWPFListManager listManager)
       throws SAXException, XmlException, IOException {
     // footers
     if (hfPolicy.getFirstPageFooter() != null) {
@@ -396,7 +502,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
   }
 
   private void extractHeaders(
-      XHTMLContentHandler xhtml, XWPFHeaderFooterPolicy hfPolicy, XWPFListManager listManager)
+      XHTMLContentHandler xhtml, XWPFHeaderFooterPolicy hfPolicy, OsXWPFListManager listManager)
       throws SAXException, XmlException, IOException {
     if (hfPolicy == null) {
       return;
@@ -415,7 +521,7 @@ public class OsXWPFWordExtractorDecorator extends AbstractOOXMLExtractor {
     }
   }
 
-  private void extractHeaderText(XHTMLContentHandler xhtml, XWPFHeaderFooter header, XWPFListManager listManager) throws SAXException, XmlException, IOException {
+  private void extractHeaderText(XHTMLContentHandler xhtml, XWPFHeaderFooter header, OsXWPFListManager listManager) throws SAXException, XmlException, IOException {
 
     for (IBodyElement e : header.getBodyElements()) {
       if (e instanceof XWPFParagraph) {
