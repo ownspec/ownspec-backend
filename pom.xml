@@ -50,6 +50,14 @@
                 <datasource.password>XW1WNBvjvLUwh6yZxFlkLbwGeg1AukpFO5UDybCBLfomrui6735DdZXG1UQi3Sz</datasource.password>
             </properties>
         </profile>
+        <profile>
+            <id>demo</id>
+            <properties>
+                <datasource.url>jdbc:postgresql://localhost:5432/ownspec</datasource.url>
+                <datasource.username>ownspec</datasource.username>
+                <datasource.password>ownspec</datasource.password>
+            </properties>
+        </profile>
 
         <profile>
             <id>bootstrap</id>
